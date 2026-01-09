@@ -21,12 +21,22 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         layoutWidth,
         showUnsavedAlert,
         confirmNavigation,
-        cancelNavigation
+        cancelNavigation,
+        isMobileMenuOpen,
+        setIsMobileMenuOpen
     } = useLayout();
 
     return (
         <div className="min-h-screen flex flex-col">
             <Header />
+
+            {/* Mobile Menu Overlay */}
+            {layoutMode === 'vertical' && isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30 md:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
 
             {layoutMode === 'horizontal' && <HorizontalNav />}
             {layoutMode === 'vertical' && <Sidebar />}

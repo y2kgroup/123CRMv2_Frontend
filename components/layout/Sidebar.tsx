@@ -8,7 +8,7 @@ import React from 'react';
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { isSidebarCollapsed, toggleSidebar, customTheme, handleNavigation, theme } = useLayout();
+    const { isSidebarCollapsed, toggleSidebar, customTheme, handleNavigation, theme, isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
     const [openSubMenus, setOpenSubMenus] = React.useState<string[]>([]);
     const activeTheme = theme === 'dark' ? customTheme.dark : customTheme.light;
     const { displayMode } = activeTheme.verticalNav;
@@ -16,8 +16,14 @@ export function Sidebar() {
     return (
         <div
             className={cn(
-                "flex flex-col fixed top-[70px] left-0 bottom-0 z-40 hidden md:flex overflow-y-auto transition-all duration-300 border-r",
-                isSidebarCollapsed ? "w-[70px]" : "w-[250px]"
+                "flex flex-col fixed top-[70px] left-0 bottom-0 z-40 overflow-y-auto transition-transform duration-300 border-r",
+                isSidebarCollapsed ? "w-[70px]" : "w-[250px]",
+                // Mobile behavior:
+                // - By default (mobile): -translate-x-full (hidden)
+                // - If isMobileMenuOpen: translate-x-0 (shown)
+                // - Desktop (md): Always translate-x-0
+                "md:translate-x-0",
+                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}
             style={{
                 backgroundColor: 'var(--v-nav-bg)',
@@ -55,7 +61,10 @@ export function Sidebar() {
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                onClick={(e) => handleNavigation(e, item.href)}
+                                onClick={(e) => {
+                                    handleNavigation(e, item.href);
+                                    setIsMobileMenuOpen(false);
+                                }}
                                 title={isSidebarCollapsed ? item.label : undefined}
                                 style={{
                                     color: isActive ? 'var(--v-nav-text)' : 'var(--v-nav-text)',

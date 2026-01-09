@@ -8,7 +8,7 @@ import { useLayout } from './LayoutContext';
 
 export function Header() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const { toggleLayoutMode, layoutMode, theme, toggleTheme, customTheme, isSidebarCollapsed } = useLayout();
+    const { toggleLayoutMode, layoutMode, theme, toggleTheme, customTheme, isSidebarCollapsed, toggleMobileMenu } = useLayout();
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown when clicking outside
@@ -49,7 +49,10 @@ export function Header() {
         >
             <div className="flex items-center gap-4 w-full">
                 {/* Mobile Menu Toggle */}
-                <button className="md:hidden p-1 hover:bg-white/10 rounded">
+                <button
+                    className="md:hidden p-1 hover:bg-white/10 rounded"
+                    onClick={toggleMobileMenu}
+                >
                     <Menu className="w-6 h-6" style={{ color: 'var(--header-icon)' }} />
                 </button>
 

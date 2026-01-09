@@ -168,6 +168,10 @@ interface LayoutContextType {
     pendingUrl: string | null;
     confirmNavigation: () => void;
     cancelNavigation: () => void;
+    // Mobile Menu
+    isMobileMenuOpen: boolean;
+    setIsMobileMenuOpen: (open: boolean) => void;
+    toggleMobileMenu: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -433,6 +437,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setPendingUrl(null);
     };
 
+    // Mobile Menu State
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
+
+
     if (!isInitialized) return null;
 
     return (
@@ -449,7 +458,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             handleNavigation,
             pendingUrl,
             confirmNavigation,
-            cancelNavigation
+            cancelNavigation,
+            // Mobile Menu
+            isMobileMenuOpen,
+            setIsMobileMenuOpen,
+            toggleMobileMenu
         }}>
             {children}
         </LayoutContext.Provider>
