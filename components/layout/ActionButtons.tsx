@@ -37,19 +37,19 @@ export function ActionButtons() {
                 </Button>
             )}
 
-            {isSettingsPage && (
-                <div className="relative" ref={menuRef}>
-                    <Button
-                        onClick={() => setIsOpen(!isOpen)}
-                        variant="action"
-                        className="h-9 text-sm px-3"
-                        icon={MoreVertical}
-                    >
-                        Action
-                    </Button>
+            <div className="relative" ref={menuRef}>
+                <Button
+                    onClick={() => setIsOpen(!isOpen)}
+                    variant="action"
+                    className="h-9 text-sm px-3"
+                    icon={MoreVertical}
+                >
+                    Action
+                </Button>
 
-                    {isOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-card-bg rounded-md shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
+                {isOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-card-bg rounded-md shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
+                        {isSettingsPage ? (
                             <button
                                 onClick={() => {
                                     confirm("Are you sure you want to reset to default brand colors?");
@@ -61,10 +61,14 @@ export function ActionButtons() {
                                 <RotateCcw className="w-4 h-4" />
                                 Change to Default
                             </button>
-                        </div>
-                    )}
-                </div>
-            )}
+                        ) : (
+                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                                No actions available
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
