@@ -259,23 +259,7 @@ export default function SettingsPage() {
 
     return (
         <div className="space-y-8">
-            {/* Mode Indicator/Warning */}
-            <div className={cn(
-                "p-4 rounded-lg flex items-center justify-between border",
-                theme === 'dark'
-                    ? "bg-slate-900 border-slate-700 text-blue-400"
-                    : "bg-blue-50 border-blue-200 text-blue-700"
-            )}>
-                <div className="flex items-center gap-3">
-                    <div className={cn("w-2 h-2 rounded-full", theme === 'dark' ? "bg-blue-400" : "bg-blue-700")} />
-                    <span className="font-medium">
-                        Editing Settings for <strong>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</strong>
-                    </span>
-                </div>
-                <div className="text-xs opacity-75">
-                    Switch theme in the top bar to edit the other mode.
-                </div>
-            </div>
+
 
             <div className="grid gap-8">
                 {/* General Sections */}
@@ -323,7 +307,7 @@ export default function SettingsPage() {
                                         <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                                             {field.label}
                                         </label>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex flex-wrap items-center gap-3">
                                             <input
                                                 type="color"
                                                 value={currentValue}
@@ -473,7 +457,7 @@ export default function SettingsPage() {
                 <div className="bg-white dark:bg-card-bg p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                     <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-6">Button Options</h2>
 
-                    <div className="flex gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 justify-center">
+                    <div className="flex flex-wrap gap-4 mb-8 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-200 dark:border-gray-700 justify-center">
                         <Button variant="primary" icon={Save}>Save</Button>
                         <Button variant="secondary" icon={SettingsIcon}>Secondary</Button>
                         <Button variant="tertiary" icon={Check}>Tertiary</Button>

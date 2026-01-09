@@ -51,7 +51,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             >
                 {layoutMode === 'vertical' && <ActionBar />}
 
-                <div className="flex-1 p-6 pt-0">
+                <div className="flex-1 p-4 md:p-6 pt-0">
                     <div className={cn(
                         "w-full transition-all duration-300",
                         layoutWidth === 'boxed' ? "max-w-[1440px] mx-auto shadow-sm bg-white dark:bg-card-bg min-h-[calc(100vh-200px)] rounded-md border border-gray-100 dark:border-gray-800 p-6" : ""
