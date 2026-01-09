@@ -105,15 +105,34 @@ const defaultThemeConfig: ThemeConfig = {
 const defaultTheme: CustomTheme = {
     light: defaultThemeConfig,
     dark: {
-        ...defaultThemeConfig,
+        header: { bg: '#212529', text: '#ced4da', icon: '#ced4da', boldText: false },
         horizontalNav: {
-            ...defaultThemeConfig.horizontalNav,
-            bg: '#1e1e2d', text: '#FFFFFF', icon: '#FFFFFF',
-            activeBackground: '#2a2a3c',
-            activeText: '#FFFFFF'
+            bg: '#212529', text: '#ced4da', icon: '#ced4da',
+            activeBorder: '#405189', activeText: '#ffffff',
+            activeBackground: '#405189',
+            activeBorderThickness: '3px',
+            displayMode: 'both',
+            boldText: false
         },
+        verticalNav: {
+            bg: '#212529', text: '#ced4da', icon: '#ced4da',
+            displayMode: 'both',
+            boldText: false,
+            // Add active states for vertical nav if needed by interface, though currently Sidebar uses simple highlighting
+            activeBackground: '#405189', activeText: '#ffffff'
+        },
+        footer: { bg: '#212529', text: '#adb5bd', icon: '#adb5bd', boldText: false },
         buttons: {
-            ...defaultThemeConfig.buttons, // Buttons usually stay same or adapt slightly
+            primary: { bg: '#405189', text: '#ffffff', icon: '#ffffff', border: '#405189', displayMode: 'both', boldText: true, borderWidth: '1px' },
+            secondary: { bg: '#3577f1', text: '#ffffff', icon: '#ffffff', border: '#3577f1', displayMode: 'both', boldText: true, borderWidth: '1px' },
+            tertiary: { bg: '#299cdb', text: '#ffffff', icon: '#ffffff', border: '#299cdb', displayMode: 'both', boldText: true, borderWidth: '1px' },
+            action: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'icon', boldText: false, borderWidth: '1px' }
+        },
+        alerts: {
+            primary: { bg: '#405189', text: '#ffffff', border: '#405189', boldText: true },
+            secondary: { bg: '#3577f1', text: '#ffffff', border: '#3577f1', boldText: true },
+            success: { bg: '#0ab39c', text: '#ffffff', border: '#0ab39c', boldText: true },
+            danger: { bg: '#f06548', text: '#ffffff', border: '#f06548', boldText: true }
         }
     },
     branding: {
