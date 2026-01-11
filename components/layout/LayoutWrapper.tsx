@@ -49,7 +49,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                         : cn("pt-[70px]", isSidebarCollapsed ? "md:pl-[70px]" : "md:pl-[250px]")
                 )}
             >
-                {layoutMode === 'vertical' && <ActionBar />}
+                <div className={layoutMode === 'horizontal' ? "md:hidden" : ""}>
+                    <ActionBar />
+                </div>
 
                 <div className="flex-1 p-4 md:p-6 pt-0">
                     <div className={cn(
