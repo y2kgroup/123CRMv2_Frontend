@@ -8,7 +8,7 @@ import React from 'react';
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { isSidebarCollapsed, toggleSidebar, customTheme, handleNavigation, theme, isMobileMenuOpen, setIsMobileMenuOpen } = useLayout();
+    const { isSidebarCollapsed, toggleSidebar, customTheme, handleNavigation, theme, isMobileMenuOpen, setIsMobileMenuOpen, layoutMode } = useLayout();
     const [openSubMenus, setOpenSubMenus] = React.useState<string[]>([]);
     const activeTheme = theme === 'dark' ? customTheme.dark : customTheme.light;
     const { displayMode } = activeTheme.verticalNav;
@@ -17,13 +17,17 @@ export function Sidebar() {
         <div
             className={cn(
                 "flex flex-col fixed top-[70px] left-0 bottom-0 z-40 overflow-y-auto transition-transform duration-300 border-r",
-                isSidebarCollapsed ? "w-[70px]" : "w-[250px]",
-                // Mobile behavior:
-                // - By default (mobile): -translate-x-full (hidden)
-                // - If isMobileMenuOpen: translate-x-0 (shown)
-                // - Desktop (md): Always translate-x-0
+                // Width Logic: Mobile always 250px. Desktop relies on collapse state.
+                "w-[250px]",
+                isSidebarCollapsed ? "md:w-[70px]" : "md:w-[250px]",
+
+                // Visibility Logic:
+                // Mobile: Drawer (transform)
+                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+
+                // Desktop: Always show (reset transform), but HIDE if horizontal mode
                 "md:translate-x-0",
-                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+                layoutMode === 'horizontal' ? "md:hidden" : "md:flex"
             )}
             style={{
                 backgroundColor: 'var(--v-nav-bg)',
@@ -45,10 +49,18 @@ export function Sidebar() {
                     )}
                     <button
                         onClick={toggleSidebar}
-                        className="p-1 rounded hover:bg-white/10 transition-colors"
+                        className="hidden md:block p-1 rounded hover:bg-white/10 transition-colors"
                         style={{ color: 'var(--v-nav-text)' }}
                     >
                         {isSidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                    </button>
+                    {/* Close button for Mobile */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="md:hidden p-1 rounded hover:bg-white/10 transition-colors ml-auto"
+                        style={{ color: 'var(--v-nav-text)' }}
+                    >
+                        <ChevronLeft className="w-4 h-4" />
                     </button>
                 </div>
 

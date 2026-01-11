@@ -39,7 +39,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
             )}
 
             {layoutMode === 'horizontal' && <HorizontalNav />}
-            {layoutMode === 'vertical' && <Sidebar />}
+            <Sidebar />
 
             <main
                 className={cn(
