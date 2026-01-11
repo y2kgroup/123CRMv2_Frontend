@@ -65,38 +65,96 @@ export function Sidebar() {
                 </div>
 
                 <nav className="flex flex-col gap-1 px-2">
-                    {navItems.map((item) => {
-                        const isActive = pathname === item.href;
+                    {navItems.map((item: any) => {
+                        const hasChildren = item.children && item.children.length > 0;
+                        const isOpen = openSubMenus.includes(item.label);
+                        const isChildActive = item.children?.some(child => pathname === child.href);
+                        const isActive = pathname === item.href || isChildActive;
                         const Icon = item.icon;
 
+                        const handleParentClick = (e: React.MouseEvent) => {
+                            if (hasChildren && !isSidebarCollapsed) {
+                                e.preventDefault();
+                                setOpenSubMenus(prev =>
+                                    prev.includes(item.label)
+                                        ? prev.filter(l => l !== item.label)
+                                        : [...prev, item.label]
+                                );
+                            } else {
+                                handleNavigation(e, item.href);
+                                setIsMobileMenuOpen(false);
+                            }
+                        };
+
                         return (
-                            <Link
-                                key={item.href}
-                                href={item.href}
-                                onClick={(e) => {
-                                    handleNavigation(e, item.href);
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                title={isSidebarCollapsed ? item.label : undefined}
-                                style={{
-                                    color: isActive ? 'var(--v-nav-text)' : 'var(--v-nav-text)',
-                                    backgroundColor: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
-                                    opacity: isActive ? 1 : 0.7,
-                                    fontWeight: 'var(--v-nav-font-weight)'
-                                }}
-                                className={cn(
-                                    "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-all",
-                                    !isActive && "hover:opacity-100 hover:bg-white/5",
-                                    isSidebarCollapsed && "justify-center px-0"
+                            <div key={item.label}>
+                                <div
+                                    onClick={handleParentClick}
+                                    title={isSidebarCollapsed ? item.label : undefined}
+                                    style={{
+                                        color: isActive ? 'var(--v-nav-text)' : 'var(--v-nav-text)',
+                                        backgroundColor: isActive && !hasChildren ? 'rgba(255,255,255,0.1)' : 'transparent',
+                                        opacity: isActive ? 1 : 0.7,
+                                        fontWeight: 'var(--v-nav-font-weight)',
+                                        cursor: 'pointer'
+                                    }}
+                                    className={cn(
+                                        "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md transition-all group select-none",
+                                        !isActive && "hover:opacity-100 hover:bg-white/5",
+                                        isSidebarCollapsed && "justify-center px-0"
+                                    )}
+                                >
+                                    {(displayMode === 'both' || displayMode === 'icon') && (
+                                        <Icon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--v-nav-icon)' }} />
+                                    )}
+                                    {(displayMode === 'both' || displayMode === 'text') && !isSidebarCollapsed && (
+                                        <>
+                                            <span className="truncate flex-1">
+                                                {hasChildren ? item.label : (
+                                                    <Link href={item.href} onClick={(e) => {
+                                                        handleNavigation(e, item.href);
+                                                        setIsMobileMenuOpen(false);
+                                                    }} className="block w-full h-full">
+                                                        {item.label}
+                                                    </Link>
+                                                )}
+                                            </span>
+                                            {hasChildren && (
+                                                <ChevronRight className={cn("w-4 h-4 transition-transform", isOpen && "rotate-90")} />
+                                            )}
+                                        </>
+                                    )}
+                                    {/* If collapsed, wrap icon in link if no children, or just show icon */}
+                                    {isSidebarCollapsed && !hasChildren && (
+                                        <Link href={item.href} className="absolute inset-0" onClick={(e) => {
+                                            handleNavigation(e, item.href);
+                                            setIsMobileMenuOpen(false);
+                                        }} />
+                                    )}
+                                </div>
+
+                                {/* Submenu */}
+                                {hasChildren && !isSidebarCollapsed && isOpen && (
+                                    <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-white/10 pl-2">
+                                        {item.children!.map((child) => (
+                                            <Link
+                                                key={child.href}
+                                                href={child.href}
+                                                onClick={(e) => {
+                                                    handleNavigation(e, child.href);
+                                                    setIsMobileMenuOpen(false);
+                                                }}
+                                                className={cn(
+                                                    "block px-3 py-2 text-sm rounded-md transition-colors",
+                                                    pathname === child.href ? "bg-white/10 text-white" : "text-white/60 hover:text-white hover:bg-white/5"
+                                                )}
+                                            >
+                                                {child.label}
+                                            </Link>
+                                        ))}
+                                    </div>
                                 )}
-                            >
-                                {(displayMode === 'both' || displayMode === 'icon') && (
-                                    <Icon className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--v-nav-icon)' }} />
-                                )}
-                                {(displayMode === 'both' || displayMode === 'text') && !isSidebarCollapsed && (
-                                    <span className="truncate">{item.label}</span>
-                                )}
-                            </Link>
+                            </div>
                         );
                     })}
                 </nav>

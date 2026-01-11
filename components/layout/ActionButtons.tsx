@@ -1,28 +1,20 @@
 'use client';
 
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Save, MoreVertical, RotateCcw } from "lucide-react";
 import { useLayout } from "./LayoutContext";
-import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function ActionButtons() {
-    const { resetTheme, hasChanges, saveTheme } = useLayout();
-    const [isOpen, setIsOpen] = useState(false);
-    const menuRef = useRef<HTMLDivElement>(null);
+    const { resetTheme, hasChanges, saveTheme, headerMenuItems } = useLayout();
     const pathname = usePathname();
-    const isSettingsPage = pathname === '/settings';
-
-    // Close menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const isSettingsPage = pathname?.startsWith('/settings');
 
     return (
         <div className="flex items-center gap-2">
@@ -37,38 +29,60 @@ export function ActionButtons() {
                 </Button>
             )}
 
-            <div className="relative" ref={menuRef}>
-                <Button
-                    onClick={() => setIsOpen(!isOpen)}
-                    variant="action"
-                    className="h-9 text-sm px-3"
-                    icon={MoreVertical}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="action"
+                        className="h-9 text-sm px-3"
+                        icon={MoreVertical}
+                    >
+                        Action
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                    align="end"
+                    className="w-48"
+                    style={{
+                        backgroundColor: 'var(--h-nav-dropdown-bg)',
+                        borderColor: 'var(--h-nav-dropdown-border)',
+                        borderWidth: 'var(--h-nav-dropdown-border-width)',
+                    }}
                 >
-                    Action
-                </Button>
-
-                {isOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-card-bg rounded-md shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
-                        {isSettingsPage ? (
-                            <button
-                                onClick={() => {
-                                    confirm("Are you sure you want to reset to default brand colors?");
+                    {isSettingsPage ? (
+                        <DropdownMenuItem
+                            onClick={() => {
+                                if (confirm("Are you sure you want to reset to default brand colors?")) {
                                     resetTheme();
-                                    setIsOpen(false);
+                                }
+                            }}
+                            className="text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
+                            style={{
+                                color: 'var(--h-nav-dropdown-text)',
+                                fontWeight: 'var(--h-nav-dropdown-font-weight)',
+                            } as React.CSSProperties}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                            onFocus={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
+                            onBlur={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                        >
+                            <RotateCcw
+                                className="w-4 h-4 mr-2"
+                                style={{
+                                    color: 'var(--h-nav-dropdown-icon)',
+                                    opacity: 1
                                 }}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2"
-                            >
-                                <RotateCcw className="w-4 h-4" />
-                                Change to Default
-                            </button>
-                        ) : (
-                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
-                                No actions available
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
+                            />
+                            Change to Default
+                        </DropdownMenuItem>
+                    ) : headerMenuItems ? (
+                        headerMenuItems
+                    ) : (
+                        <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                            No actions available
+                        </div>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 }

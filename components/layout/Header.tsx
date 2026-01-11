@@ -8,7 +8,7 @@ import { useLayout } from './LayoutContext';
 
 export function Header() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const { toggleLayoutMode, layoutMode, theme, toggleTheme, customTheme, isSidebarCollapsed, toggleMobileMenu } = useLayout();
+    const { toggleLayoutMode, layoutMode, theme, toggleTheme, customTheme, isSidebarCollapsed, toggleMobileMenu, headerActions } = useLayout();
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown when clicking outside
@@ -87,6 +87,8 @@ export function Header() {
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-3 ml-auto">
+
+
                     {/* User Dropdown */}
                     <div className="relative" ref={dropdownRef}>
                         <div

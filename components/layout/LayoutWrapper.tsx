@@ -27,7 +27,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     } = useLayout();
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="h-screen overflow-hidden flex flex-col">
             <Header />
 
             {/* Mobile Menu Overlay */}
@@ -43,20 +43,20 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
             <main
                 className={cn(
-                    "flex-1 flex flex-col fade-in transition-all duration-300",
+                    "flex-1 flex flex-col fade-in transition-all duration-300 overflow-hidden",
                     layoutMode === 'horizontal'
-                        ? "pt-[70px] md:pt-[144px]"
+                        ? "pt-[70px] md:pt-[120px]"
                         : cn("pt-[70px]", isSidebarCollapsed ? "md:pl-[70px]" : "md:pl-[250px]")
                 )}
             >
-                <div className={layoutMode === 'horizontal' ? "md:hidden" : ""}>
+                <div>
                     <ActionBar />
                 </div>
 
-                <div className="flex-1 p-4 md:p-6 pt-0">
+                <div className="flex-1 p-4 md:p-6 pt-0 overflow-hidden">
                     <div className={cn(
-                        "w-full transition-all duration-300",
-                        layoutWidth === 'boxed' ? "max-w-[1440px] mx-auto shadow-sm bg-white dark:bg-card-bg min-h-[calc(100vh-200px)] rounded-md border border-gray-100 dark:border-gray-800 p-6" : ""
+                        "w-full h-full flex flex-col transition-all duration-300",
+                        layoutWidth === 'boxed' ? "max-w-[1440px] mx-auto shadow-sm bg-white dark:bg-card-bg rounded-md border border-gray-100 dark:border-gray-800 p-6" : ""
                     )}>
                         {children}
                     </div>

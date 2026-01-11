@@ -15,12 +15,25 @@ export interface ColorSettings {
     boldText?: boolean;
 }
 
+export interface DropdownSettings {
+    bg: string;
+    text: string;
+    icon: string;
+    border: string;
+    borderWidth?: string;
+    bold?: boolean;
+    activeBackground?: string;
+    triggerMode?: 'click' | 'hover';
+}
+
 export interface MenuSettings extends ColorSettings {
     activeBorder?: string;
     activeText?: string;
     activeBackground?: string;
     activeBorderThickness?: string;
     displayMode: 'icon' | 'text' | 'both';
+    menuAlignment?: 'left' | 'center' | 'right';
+    dropdown?: DropdownSettings;
 }
 
 export interface ButtonSettings {
@@ -80,7 +93,18 @@ const defaultThemeConfig: ThemeConfig = {
         activeBackground: '#DDE8FD',
         activeBorderThickness: '3px',
         displayMode: 'both',
-        boldText: true
+        menuAlignment: 'center',
+        boldText: true,
+        dropdown: {
+            bg: '#FFFFFF',
+            text: '#1F2937', // gray-800
+            icon: '#6B7280', // gray-500
+            border: '#E5E7EB', // gray-200
+            borderWidth: '1px',
+            bold: false,
+            activeBackground: '#F3F4F6', // gray-100
+            triggerMode: 'click'
+        }
     },
     verticalNav: {
         bg: '#405189', text: '#FFFFFF', icon: '#FFFFFF',
@@ -112,7 +136,18 @@ const defaultTheme: CustomTheme = {
             activeBackground: '#405189',
             activeBorderThickness: '3px',
             displayMode: 'both',
-            boldText: false
+            menuAlignment: 'center',
+            boldText: false,
+            dropdown: {
+                bg: '#1F2937', // gray-800
+                text: '#F3F4F6', // gray-100
+                icon: '#9CA3AF', // gray-400
+                border: '#374151', // gray-700
+                borderWidth: '1px',
+                bold: false,
+                activeBackground: '#374151', // gray-700
+                triggerMode: 'click'
+            }
         },
         verticalNav: {
             bg: '#212529', text: '#ced4da', icon: '#ced4da',
@@ -172,6 +207,10 @@ interface LayoutContextType {
     isMobileMenuOpen: boolean;
     setIsMobileMenuOpen: (open: boolean) => void;
     toggleMobileMenu: () => void;
+    headerActions: React.ReactNode;
+    setHeaderActions: (actions: React.ReactNode) => void;
+    headerMenuItems: React.ReactNode;
+    setHeaderMenuItems: (items: React.ReactNode) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -187,6 +226,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [headerActions, setHeaderActions] = useState<React.ReactNode>(null);
+    const [headerMenuItems, setHeaderMenuItems] = useState<React.ReactNode>(null);
 
     // Apply CSS Variables
     useEffect(() => {
@@ -211,7 +252,28 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setVar('--h-nav-active-text', activeConfig.horizontalNav.activeText || activeConfig.horizontalNav.text);
         setVar('--h-nav-active-bg', activeConfig.horizontalNav.activeBackground || 'rgba(0,0,0,0.05)');
         setVar('--h-nav-border-width', activeConfig.horizontalNav.activeBorderThickness || '2px');
+        setVar('--h-nav-border-width', activeConfig.horizontalNav.activeBorderThickness || '2px');
         setVar('--h-nav-font-weight', activeConfig.horizontalNav.boldText ? '700' : '500');
+
+        // Horizontal Nav Dropdown
+        if (activeConfig.horizontalNav.dropdown) {
+            setVar('--h-nav-dropdown-bg', activeConfig.horizontalNav.dropdown.bg);
+            setVar('--h-nav-dropdown-text', activeConfig.horizontalNav.dropdown.text);
+            setVar('--h-nav-dropdown-icon', activeConfig.horizontalNav.dropdown.icon);
+            setVar('--h-nav-dropdown-border', activeConfig.horizontalNav.dropdown.border);
+            setVar('--h-nav-dropdown-border-width', activeConfig.horizontalNav.dropdown.borderWidth || '1px');
+            setVar('--h-nav-dropdown-font-weight', activeConfig.horizontalNav.dropdown.bold ? '700' : '400');
+            setVar('--h-nav-dropdown-active-bg', activeConfig.horizontalNav.dropdown.activeBackground || '#F3F4F6');
+        } else {
+            // Fallback default values
+            setVar('--h-nav-dropdown-bg', '#fff');
+            setVar('--h-nav-dropdown-text', '#000');
+            setVar('--h-nav-dropdown-icon', '#666');
+            setVar('--h-nav-dropdown-border', '#ddd');
+            setVar('--h-nav-dropdown-border-width', '1px');
+            setVar('--h-nav-dropdown-font-weight', '400');
+            setVar('--h-nav-dropdown-active-bg', '#F3F4F6');
+        }
 
         // Vertical Nav
         setVar('--v-nav-bg', activeConfig.verticalNav.bg);
@@ -462,7 +524,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             // Mobile Menu
             isMobileMenuOpen,
             setIsMobileMenuOpen,
-            toggleMobileMenu
+            toggleMobileMenu,
+            headerActions,
+            setHeaderActions,
+            headerMenuItems,
+            setHeaderMenuItems
         }}>
             {children}
         </LayoutContext.Provider>
