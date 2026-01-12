@@ -8,7 +8,7 @@ import { PageHeading } from './PageHeading'; // Import
 import { Footer } from './Footer';
 import { LayoutProvider, useLayout } from './LayoutContext';
 import { cn } from '@/lib/utils'; // Make sure you import cn!
-import { NavigationAlert } from '@/components/ui/NavigationAlert';
+import { NavigationAlert } from '@/components/ui/navigation-alert';
 
 interface LayoutWrapperProps {
     children: React.ReactNode;
