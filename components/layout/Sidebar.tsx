@@ -68,7 +68,7 @@ export function Sidebar() {
                     {navItems.map((item: any) => {
                         const hasChildren = item.children && item.children.length > 0;
                         const isOpen = openSubMenus.includes(item.label);
-                        const isChildActive = item.children?.some(child => pathname === child.href);
+                        const isChildActive = item.children?.some((child: any) => pathname === child.href);
                         const isActive = pathname === item.href || isChildActive;
                         const Icon = item.icon;
 
@@ -136,7 +136,7 @@ export function Sidebar() {
                                 {/* Submenu */}
                                 {hasChildren && !isSidebarCollapsed && isOpen && (
                                     <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-white/10 pl-2">
-                                        {item.children!.map((child) => (
+                                        {item.children!.map((child: any) => (
                                             <Link
                                                 key={child.href}
                                                 href={child.href}
