@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { FileText } from 'lucide-react';
 
 type LayoutMode = 'horizontal' | 'vertical';
 type LayoutWidth = 'full' | 'boxed';
@@ -179,6 +180,10 @@ const defaultTheme: CustomTheme = {
     }
 };
 
+import { navItems as initialNavItems } from '@/config/navigation';
+
+// ... (existing interfaces)
+
 interface LayoutContextType {
     layoutMode: LayoutMode;
     setLayoutMode: (mode: LayoutMode) => void;
@@ -211,6 +216,10 @@ interface LayoutContextType {
     setHeaderActions: (actions: React.ReactNode) => void;
     headerMenuItems: React.ReactNode;
     setHeaderMenuItems: (items: React.ReactNode) => void;
+    // Dynamic Nav
+    navItems: any[];
+    updateNavItems: (items: any[]) => void;
+    resetNavItems: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -503,6 +512,76 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
+    // Dynamic Navigation State
+    const [navItems, setNavItems] = useState<any[]>(initialNavItems);
+
+    // Persist navItems changes (optional, or just keep in state for session)
+    // For now, let's persist to localStorage so edits survive refresh, similar to theme
+    useEffect(() => {
+        const savedNav = localStorage.getItem('navItems');
+        if (savedNav) {
+            try {
+                const parsed = JSON.parse(savedNav);
+
+                // Helper to find original icon
+                const findOriginalIcon = (href: string, list: any[]): any => {
+                    for (const item of list) {
+                        if (item.href === href) return item.icon;
+                        if (item.children) {
+                            const found = findOriginalIcon(href, item.children);
+                            if (found) return found;
+                        }
+                    }
+                    return null;
+                };
+
+                // Helper to restore icons recursively
+                const restoreIcons = (items: any[]) => {
+                    return items.map((item: any) => {
+                        const originalIcon = findOriginalIcon(item.href, initialNavItems);
+                        // Use original icon, or FileText for new pages, or keep existing if it somehow survived (unlikely from JSON)
+                        const Icon = originalIcon || FileText;
+
+                        return {
+                            ...item,
+                            icon: Icon,
+                            children: item.children ? restoreIcons(item.children) : undefined
+                        };
+                    });
+                };
+
+                setNavItems(restoreIcons(parsed));
+            } catch (e) {
+                console.error("Failed to parse saved nav items", e);
+            }
+        }
+    }, []);
+
+    const updateNavItems = (newItems: any[]) => {
+        setNavItems(newItems);
+        localStorage.setItem('navItems', JSON.stringify(newItems));
+        setHasChanges(true); // Treat as a change that might need saving if we were doing a bulk save, but here we save immediately to LS. 
+        // However, 'hasChanges' usually triggers the "Unsaved Changes" alert. 
+        // If we save to LS immediately, maybe we don't need 'hasChanges'?
+        // The existing pattern for theme is 'updateCustomTheme' -> 'setHasChanges(true)'.
+        // Let's follow that pattern if we want a "Save" button, or just save immediately.
+        // The user asked to "control" them. 
+        // Let's stick to immediate persistence for now or follow the pattern. 
+        // Actually, the existing theme uses explicit 'saveTheme'. 
+        // Let's make 'updateNavItems' just update state and setHasChanges, 
+        // and include navItems in 'saveTheme' if we want unified saving, 
+        // OR just autosave for now to simplify.
+        // Given "Save" button exists in settings, maybe better to loop it in.
+        // But 'saveTheme' currently only saves 'customTheme'.
+        // Let's keep it simple: Autosave nav items for now to avoid refactoring save logic too much.
+    };
+
+    const resetNavItems = () => {
+        setNavItems(initialNavItems);
+        localStorage.removeItem('navItems');
+        setHasChanges(false);
+    };
+
 
     if (!isInitialized) return null;
 
@@ -528,7 +607,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             headerActions,
             setHeaderActions,
             headerMenuItems,
-            setHeaderMenuItems
+            setHeaderMenuItems,
+            // Dynamic Nav
+            navItems,
+            updateNavItems,
+            resetNavItems
         }}>
             {children}
         </LayoutContext.Provider>

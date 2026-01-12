@@ -2,13 +2,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useLayout } from './LayoutContext';
-import { navItems } from '@/config/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import React from 'react';
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { isSidebarCollapsed, toggleSidebar, customTheme, handleNavigation, theme, isMobileMenuOpen, setIsMobileMenuOpen, layoutMode } = useLayout();
+    const { isSidebarCollapsed, toggleSidebar, customTheme, handleNavigation, theme, isMobileMenuOpen, setIsMobileMenuOpen, layoutMode, navItems } = useLayout();
     const [openSubMenus, setOpenSubMenus] = React.useState<string[]>([]);
     const activeTheme = theme === 'dark' ? customTheme.dark : customTheme.light;
     const { displayMode } = activeTheme.verticalNav;
@@ -70,7 +69,7 @@ export function Sidebar() {
                         const isOpen = openSubMenus.includes(item.label);
                         const isChildActive = item.children?.some((child: any) => pathname === child.href);
                         const isActive = pathname === item.href || isChildActive;
-                        const Icon = item.icon;
+                        const Icon = item.icon || FileText;
 
                         const handleParentClick = (e: React.MouseEvent) => {
                             if (hasChildren && !isSidebarCollapsed) {

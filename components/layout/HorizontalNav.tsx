@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useLayout } from './LayoutContext';
-import { navItems } from '@/config/navigation';
 import { ActionButtons } from './ActionButtons';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronRight, ChevronDown, FileText } from 'lucide-react';
 import { useState, Fragment } from 'react';
 import {
     DropdownMenu,
@@ -15,7 +14,7 @@ import {
 
 export function HorizontalNav() {
     const pathname = usePathname();
-    const { customTheme, handleNavigation, theme, headerActions } = useLayout();
+    const { customTheme, handleNavigation, theme, headerActions, navItems } = useLayout();
     const activeTheme = theme === 'dark' ? customTheme.dark : customTheme.light;
     const { displayMode } = activeTheme.horizontalNav;
 
@@ -45,7 +44,7 @@ export function HorizontalNav() {
                     const hasChildren = item.children && item.children.length > 0;
                     const isChildActive = item.children?.some((child: any) => pathname === child.href);
                     const isActive = pathname === item.href || isChildActive;
-                    const Icon = item.icon;
+                    const Icon = item.icon || FileText;
 
                     const iconColor = isActive ? 'var(--h-nav-active-text)' : 'var(--h-nav-icon)';
 
@@ -112,7 +111,7 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
     let timeoutId: NodeJS.Timeout;
 
     const isActive = pathname === item.href || item.children?.some((child: any) => pathname === child.href);
-    const Icon = item.icon;
+    const Icon = item.icon || FileText;
     const iconColor = isActive ? 'var(--h-nav-active-text)' : 'var(--h-nav-icon)';
 
     // Dynamic styles
