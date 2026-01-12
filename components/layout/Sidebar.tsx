@@ -86,7 +86,7 @@ export function Sidebar() {
                         };
 
                         return (
-                            <div key={item.label}>
+                            <div key={item.id || item.label || item.href}>
                                 <div
                                     onClick={handleParentClick}
                                     title={isSidebarCollapsed ? item.label : undefined}
@@ -137,7 +137,7 @@ export function Sidebar() {
                                     <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-white/10 pl-2">
                                         {item.children!.map((child: any) => (
                                             <Link
-                                                key={child.href}
+                                                key={child.id || child.href}
                                                 href={child.href}
                                                 onClick={(e) => {
                                                     handleNavigation(e, child.href);

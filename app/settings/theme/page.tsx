@@ -7,6 +7,8 @@ import { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { createPage, deletePage, getAvailablePages } from "@/app/actions/page-management";
+import { MenuBuilder } from "@/components/settings/MenuBuilder";
+import { PageCreator } from "@/components/settings/PageCreator";
 import {
     Dialog,
     DialogContent,
@@ -33,6 +35,60 @@ export default function SettingsPage() {
         variant: 'default',
         onConfirm: () => { },
     });
+
+    // Edit Dialog State
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        item: any | null;
+        label: string;
+        iconName: string;
+    }>({
+        isOpen: false,
+        item: null,
+        label: '',
+        iconName: 'FileText',
+    });
+
+    // Available icons
+    const ICON_OPTIONS = [
+        { label: 'Document', value: 'FileText' },
+        { label: 'Dashboard', value: 'LayoutDashboard' },
+        { label: 'Users', value: 'Users' },
+        { label: 'Building', value: 'Building2' },
+        { label: 'Factory', value: 'Factory' },
+        { label: 'Calculator', value: 'Calculator' },
+        { label: 'Store', value: 'Store' },
+        { label: 'Calendar', value: 'CalendarDays' },
+        { label: 'Settings', value: 'Settings' },
+        { label: 'Pie Chart', value: 'PieChart' },
+        { label: 'Bell', value: 'Bell' },
+        { label: 'Briefcase', value: 'Briefcase' },
+        { label: 'Circle', value: 'Circle' },
+        { label: 'Clipboard', value: 'Clipboard' },
+        { label: 'Globe', value: 'Globe' },
+        { label: 'Home', value: 'Home' },
+        { label: 'Image', value: 'Image' },
+        { label: 'Inbox', value: 'Inbox' },
+        { label: 'Layers', value: 'Layers' },
+        { label: 'Link', value: 'Link' },
+        { label: 'Lock', value: 'Lock' },
+        { label: 'Mail', value: 'Mail' },
+        { label: 'Map', value: 'Map' },
+        { label: 'Chat', value: 'MessageSquare' },
+        { label: 'Package', value: 'Package' },
+        { label: 'Search', value: 'Search' },
+        { label: 'Server', value: 'Server' },
+        { label: 'Phone', value: 'Smartphone' },
+        { label: 'Star', value: 'Star' },
+        { label: 'Tag', value: 'Tag' },
+        { label: 'Terminal', value: 'Terminal' },
+        { label: 'Tool', value: 'Tool' },
+        { label: 'Trash', value: 'Trash2' },
+        { label: 'Truck', value: 'Truck' },
+        { label: 'User', value: 'User' },
+        { label: 'Video', value: 'Video' },
+        { label: 'Wifi', value: 'Wifi' },
+    ];
 
     const activeTheme = theme === 'dark' ? customTheme.dark : customTheme.light;
 
@@ -94,275 +150,48 @@ export default function SettingsPage() {
         </div>
     );
 
-    const PageCreator = ({ items, onAdd }: { items: any[], onAdd: (newItem: any, parentLabel?: string) => void }) => {
-        const [mode, setMode] = useState<'create' | 'existing'>('create');
-        const [title, setTitle] = useState('');
-        const [path, setPath] = useState('');
-        const [parent, setParent] = useState('');
-        const [loading, setLoading] = useState(false);
-        const [existingPages, setExistingPages] = useState<string[]>([]);
-        const [selectedPage, setSelectedPage] = useState('');
-        const [existingLabel, setExistingLabel] = useState('');
 
-        useEffect(() => {
-            if (mode === 'existing') {
-                getAvailablePages().then(res => {
-                    if (res.success && res.pages) {
-                        setExistingPages(res.pages);
-                    }
-                });
-            }
-        }, [mode]);
 
-        const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const val = e.target.value;
-            setTitle(val);
-            setPath(val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
-        };
-
-        const handleCreateSubmit = async (e: React.FormEvent) => {
-            e.preventDefault();
-            if (!title || !path) return;
-            setLoading(true);
-
-            try {
-                const res = await createPage(path, title);
-                if (res.success) {
-                    onAdd({ label: title, href: `/${path}` }, parent || undefined);
-                    setTitle('');
-                    setPath('');
-                    setParent('');
-                    alert('Page created successfully!');
-                } else {
-                    alert(res.message);
-                }
-            } catch (err) {
-                console.error(err);
-                alert('Failed to create page');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const handleExistingSubmit = (e: React.FormEvent) => {
-            e.preventDefault();
-            if (!selectedPage || !existingLabel) return;
-            onAdd({ label: existingLabel, href: selectedPage, icon: FileText }, parent || undefined);
-            setExistingLabel('');
-            setSelectedPage('');
-            setParent('');
-            alert('Existing page added to menu!');
-        };
-
-        const renderOptions = (opts: any[], prefix = '') => {
-            return opts.reduce((acc: any[], item: any) => {
-                acc.push(<option key={item.label + prefix} value={item.label}>{prefix + item.label}</option>);
-                if (item.children) {
-                    acc.push(...renderOptions(item.children, prefix + '\u00A0\u00A0\u00A0'));
-                }
-                return acc;
-            }, []);
-        };
-
-        return (
-            <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-dashed border-gray-200 dark:border-gray-800 mb-6">
-                <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700 mb-6">
-                    <button
-                        type="button"
-                        onClick={() => setMode('create')}
-                        className={cn("flex items-center gap-2 pb-2 border-b-2 text-sm font-medium transition-colors", mode === 'create' ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700")}
-                    >
-                        <Plus className="w-4 h-4" /> Create New Page
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setMode('existing')}
-                        className={cn("flex items-center gap-2 pb-2 border-b-2 text-sm font-medium transition-colors", mode === 'existing' ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700")}
-                    >
-                        <FolderPlus className="w-4 h-4" /> Add Existing Page
-                    </button>
-                </div>
-
-                {mode === 'create' ? (
-                    <form onSubmit={handleCreateSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">Page Title</label>
-                                <input type="text" placeholder="e.g. About Us" value={title} onChange={handleTitleChange} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">URL Path</label>
-                                <div className="flex items-center text-sm text-gray-500 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-3 py-2">
-                                    <span className="mr-1">/</span>
-                                    <input type="text" value={path} readOnly className="bg-transparent border-none p-0 focus:ring-0 w-full" />
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">Add to Menu (Optional)</label>
-                                <select value={parent} onChange={e => setParent(e.target.value)} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500">
-                                    <option value="">Top Level (Root)</option>
-                                    {renderOptions(items)}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={loading} className="w-full md:w-auto" variant="primary">
-                                {loading ? 'Creating...' : 'Create Page & Add to Menu'}
-                            </Button>
-                        </div>
-                    </form>
-                ) : (
-                    <form onSubmit={handleExistingSubmit} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">Select Page</label>
-                                <select
-                                    value={selectedPage}
-                                    onChange={e => {
-                                        const p = e.target.value;
-                                        setSelectedPage(p);
-                                        if (p) {
-                                            const segments = p.split('/').filter(Boolean);
-                                            const last = segments[segments.length - 1] || 'Home';
-                                            setExistingLabel(last.charAt(0).toUpperCase() + last.slice(1).replace(/-/g, ' '));
-                                        }
-                                    }}
-                                    className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
-                                >
-                                    <option value="">-- Select a Page --</option>
-                                    {existingPages.map(p => <option key={p} value={p}>{p}</option>)}
-                                </select>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">Menu Label</label>
-                                <input type="text" value={existingLabel} onChange={e => setExistingLabel(e.target.value)} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">Add to Menu (Optional)</label>
-                                <select value={parent} onChange={e => setParent(e.target.value)} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500">
-                                    <option value="">Top Level (Root)</option>
-                                    {renderOptions(items)}
-                                </select>
-                            </div>
-                        </div>
-                        <div className="flex justify-end">
-                            <Button type="submit" disabled={!selectedPage} className="w-full md:w-auto" variant="primary">
-                                Add to Menu
-                            </Button>
-                        </div>
-                    </form>
-                )}
-            </div>
-        );
-    };
-
-    const MenuEditor = ({ items, onUpdate, depth = 0 }: { items: any[], onUpdate: (items: any[]) => void, depth?: number }) => {
-        const handleDeleteItem = (index: number, item: any) => {
-            setDeleteDialog({
-                isOpen: true,
-                title: `Delete Page "${item.label}"`,
-                description: `Are you sure you want to permanently delete this page file? This action cannot be undone and will remove the file from your project.`,
-                actionLabel: 'Delete Permanently',
-                variant: 'destructive',
-                onConfirm: async () => {
-                    const newItems = [...items];
-                    newItems.splice(index, 1);
-                    onUpdate(newItems);
-
+    const handleRemoveItem = (itemType: 'remove' | 'delete', item: any) => {
+        setDeleteDialog({
+            isOpen: true,
+            title: itemType === 'delete' ? `Delete Page "${item.label}"` : 'Remove from Menu',
+            description: itemType === 'delete'
+                ? `Are you sure you want to permanently delete this page file? This action cannot be undone and will remove the file from your project.`
+                : 'Are you sure you want to remove this item from the navigation menu? The page file will remain.',
+            actionLabel: itemType === 'delete' ? 'Delete Permanently' : 'Remove',
+            variant: itemType === 'delete' ? 'destructive' : 'default',
+            onConfirm: async () => {
+                if (itemType === 'delete') {
                     const res = await deletePage(item.href);
                     if (!res.success) {
                         alert('Error deleting file: ' + res.message);
+                        return;
                     }
                 }
-            });
-        };
 
-        const handleRemoveFromMenu = (index: number) => {
-            setDeleteDialog({
-                isOpen: true,
-                title: 'Remove from Menu',
-                description: 'Are you sure you want to remove this item from the navigation menu? The page file will remain.',
-                actionLabel: 'Remove',
-                variant: 'default',
-                onConfirm: () => {
-                    const newItems = [...items];
-                    newItems.splice(index, 1);
-                    onUpdate(newItems);
-                }
-            });
-        };
+                // Helper to recursively remove item from tree
+                const removeItemRecursive = (list: any[]): any[] => {
+                    return list.filter(i => {
+                        // Match roughly by reference or consistent fields
+                        // MenuBuilder passes a flattened item with ID if possible, but here we might get the original object
+                        // or a clone. Safest is label+href match or ID match.
+                        // Assuming unique href/label combo for now or just checking all props.
+                        const isMatch = (i.id && i.id === item.id) || (i.href === item.href && i.label === item.label);
 
-        return (
-            <div className="space-y-3">
-                {items.map((item, index) => (
-                    <div key={index} className={cn("rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800", depth > 0 && "ml-6 border-l-4 border-l-blue-500/20")}>
-                        <div className="p-3 flex gap-3 items-start">
-                            <div className="flex-1 space-y-2">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-gray-400">Label</label>
-                                        <input
-                                            type="text"
-                                            value={item.label}
-                                            onChange={e => {
-                                                const newItems = [...items];
-                                                newItems[index] = { ...item, label: e.target.value };
-                                                onUpdate(newItems);
-                                            }}
-                                            className="w-full text-sm px-2 py-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase font-bold text-gray-400">Path</label>
-                                        <input
-                                            type="text"
-                                            value={item.href}
-                                            disabled={item.children && item.children.length > 0}
-                                            onChange={e => {
-                                                const newItems = [...items];
-                                                newItems[index] = { ...item, href: e.target.value };
-                                                onUpdate(newItems);
-                                            }}
-                                            className="w-full text-sm px-2 py-1 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500 disabled:opacity-50"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-1 pt-4">
-                                <button
-                                    type="button"
-                                    className="h-6 w-6 flex items-center justify-center text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded transition-colors"
-                                    title="Remove from Menu"
-                                    onClick={() => handleRemoveFromMenu(index)}
-                                >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                                {!['/', '/settings', '/dashboard'].includes(item.href) && (
-                                    <button
-                                        type="button"
-                                        className="h-6 w-6 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                                        title="Permanently Delete Page File"
-                                        onClick={() => handleDeleteItem(index, item)}
-                                    >
-                                        <FilePlus className="w-3.5 h-3.5 rotate-45" />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                        {item.children && item.children.length > 0 && (
-                            <div className="p-3 pt-0 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
-                                <p className="text-[10px] uppercase font-bold text-gray-400 mb-2 mt-2">Submenu Items</p>
-                                <MenuEditor items={item.children} depth={depth + 1} onUpdate={(newChildren) => {
-                                    const newItems = [...items];
-                                    newItems[index] = { ...item, children: newChildren };
-                                    onUpdate(newItems);
-                                }} />
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
-        );
+                        if (isMatch) return false;
+
+                        if (i.children) {
+                            i.children = removeItemRecursive(i.children);
+                        }
+                        return true;
+                    });
+                };
+
+                const newItems = removeItemRecursive(navItems);
+                updateNavItems(newItems);
+            }
+        });
     };
 
     const handleAddPage = (newItem: any, parentLabel?: string) => {
@@ -385,6 +214,37 @@ export default function SettingsPage() {
             findAndAdd(newItems);
         }
         updateNavItems(newItems);
+        updateNavItems(newItems);
+    };
+
+    const handleEditItem = (item: any) => {
+        setEditDialog({
+            isOpen: true,
+            item: item,
+            label: item.label,
+            iconName: item.iconName || 'FileText',
+        });
+    };
+
+    const handleSaveEdit = () => {
+        if (!editDialog.item) return;
+
+        // Recursive update
+        const updateItemInTree = (list: any[]): any[] => {
+            return list.map(i => {
+                if (i.id === editDialog.item.id) {
+                    return { ...i, label: editDialog.label, iconName: editDialog.iconName };
+                }
+                if (i.children) {
+                    return { ...i, children: updateItemInTree(i.children) };
+                }
+                return i;
+            });
+        };
+
+        const newItems = updateItemInTree(navItems);
+        updateNavItems(newItems);
+        setEditDialog(prev => ({ ...prev, isOpen: false }));
     };
 
     return (
@@ -887,95 +747,131 @@ export default function SettingsPage() {
                                             { label: "Action Button (Menu)", key: "action" },
                                         ].map(btn => (
                                             <div key={btn.key} className="border-t border-gray-100 dark:border-gray-700 pt-6 first:border-0 first:pt-0">
-                                                <div className="flex items-center justify-between mb-4">
-                                                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">{btn.label}</h3>
-                                                    <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-md">
-                                                        {[
-                                                            { label: 'Icon Only', value: 'icon' },
-                                                            { label: 'Text Only', value: 'text' },
-                                                            { label: 'Icon & Text', value: 'both' },
-                                                        ].map(opt => (
-                                                            <button
-                                                                key={opt.value}
-                                                                onClick={() => updateCustomTheme('buttons', {
-                                                                    [btn.key]: { ...(activeTheme.buttons as any)[btn.key], displayMode: opt.value }
-                                                                })}
-                                                                className={`px-3 py-1 text-xs rounded-sm transition-all ${(activeTheme.buttons as any)[btn.key]?.displayMode === opt.value
-                                                                    ? 'bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-400 font-medium'
-                                                                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
-                                                                    }`}
-                                                            >
-                                                                {opt.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                                    {['bg', 'text', 'icon', 'border'].map(prop => (
-                                                        <div key={prop} className="space-y-2">
-                                                            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                                                                {prop === 'bg' ? 'Background' : prop} Color
-                                                            </label>
-                                                            <div className="flex items-center gap-3">
-                                                                <input
-                                                                    type="color"
-                                                                    value={(activeTheme.buttons as any)[btn.key][prop]}
-                                                                    onChange={(e) => {
-                                                                        const newButtons = { ...activeTheme.buttons };
-                                                                        (newButtons as any)[btn.key][prop] = e.target.value;
-                                                                        updateCustomTheme('buttons', newButtons);
-                                                                    }}
-                                                                    className="w-10 h-10 p-0.5 rounded border border-gray-200 cursor-pointer"
-                                                                />
-                                                                <input
-                                                                    type="text"
-                                                                    value={(activeTheme.buttons as any)[btn.key][prop]}
-                                                                    onChange={(e) => {
-                                                                        const newButtons = { ...activeTheme.buttons };
-                                                                        (newButtons as any)[btn.key][prop] = e.target.value;
-                                                                        updateCustomTheme('buttons', newButtons);
-                                                                    }}
-                                                                    className="w-24 px-2 py-1 text-sm font-mono border border-gray-200 rounded focus:outline-none focus:border-blue-500 uppercase"
-                                                                    maxLength={7}
-                                                                />
-                                                                {prop === 'text' && (
-                                                                    <label className="flex items-center gap-2 cursor-pointer ml-2 select-none">
+                                                <div className="flex flex-col lg:flex-row gap-6">
+                                                    {/* Left Column: Title & Color Inputs */}
+                                                    <div className="flex-1 space-y-4">
+                                                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 pl-1">{btn.label}</h3>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                                                            {['bg', 'text', 'icon', 'border'].map(prop => (
+                                                                <div key={prop} className="space-y-2">
+                                                                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                                                        {prop === 'bg' ? 'Background' : prop} Color
+                                                                    </label>
+                                                                    <div className="flex items-center gap-3">
                                                                         <input
-                                                                            type="checkbox"
-                                                                            checked={(activeTheme.buttons as any)[btn.key].boldText || false}
+                                                                            type="color"
+                                                                            value={(activeTheme.buttons as any)[btn.key][prop]}
                                                                             onChange={(e) => {
                                                                                 const newButtons = { ...activeTheme.buttons };
-                                                                                (newButtons as any)[btn.key].boldText = e.target.checked;
+                                                                                (newButtons as any)[btn.key][prop] = e.target.value;
                                                                                 updateCustomTheme('buttons', newButtons);
                                                                             }}
-                                                                            className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                            className="w-10 h-10 p-0.5 rounded border border-gray-200 cursor-pointer"
                                                                         />
-                                                                        <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Bold</span>
-                                                                    </label>
-                                                                )}
-                                                            </div>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={(activeTheme.buttons as any)[btn.key][prop]}
+                                                                            onChange={(e) => {
+                                                                                const newButtons = { ...activeTheme.buttons };
+                                                                                (newButtons as any)[btn.key][prop] = e.target.value;
+                                                                                updateCustomTheme('buttons', newButtons);
+                                                                            }}
+                                                                            className="w-24 px-2 py-1 text-sm font-mono border border-gray-200 rounded focus:outline-none focus:border-blue-500 uppercase"
+                                                                            maxLength={7}
+                                                                        />
+                                                                        {prop === 'text' && (
+                                                                            <label className="flex items-center gap-2 cursor-pointer ml-2 select-none">
+                                                                                <input
+                                                                                    type="checkbox"
+                                                                                    checked={(activeTheme.buttons as any)[btn.key].boldText || false}
+                                                                                    onChange={(e) => {
+                                                                                        const newButtons = { ...activeTheme.buttons };
+                                                                                        (newButtons as any)[btn.key].boldText = e.target.checked;
+                                                                                        updateCustomTheme('buttons', newButtons);
+                                                                                    }}
+                                                                                    className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                                                />
+                                                                                <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Bold</span>
+                                                                            </label>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
+                                                    </div>
 
-                                                    <div className="col-span-1 md:col-span-2 lg:col-span-4 space-y-2 mt-4">
-                                                        <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                                                            Active Border Thickness
-                                                        </label>
-                                                        <input
-                                                            type="range"
-                                                            min="0"
-                                                            max="8"
-                                                            step="1"
-                                                            value={parseInt((activeTheme.buttons as any)[btn.key]?.borderWidth || '1')}
-                                                            onChange={(e) => {
-                                                                updateCustomTheme('buttons', {
-                                                                    [btn.key]: { ...(activeTheme.buttons as any)[btn.key], borderWidth: `${e.target.value}px` }
-                                                                });
-                                                            }}
-                                                            className="w-full accent-blue-600"
-                                                        />
-                                                        <div className="text-xs text-gray-400">
-                                                            Current: {(activeTheme.buttons as any)[btn.key]?.borderWidth || '1px'}
+                                                    {/* Right Column: Controls Sidebar */}
+                                                    <div className="w-full lg:w-72 flex flex-col gap-3 pt-0 lg:pt-9">
+                                                        {/* Display Mode Toggle */}
+                                                        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-md w-full">
+                                                            {[
+                                                                { label: 'Icon Only', value: 'icon' },
+                                                                { label: 'Text Only', value: 'text' },
+                                                                { label: 'Icon & Text', value: 'both' },
+                                                            ].map(opt => (
+                                                                <button
+                                                                    key={opt.value}
+                                                                    onClick={() => updateCustomTheme('buttons', {
+                                                                        [btn.key]: { ...(activeTheme.buttons as any)[btn.key], displayMode: opt.value }
+                                                                    })}
+                                                                    className={`flex-1 py-1 text-xs rounded-sm transition-all text-center whitespace-nowrap ${(activeTheme.buttons as any)[btn.key]?.displayMode === opt.value
+                                                                        ? 'bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-400 font-medium'
+                                                                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                                                                        }`}
+                                                                >
+                                                                    {opt.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Size Toggle */}
+                                                        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-md w-full">
+                                                            {[
+                                                                { label: 'Small', value: 'small' },
+                                                                { label: 'Medium', value: 'medium' },
+                                                                { label: 'Large', value: 'large' },
+                                                            ].map(opt => (
+                                                                <button
+                                                                    key={opt.value}
+                                                                    onClick={() => updateCustomTheme('buttons', {
+                                                                        [btn.key]: { ...(activeTheme.buttons as any)[btn.key], size: opt.value }
+                                                                    })}
+                                                                    className={cn(
+                                                                        "flex-1 py-1 text-xs rounded-sm transition-all text-center",
+                                                                        ((activeTheme.buttons as any)[btn.key]?.size || 'medium') === opt.value
+                                                                            ? "bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-400 font-medium"
+                                                                            : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                                                                    )}
+                                                                >
+                                                                    {opt.label}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Border Thickness Slider */}
+                                                        <div className="w-full bg-gray-50 dark:bg-gray-800/50 p-2 rounded-md border border-dashed border-gray-200 dark:border-gray-700">
+                                                            <div className="flex items-center justify-between mb-1.5">
+                                                                <label className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                                                    Active Border
+                                                                </label>
+                                                                <span className="text-[10px] text-gray-400 font-mono">
+                                                                    {(activeTheme.buttons as any)[btn.key]?.borderWidth || '1px'}
+                                                                </span>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min="0"
+                                                                max="8"
+                                                                step="1"
+                                                                value={parseInt((activeTheme.buttons as any)[btn.key]?.borderWidth || '1')}
+                                                                onChange={(e) => {
+                                                                    updateCustomTheme('buttons', {
+                                                                        [btn.key]: { ...(activeTheme.buttons as any)[btn.key], borderWidth: `${e.target.value}px` }
+                                                                    });
+                                                                }}
+                                                                className="w-full accent-blue-600 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -991,7 +887,7 @@ export default function SettingsPage() {
                                     <div>
                                         <h3 className="font-semibold text-gray-900 dark:text-gray-100">Menu Structure</h3>
                                         <p className="text-sm text-gray-500 mt-1">
-                                            Customize the labels and links for your application navigation.
+                                            Customize the labels and links for your application navigation. Use drag-and-drop to reorder and nest items.
                                         </p>
                                     </div>
                                     <Button
@@ -1010,17 +906,26 @@ export default function SettingsPage() {
                                 <PageCreator items={navItems} onAdd={handleAddPage} />
 
                                 <div className="bg-gray-50 dark:bg-gray-900/20 p-4 rounded-lg border border-dashed border-gray-200 dark:border-gray-800">
-                                    <MenuEditor items={navItems} onUpdate={updateNavItems} />
+                                    {/* Using new MenuBuilder with DnD support */}
+                                    <MenuBuilder
+                                        items={navItems}
+                                        onUpdate={updateNavItems}
+                                        onRemoveItem={(item) => handleRemoveItem('remove', item)}
+                                        onDeleteItem={(item) => handleRemoveItem('delete', item)}
+
+                                        onEditItem={handleEditItem}
+                                    />
                                 </div>
                             </TabsContent>
 
                         </div>
                     </Tabs>
                 </div>
-            </div>
+            </div >
 
             {/* Delete Confirmation Dialog */}
-            <Dialog open={deleteDialog.isOpen} onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, isOpen: open }))}>
+            < Dialog open={deleteDialog.isOpen} onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, isOpen: open }))
+            }>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>{deleteDialog.title}</DialogTitle>
@@ -1044,7 +949,50 @@ export default function SettingsPage() {
                         </Button>
                     </DialogFooter>
                 </DialogContent>
-            </Dialog>
-        </div>
+            </Dialog >
+
+            {/* Edit Item Dialog */}
+            < Dialog open={editDialog.isOpen} onOpenChange={(open) => setEditDialog(prev => ({ ...prev, isOpen: open }))}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Menu Item</DialogTitle>
+                        <DialogDescription>
+                            Update the label and icon for this menu item.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Label</label>
+                            <input
+                                type="text"
+                                value={editDialog.label}
+                                onChange={(e) => setEditDialog(prev => ({ ...prev, label: e.target.value }))}
+                                className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Icon</label>
+                            <select
+                                value={editDialog.iconName}
+                                onChange={(e) => setEditDialog(prev => ({ ...prev, iconName: e.target.value }))}
+                                className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                            >
+                                {ICON_OPTIONS.map(opt => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="secondary" onClick={() => setEditDialog(prev => ({ ...prev, isOpen: false }))}>
+                            Cancel
+                        </Button>
+                        <Button variant="primary" onClick={handleSaveEdit}>
+                            Save Changes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog >
+        </div >
     );
 }

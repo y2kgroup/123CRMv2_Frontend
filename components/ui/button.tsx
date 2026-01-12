@@ -20,19 +20,28 @@ export function Button({ variant = 'primary', icon: Icon, children, className, .
         '--font-weight': `var(--btn-${variant}-font-weight, 500)`,
         '--display-icon': `var(--btn-${variant}-display-icon, block)`,
         '--display-text': `var(--btn-${variant}-display-text, block)`,
+        '--padding': `var(--btn-${variant}-padding, 8px 16px)`,
+        '--font-size': `var(--btn-${variant}-font-size, 14px)`,
+        '--icon-size': `var(--btn-${variant}-icon-size, 16px)`,
     } as React.CSSProperties;
 
     return (
         <button
             className={cn(
-                "flex items-center justify-center gap-2 px-4 py-2 rounded-md transition-opacity hover:opacity-90",
+                "flex items-center justify-center gap-2 rounded-md transition-opacity hover:opacity-90",
                 "bg-[var(--bg)] text-[var(--text)] border border-[var(--border)]",
                 className
             )}
-            style={{ ...vars, borderBottomWidth: 'var(--border-width)', fontWeight: 'var(--font-weight)' }}
+            style={{
+                ...vars,
+                borderBottomWidth: 'var(--border-width)',
+                fontWeight: 'var(--font-weight)',
+                padding: 'var(--padding)',
+                fontSize: 'var(--font-size)'
+            }}
             {...props}
         >
-            {Icon && <Icon className="w-4 h-4 text-[var(--icon)]" style={{ display: 'var(--display-icon)' }} />}
+            {Icon && <Icon className="text-[var(--icon)]" style={{ display: 'var(--display-icon)', width: 'var(--icon-size)', height: 'var(--icon-size)' }} />}
             <span style={{ display: 'var(--display-text)' }}>{children}</span>
         </button>
     );

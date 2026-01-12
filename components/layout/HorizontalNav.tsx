@@ -51,7 +51,7 @@ export function HorizontalNav() {
                     if (hasChildren) {
                         return (
                             <NavDropdownItem
-                                key={item.href}
+                                key={item.id || item.href}
                                 item={item}
                                 activeTheme={activeTheme}
                                 pathname={pathname}
@@ -77,7 +77,7 @@ export function HorizontalNav() {
 
                     return (
                         <Link
-                            key={item.href}
+                            key={item.id || item.href}
                             href={item.href}
                             onClick={(e) => handleNavigation(e, item.href)}
                             style={itemStyle}
@@ -185,7 +185,7 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
                     onMouseLeave={handleMouseLeave}
                 >
                     {item.children.map((child: any) => (
-                        <Link key={child.href} href={child.href} onClick={(e) => {
+                        <Link key={child.id || child.href} href={child.href} onClick={(e) => {
                             setIsOpen(false);
                             handleNavigation(e, child.href);
                         }}>
@@ -200,13 +200,18 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
                                 onFocus={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
                                 onBlur={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                             >
-                                <child.icon
-                                    className="w-4 h-4 mr-2"
-                                    style={{
-                                        color: 'var(--h-nav-dropdown-icon)',
-                                        opacity: 1
-                                    }}
-                                />
+                                {(() => {
+                                    const ChildIcon = child.icon || FileText;
+                                    return (
+                                        <ChildIcon
+                                            className="w-4 h-4 mr-2"
+                                            style={{
+                                                color: 'var(--h-nav-dropdown-icon)',
+                                                opacity: 1
+                                            }}
+                                        />
+                                    );
+                                })()}
                                 <span style={{ fontWeight: 'var(--h-nav-dropdown-font-weight)' }}>
                                     {child.label}
                                 </span>

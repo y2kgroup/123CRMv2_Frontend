@@ -45,6 +45,7 @@ export interface ButtonSettings {
     borderWidth?: string;
     displayMode?: 'icon' | 'text' | 'both';
     boldText?: boolean;
+    size?: 'small' | 'medium' | 'large';
 }
 
 export interface AlertSettings {
@@ -114,10 +115,10 @@ const defaultThemeConfig: ThemeConfig = {
     },
     footer: { bg: '#405189', text: '#FFFFFF', icon: '#6F6772', boldText: true },
     buttons: {
-        primary: { bg: '#D5F2EE', text: '#059669', icon: '#059669', border: '#10B981', displayMode: 'both', boldText: true, borderWidth: '3px' },
-        secondary: { bg: '#FEF2E0', text: '#D97706', icon: '#D97706', border: '#D97706', displayMode: 'both', boldText: true, borderWidth: '3px' },
-        tertiary: { bg: '#FDE5ED', text: '#DC2626', icon: '#DC2626', border: '#DC2626', displayMode: 'both', boldText: true, borderWidth: '3px' },
-        action: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'icon', boldText: false, borderWidth: '1px' }
+        primary: { bg: '#D5F2EE', text: '#059669', icon: '#059669', border: '#10B981', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
+        secondary: { bg: '#FEF2E0', text: '#D97706', icon: '#D97706', border: '#D97706', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
+        tertiary: { bg: '#FDE5ED', text: '#DC2626', icon: '#DC2626', border: '#DC2626', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
+        action: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' }
     },
     alerts: {
         primary: { bg: '#EEF2FF', text: '#3730A3', border: '#E0E7FF', boldText: true },
@@ -159,10 +160,10 @@ const defaultTheme: CustomTheme = {
         },
         footer: { bg: '#212529', text: '#adb5bd', icon: '#adb5bd', boldText: false },
         buttons: {
-            primary: { bg: '#405189', text: '#ffffff', icon: '#ffffff', border: '#405189', displayMode: 'both', boldText: true, borderWidth: '1px' },
-            secondary: { bg: '#3577f1', text: '#ffffff', icon: '#ffffff', border: '#3577f1', displayMode: 'both', boldText: true, borderWidth: '1px' },
-            tertiary: { bg: '#299cdb', text: '#ffffff', icon: '#ffffff', border: '#299cdb', displayMode: 'both', boldText: true, borderWidth: '1px' },
-            action: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'icon', boldText: false, borderWidth: '1px' }
+            primary: { bg: '#405189', text: '#ffffff', icon: '#ffffff', border: '#405189', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
+            secondary: { bg: '#3577f1', text: '#ffffff', icon: '#ffffff', border: '#3577f1', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
+            tertiary: { bg: '#299cdb', text: '#ffffff', icon: '#ffffff', border: '#299cdb', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
+            action: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' }
         },
         alerts: {
             primary: { bg: '#405189', text: '#ffffff', border: '#405189', boldText: true },
@@ -304,13 +305,35 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             setVar(`--btn-${variant}-display-text`, textDisplay);
         };
 
+        const setButtonSize = (variant: string, size: 'small' | 'medium' | 'large' = 'medium') => {
+            let padding = '8px 16px';
+            let fontSize = '14px';
+            let iconSize = '16px';
+
+            if (size === 'small') {
+                padding = '4px 12px';
+                fontSize = '12px';
+                iconSize = '14px';
+            } else if (size === 'large') {
+                padding = '12px 24px';
+                fontSize = '16px';
+                iconSize = '20px';
+            }
+
+            setVar(`--btn-${variant}-padding`, padding);
+            setVar(`--btn-${variant}-font-size`, fontSize);
+            setVar(`--btn-${variant}-icon-size`, iconSize);
+        };
+
         setVar('--btn-primary-bg', activeConfig.buttons.primary.bg);
         setVar('--btn-primary-text', activeConfig.buttons.primary.text);
         setVar('--btn-primary-icon', activeConfig.buttons.primary.icon);
         setVar('--btn-primary-border', activeConfig.buttons.primary.border);
         setVar('--btn-primary-border-width', activeConfig.buttons.primary.borderWidth || '1px');
         setVar('--btn-primary-font-weight', activeConfig.buttons.primary.boldText ? '700' : '500');
+        setVar('--btn-primary-font-weight', activeConfig.buttons.primary.boldText ? '700' : '500');
         setButtonDisplay('primary', activeConfig.buttons.primary.displayMode);
+        setButtonSize('primary', activeConfig.buttons.primary.size);
 
         setVar('--btn-secondary-bg', activeConfig.buttons.secondary.bg);
         setVar('--btn-secondary-text', activeConfig.buttons.secondary.text);
@@ -318,7 +341,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setVar('--btn-secondary-border', activeConfig.buttons.secondary.border);
         setVar('--btn-secondary-border-width', activeConfig.buttons.secondary.borderWidth || '1px');
         setVar('--btn-secondary-font-weight', activeConfig.buttons.secondary.boldText ? '700' : '500');
+        setVar('--btn-secondary-font-weight', activeConfig.buttons.secondary.boldText ? '700' : '500');
         setButtonDisplay('secondary', activeConfig.buttons.secondary.displayMode);
+        setButtonSize('secondary', activeConfig.buttons.secondary.size);
 
         setVar('--btn-tertiary-bg', activeConfig.buttons.tertiary.bg);
         setVar('--btn-tertiary-text', activeConfig.buttons.tertiary.text);
@@ -326,7 +351,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setVar('--btn-tertiary-border', activeConfig.buttons.tertiary.border);
         setVar('--btn-tertiary-border-width', activeConfig.buttons.tertiary.borderWidth || '1px');
         setVar('--btn-tertiary-font-weight', activeConfig.buttons.tertiary.boldText ? '700' : '500');
+        setVar('--btn-tertiary-font-weight', activeConfig.buttons.tertiary.boldText ? '700' : '500');
         setButtonDisplay('tertiary', activeConfig.buttons.tertiary.displayMode);
+        setButtonSize('tertiary', activeConfig.buttons.tertiary.size);
 
         setVar('--btn-action-bg', activeConfig.buttons.action.bg);
         setVar('--btn-action-text', activeConfig.buttons.action.text);
@@ -334,7 +361,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setVar('--btn-action-border', activeConfig.buttons.action.border);
         setVar('--btn-action-border-width', activeConfig.buttons.action.borderWidth || '0px');
         setVar('--btn-action-font-weight', activeConfig.buttons.action.boldText ? '700' : '500');
+        setVar('--btn-action-font-weight', activeConfig.buttons.action.boldText ? '700' : '500');
         setButtonDisplay('action', activeConfig.buttons.action.displayMode);
+        setButtonSize('action', activeConfig.buttons.action.size);
 
         // Alerts
         const alertVariants = ['primary', 'secondary', 'success', 'danger'] as const;
@@ -517,39 +546,53 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
     // Persist navItems changes (optional, or just keep in state for session)
     // For now, let's persist to localStorage so edits survive refresh, similar to theme
+    // --- Icon Restoration Logic ---
+    const ICON_MAP: Record<string, any> = {
+        FileText, LayoutDashboard: require('lucide-react').LayoutDashboard, Users: require('lucide-react').Users, Building2: require('lucide-react').Building2, Factory: require('lucide-react').Factory, Calculator: require('lucide-react').Calculator, Store: require('lucide-react').Store, CalendarDays: require('lucide-react').CalendarDays, Settings: require('lucide-react').Settings, PieChart: require('lucide-react').PieChart, Bell: require('lucide-react').Bell, Briefcase: require('lucide-react').Briefcase, Circle: require('lucide-react').Circle, Clipboard: require('lucide-react').Clipboard, Globe: require('lucide-react').Globe, Home: require('lucide-react').Home, Image: require('lucide-react').Image, Inbox: require('lucide-react').Inbox, Layers: require('lucide-react').Layers, Link: require('lucide-react').Link, Lock: require('lucide-react').Lock, Mail: require('lucide-react').Mail, Map: require('lucide-react').Map, MessageSquare: require('lucide-react').MessageSquare, Package: require('lucide-react').Package, Search: require('lucide-react').Search, Server: require('lucide-react').Server, Smartphone: require('lucide-react').Smartphone, Star: require('lucide-react').Star, Tag: require('lucide-react').Tag, Terminal: require('lucide-react').Terminal, Tool: require('lucide-react').Tool, Trash2: require('lucide-react').Trash2, Truck: require('lucide-react').Truck, User: require('lucide-react').User, Video: require('lucide-react').Video, Wifi: require('lucide-react').Wifi
+    };
+
+    // Helper to find original icon
+    const findOriginalIcon = (href: string, list: any[]): any => {
+        for (const item of list) {
+            if (item.href === href) return item.icon;
+            if (item.children) {
+                const found = findOriginalIcon(href, item.children);
+                if (found) return found;
+            }
+        }
+        return null;
+    };
+
+    // Helper to restore icons recursively
+    const restoreIcons = (items: any[]): any[] => {
+        return items.map((item: any) => {
+            let Icon = FileText;
+
+            // 1. Try to restore from 'iconName' if present (user selected icon)
+            if (item.iconName && ICON_MAP[item.iconName]) {
+                Icon = ICON_MAP[item.iconName];
+            }
+            // 2. Or try to find original icon from config (built-in pages)
+            else {
+                const originalIcon = findOriginalIcon(item.href, initialNavItems);
+                if (originalIcon) Icon = originalIcon;
+            }
+
+            return {
+                ...item,
+                icon: Icon,
+                children: item.children ? restoreIcons(item.children) : undefined
+            };
+        });
+    };
+
+    // Persist navItems changes (optional, or just keep in state for session)
+    // For now, let's persist to localStorage so edits survive refresh, similar to theme
     useEffect(() => {
         const savedNav = localStorage.getItem('navItems');
         if (savedNav) {
             try {
                 const parsed = JSON.parse(savedNav);
-
-                // Helper to find original icon
-                const findOriginalIcon = (href: string, list: any[]): any => {
-                    for (const item of list) {
-                        if (item.href === href) return item.icon;
-                        if (item.children) {
-                            const found = findOriginalIcon(href, item.children);
-                            if (found) return found;
-                        }
-                    }
-                    return null;
-                };
-
-                // Helper to restore icons recursively
-                const restoreIcons = (items: any[]): any[] => {
-                    return items.map((item: any) => {
-                        const originalIcon = findOriginalIcon(item.href, initialNavItems);
-                        // Use original icon, or FileText for new pages, or keep existing if it somehow survived (unlikely from JSON)
-                        const Icon = originalIcon || FileText;
-
-                        return {
-                            ...item,
-                            icon: Icon,
-                            children: item.children ? restoreIcons(item.children) : undefined
-                        };
-                    });
-                };
-
                 setNavItems(restoreIcons(parsed));
             } catch (e) {
                 console.error("Failed to parse saved nav items", e);
@@ -558,22 +601,11 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     }, []);
 
     const updateNavItems = (newItems: any[]) => {
-        setNavItems(newItems);
+        // ALWAYS hydrate icons before setting state, because inputs (e.g. from JSON.clone) might lack them.
+        const hydratedItems = restoreIcons(newItems);
+        setNavItems(hydratedItems);
         localStorage.setItem('navItems', JSON.stringify(newItems));
-        setHasChanges(true); // Treat as a change that might need saving if we were doing a bulk save, but here we save immediately to LS. 
-        // However, 'hasChanges' usually triggers the "Unsaved Changes" alert. 
-        // If we save to LS immediately, maybe we don't need 'hasChanges'?
-        // The existing pattern for theme is 'updateCustomTheme' -> 'setHasChanges(true)'.
-        // Let's follow that pattern if we want a "Save" button, or just save immediately.
-        // The user asked to "control" them. 
-        // Let's stick to immediate persistence for now or follow the pattern. 
-        // Actually, the existing theme uses explicit 'saveTheme'. 
-        // Let's make 'updateNavItems' just update state and setHasChanges, 
-        // and include navItems in 'saveTheme' if we want unified saving, 
-        // OR just autosave for now to simplify.
-        // Given "Save" button exists in settings, maybe better to loop it in.
-        // But 'saveTheme' currently only saves 'customTheme'.
-        // Let's keep it simple: Autosave nav items for now to avoid refactoring save logic too much.
+        setHasChanges(true);
     };
 
     const resetNavItems = () => {
