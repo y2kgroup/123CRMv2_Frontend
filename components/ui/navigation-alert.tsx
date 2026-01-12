@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert } from '@/components/ui/Alert';
+import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
 interface NavigationAlertProps {
