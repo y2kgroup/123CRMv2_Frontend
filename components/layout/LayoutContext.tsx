@@ -536,7 +536,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
                 };
 
                 // Helper to restore icons recursively
-                const restoreIcons = (items: any[]) => {
+                const restoreIcons = (items: any[]): any[] => {
                     return items.map((item: any) => {
                         const originalIcon = findOriginalIcon(item.href, initialNavItems);
                         // Use original icon, or FileText for new pages, or keep existing if it somehow survived (unlikely from JSON)
