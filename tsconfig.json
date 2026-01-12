@@ -37,7 +37,6 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules",
-    "123CRMv1-Old"
+    "node_modules"
   ]
 }
