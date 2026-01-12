@@ -12,16 +12,7 @@ import {
 export const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard, description: 'Overview of your activities' },
     { label: 'Contacts', href: '/contacts', icon: Users, description: 'Manage your address book' },
-    {
-        label: 'Companies',
-        href: '/companies',
-        icon: Building2,
-        description: 'Partner and client organizations',
-        children: [
-            { label: 'Companies V1', href: '/companies/v1', icon: Building2 },
-            { label: 'Companies V2', href: '/companies/v2', icon: Building2 }
-        ]
-    },
+    { label: 'Companies', href: '/companies', icon: Building2, description: 'Partner and client organizations' },
     { label: 'Production', href: '/production', icon: Factory, description: 'Monitor production lines' },
     { label: 'Accounting', href: '/accounting', icon: Calculator, description: 'Financial records and reports' },
     { label: 'Vendors', href: '/vendors', icon: Store, description: 'Manage external suppliers' },

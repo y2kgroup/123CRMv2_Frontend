@@ -3,7 +3,7 @@
 import React, { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Trash2 } from 'lucide-react';
+import { Search, Plus, Trash2, Filter, X } from 'lucide-react';
 import { useTableConfig } from '@/components/ui/data-table/useTableConfig';
 import { DataTable } from '@/components/ui/data-table/DataTable';
 import { DataTableViewOptions } from '@/components/ui/data-table/DataTableViewOptions';
@@ -27,6 +27,7 @@ import { MoreVertical, Settings, FileDown, FileUp, CreditCard, Pencil, Eye } fro
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImportCompaniesDialog } from '@/components/companies/ImportCompaniesDialog';
 import { AddCompanyDialog } from '@/components/companies/AddCompanyDialog';
+import { AdvancedFilterSheet, FilterRule, MatchType } from '@/components/companies/AdvancedFilterSheet';
 import Papa from 'papaparse';
 
 const defaultColumns = [
@@ -47,14 +48,14 @@ const defaultColumns = [
     { id: 'actions', label: 'ACTIONS', isMandatory: true },
 ];
 
-export default function CompaniesV1Page() {
+export default function CompaniesPage() {
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
     const actionButtonStyles = activeTheme.buttons.action;
 
     // --- Table Config ---
     const tableConfig = useTableConfig({
-        tableId: 'companies-v1-updated',
+        tableId: 'companies-updated',
         defaultColumns: defaultColumns
     });
 
@@ -127,6 +128,46 @@ export default function CompaniesV1Page() {
             setSelectedRows(new Set(tableData.map(row => row.id)));
         }
     };
+
+    // --- Advanced Filter State ---
+    const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+    const [filterRules, setFilterRules] = React.useState<FilterRule[]>([]);
+    const [filterMatchType, setFilterMatchType] = React.useState<MatchType>('AND');
+
+    // --- Filter Logic ---
+    const filteredData = useMemo(() => {
+        let result = tableData;
+
+        if (filterRules.length > 0) {
+            result = result.filter(item => {
+                const results = filterRules.map(rule => {
+                    const itemValue = String(item[rule.columnId as keyof typeof item] || '').toLowerCase();
+                    const filterValue = rule.value.toLowerCase();
+
+                    // If no column selected, ignore rule (or treat as true)
+                    if (!rule.columnId) return true;
+
+                    switch (rule.operator) {
+                        case 'contains': return itemValue.includes(filterValue);
+                        case 'equals': return itemValue === filterValue;
+                        case 'startsWith': return itemValue.startsWith(filterValue);
+                        case 'endsWith': return itemValue.endsWith(filterValue);
+                        case 'isEmpty': return itemValue === '';
+                        case 'isNotEmpty': return itemValue !== '';
+                        default: return true;
+                    }
+                });
+
+                if (filterMatchType === 'AND') {
+                    return results.every(Boolean);
+                } else {
+                    return results.some(Boolean);
+                }
+            });
+        }
+        return result;
+    }, [tableData, filterRules, filterMatchType]);
+
 
     // --- Quick Edit State ---
     const [isQuickEditMode, setIsQuickEditMode] = React.useState(false);
@@ -341,9 +382,6 @@ export default function CompaniesV1Page() {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
-                    // Transform data if necessary or just set it
-                    // We expect headers to match our IDs roughly, or we map them.
-                    // For simplicity, we assume the CSV headers match the keys or we map common ones.
                     const parsedData = results.data.map((row: any, index) => ({
                         id: row.id || row.ID || index + 1,
                         name: row.name || row.Name || row['Company Name'],
@@ -370,9 +408,6 @@ export default function CompaniesV1Page() {
             });
         }
     };
-
-
-
 
 
     const handleExport = () => {
@@ -427,11 +462,41 @@ export default function CompaniesV1Page() {
                         Delete
                     </Button>
                 )}
+
+                {/* Clear Filter Button */}
+                {filterRules.length > 0 && (
+                    <Button
+                        variant="tertiary"
+                        className="px-3 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 border-transparent transition-colors"
+                        onClick={() => {
+                            setFilterRules([]);
+                            setFilterMatchType('AND');
+                        }}
+                    >
+                        <span className="flex items-center gap-1.5">
+                            <X className="w-4 h-4" />
+                            Clear
+                            <span className="ml-0.5 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 text-[10px] font-bold px-2 py-0.5 rounded-full ring-1 ring-inset ring-red-700/10 dark:ring-red-400/20">
+                                {filterRules.length}
+                            </span>
+                        </span>
+                    </Button>
+                )}
+
                 <Button variant="secondary" icon={Pencil} onClick={() => setIsQuickEditMode(!isQuickEditMode)}>
                     {isQuickEditMode ? 'Done' : 'Quick Edit'}
                 </Button>
-                <Button variant="primary" icon={Plus} onClick={() => setIsAddCompanyOpen(true)}>
+
+                <Button variant="primary" icon={Plus} onClick={() => {
+                    setEditingCompany(undefined);
+                    setIsAddCompanyOpen(true);
+                }}>
                     Add Company
+                </Button>
+
+                {/* Filter Button (Action) */}
+                <Button variant="action" icon={Filter} onClick={() => setIsFilterOpen(true)}>
+                    Filter
                 </Button>
             </div>
         );
@@ -491,13 +556,24 @@ export default function CompaniesV1Page() {
                 </DropdownMenuItem>
             </>
         );
-    }, [tableConfig, selectedRows.size, setHeaderMenuItems, setHeaderActions, isQuickEditMode]);
+    }, [tableConfig, selectedRows.size, setHeaderMenuItems, setHeaderActions, isQuickEditMode, filterRules.length]);
+
+    // Extract column options for the filter
+    const filterColumns = useMemo(() => [
+        { id: 'name', label: 'Company Name' },
+        { id: 'email', label: 'Contact Email' },
+        { id: 'phone', label: 'Phone' },
+        { id: 'website', label: 'Website' },
+        { id: 'address', label: 'Address' },
+        { id: 'owner', label: 'Owner' },
+        { id: 'industry', label: 'Industry' },
+    ], []);
 
     return (
         <div className="h-full flex flex-col gap-4">
             <div className="flex-1 min-h-0">
                 <DataTable
-                    data={tableData}
+                    data={filteredData}
                     config={tableConfig}
                     columns={columns}
                     isAllSelected={tableData.length > 0 && selectedRows.size === tableData.length}
@@ -506,7 +582,7 @@ export default function CompaniesV1Page() {
             </div>
 
             <div className="flex items-center justify-between py-4 text-xs text-slate-500 shrink-0">
-                <div>Showing {tableData.length} of {tableData.length} Results</div>
+                <div>Showing {filteredData.length} of {tableData.length} Results</div>
                 <div className="flex-1 mx-4 h-1 bg-slate-100 rounded-full overflow-hidden">
                     <div className="h-full bg-slate-300 w-full" />
                 </div>
@@ -523,6 +599,18 @@ export default function CompaniesV1Page() {
                 onOpenChange={(open) => { setIsAddCompanyOpen(open); if (!open) setEditingCompany(null); }}
                 onSubmit={handleSaveCompany}
                 initialData={editingCompany}
+            />
+
+            <AdvancedFilterSheet
+                isOpen={isFilterOpen}
+                onOpenChange={setIsFilterOpen}
+                columns={filterColumns}
+                onApply={(rules, type) => {
+                    setFilterRules(rules);
+                    setFilterMatchType(type);
+                }}
+                initialRules={filterRules}
+                initialMatchType={filterMatchType}
             />
 
             <Dialog open={deleteConfirm.open} onOpenChange={(open) => setDeleteConfirm(prev => ({ ...prev, open }))}>
