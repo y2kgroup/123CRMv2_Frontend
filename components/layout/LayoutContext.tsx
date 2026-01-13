@@ -66,6 +66,7 @@ export interface ThemeConfig {
         secondary: ButtonSettings;
         tertiary: ButtonSettings;
         action: ButtonSettings;
+        actionCard: ButtonSettings;
     };
     alerts: {
         primary: AlertSettings;
@@ -118,7 +119,8 @@ const defaultThemeConfig: ThemeConfig = {
         primary: { bg: '#D5F2EE', text: '#059669', icon: '#059669', border: '#10B981', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
         secondary: { bg: '#FEF2E0', text: '#D97706', icon: '#D97706', border: '#D97706', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
         tertiary: { bg: '#FDE5ED', text: '#DC2626', icon: '#DC2626', border: '#DC2626', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
-        action: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' }
+        action: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' },
+        actionCard: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'both', boldText: false, borderWidth: '1px', size: 'medium' }
     },
     alerts: {
         primary: { bg: '#EEF2FF', text: '#3730A3', border: '#E0E7FF', boldText: true },
@@ -163,7 +165,8 @@ const defaultTheme: CustomTheme = {
             primary: { bg: '#405189', text: '#ffffff', icon: '#ffffff', border: '#405189', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
             secondary: { bg: '#3577f1', text: '#ffffff', icon: '#ffffff', border: '#3577f1', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
             tertiary: { bg: '#299cdb', text: '#ffffff', icon: '#ffffff', border: '#299cdb', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
-            action: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' }
+            action: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' },
+            actionCard: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'both', boldText: false, borderWidth: '1px', size: 'medium' }
         },
         alerts: {
             primary: { bg: '#405189', text: '#ffffff', border: '#405189', boldText: true },
@@ -217,6 +220,8 @@ interface LayoutContextType {
     setHeaderActions: (actions: React.ReactNode) => void;
     headerMenuItems: React.ReactNode;
     setHeaderMenuItems: (items: React.ReactNode) => void;
+    pageHeadingContent: React.ReactNode;
+    setPageHeadingContent: (content: React.ReactNode) => void;
     // Dynamic Nav
     navItems: any[];
     updateNavItems: (items: any[]) => void;
@@ -238,6 +243,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const [isInitialized, setIsInitialized] = useState(false);
     const [headerActions, setHeaderActions] = useState<React.ReactNode>(null);
     const [headerMenuItems, setHeaderMenuItems] = useState<React.ReactNode>(null);
+    const [pageHeadingContent, setPageHeadingContent] = useState<React.ReactNode>(null);
 
     // Apply CSS Variables
     useEffect(() => {
@@ -365,6 +371,16 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setButtonDisplay('action', activeConfig.buttons.action.displayMode);
         setButtonSize('action', activeConfig.buttons.action.size);
 
+        setVar('--btn-actionCard-bg', activeConfig.buttons.actionCard.bg);
+        setVar('--btn-actionCard-text', activeConfig.buttons.actionCard.text);
+        setVar('--btn-actionCard-icon', activeConfig.buttons.actionCard.icon);
+        setVar('--btn-actionCard-border', activeConfig.buttons.actionCard.border);
+        setVar('--btn-actionCard-border-width', activeConfig.buttons.actionCard.borderWidth || '0px');
+        setVar('--btn-actionCard-font-weight', activeConfig.buttons.actionCard.boldText ? '700' : '500');
+        setVar('--btn-actionCard-font-weight', activeConfig.buttons.actionCard.boldText ? '700' : '500');
+        setButtonDisplay('actionCard', activeConfig.buttons.actionCard.displayMode);
+        setButtonSize('actionCard', activeConfig.buttons.actionCard.size);
+
         // Alerts
         const alertVariants = ['primary', 'secondary', 'success', 'danger'] as const;
         alertVariants.forEach(variant => {
@@ -397,17 +413,44 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
                 // Handle Migration from Old Theme Structure
                 if (!parsed.light || !parsed.dark) {
                     // Old structure detected, migrate to light/dark
-                    setCustomTheme(prev => ({
-                        ...prev,
-                        light: { ...prev.light, ...parsed, branding: undefined }, // Apply old rules to light
-                        dark: { ...prev.dark, ...parsed, branding: undefined }, // Apply old rules to dark as well (as a baseline)
-                        branding: { ...prev.branding, ...parsed.branding }
-                    }));
+                    setCustomTheme(prev => {
+                        const newLight = { ...prev.light, ...parsed, branding: undefined };
+                        // Ensure nested objects (buttons, alerts) are merged, not replaced if missing keys
+                        if (parsed.buttons) newLight.buttons = { ...prev.light.buttons, ...parsed.buttons };
+                        if (parsed.alerts) newLight.alerts = { ...prev.light.alerts, ...parsed.alerts };
+
+                        const newDark = { ...prev.dark, ...parsed, branding: undefined };
+                        if (parsed.buttons) newDark.buttons = { ...prev.dark.buttons, ...parsed.buttons };
+                        if (parsed.alerts) newDark.alerts = { ...prev.dark.alerts, ...parsed.alerts };
+
+                        return {
+                            ...prev,
+                            light: newLight,
+                            dark: newDark,
+                            branding: { ...prev.branding, ...parsed.branding }
+                        };
+                    });
                 } else {
-                    setCustomTheme(prev => ({
-                        ...prev,
-                        ...parsed
-                    }));
+                    // New structure detected
+                    setCustomTheme(prev => {
+                        // Deep merge light and dark configs to preserve new keys (like actionCard)
+                        return {
+                            ...prev,
+                            light: {
+                                ...prev.light,
+                                ...parsed.light,
+                                buttons: { ...prev.light.buttons, ...parsed.light?.buttons },
+                                alerts: { ...prev.light.alerts, ...parsed.light?.alerts }
+                            },
+                            dark: {
+                                ...prev.dark,
+                                ...parsed.dark,
+                                buttons: { ...prev.dark.buttons, ...parsed.dark?.buttons },
+                                alerts: { ...prev.dark.alerts, ...parsed.dark?.alerts }
+                            },
+                            branding: { ...prev.branding, ...parsed.branding }
+                        };
+                    });
                 }
             } catch (e) {
                 console.error("Failed to parse persisted theme", e);
@@ -485,6 +528,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
     const saveTheme = () => {
         localStorage.setItem('customTheme', JSON.stringify(customTheme));
+        // Also save nav items
+        localStorage.setItem('navItems', JSON.stringify(navItems));
         setHasChanges(false);
     };
 
@@ -533,8 +578,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     };
 
     const cancelNavigation = () => {
-        setShowUnsavedAlert(false);
         setPendingUrl(null);
+        setShowUnsavedAlert(false);
     };
 
     // Mobile Menu State
@@ -586,6 +631,23 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
+    // Helper to remove duplicates to prevent key errors
+    const removeDuplicates = (items: any[], seenHrefs: Set<string>): any[] => {
+        return items.reduce((acc: any[], item: any) => {
+            if (item.href && seenHrefs.has(item.href)) {
+                return acc;
+            }
+            if (item.href) seenHrefs.add(item.href);
+
+            const newItem = { ...item };
+            if (newItem.children) {
+                newItem.children = removeDuplicates(newItem.children, seenHrefs);
+            }
+            acc.push(newItem);
+            return acc;
+        }, []);
+    };
+
     // Persist navItems changes (optional, or just keep in state for session)
     // For now, let's persist to localStorage so edits survive refresh, similar to theme
     useEffect(() => {
@@ -593,7 +655,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         if (savedNav) {
             try {
                 const parsed = JSON.parse(savedNav);
-                setNavItems(restoreIcons(parsed));
+                // First deduplicate, then restore icons
+                const uniqueItems = removeDuplicates(parsed, new Set());
+                setNavItems(restoreIcons(uniqueItems));
             } catch (e) {
                 console.error("Failed to parse saved nav items", e);
             }
@@ -602,9 +666,13 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
     const updateNavItems = (newItems: any[]) => {
         // ALWAYS hydrate icons before setting state, because inputs (e.g. from JSON.clone) might lack them.
-        const hydratedItems = restoreIcons(newItems);
+        // Also deduplicate to prevent key errors
+        const uniqueItems = removeDuplicates(newItems, new Set());
+        const hydratedItems = restoreIcons(uniqueItems);
+
         setNavItems(hydratedItems);
-        localStorage.setItem('navItems', JSON.stringify(newItems));
+        // Do NOT save to localStorage yet. Wait for saveTheme().
+        // localStorage.setItem('navItems', JSON.stringify(uniqueItems)); 
         setHasChanges(true);
     };
 
@@ -640,6 +708,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             setHeaderActions,
             headerMenuItems,
             setHeaderMenuItems,
+            // Dynamic Page Heading
+            pageHeadingContent,
+            setPageHeadingContent,
             // Dynamic Nav
             navItems,
             updateNavItems,

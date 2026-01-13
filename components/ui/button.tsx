@@ -5,7 +5,7 @@ import React from "react";
 import { LucideIcon } from "lucide-react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'tertiary' | 'action';
+    variant?: 'primary' | 'secondary' | 'tertiary' | 'action' | 'actionCard';
     icon?: LucideIcon;
     children?: React.ReactNode;
 }

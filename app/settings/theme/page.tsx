@@ -20,21 +20,7 @@ import {
 
 export default function SettingsPage() {
     const { customTheme, updateCustomTheme, layoutWidth, setLayoutWidth, theme, navItems, updateNavItems, resetNavItems } = useLayout();
-    const [deleteDialog, setDeleteDialog] = useState<{
-        isOpen: boolean;
-        title: string;
-        description: string;
-        actionLabel: string;
-        variant: 'destructive' | 'default';
-        onConfirm: () => void;
-    }>({
-        isOpen: false,
-        title: '',
-        description: '',
-        actionLabel: '',
-        variant: 'default',
-        onConfirm: () => { },
-    });
+
 
     // Edit Dialog State
     const [editDialog, setEditDialog] = useState<{
@@ -152,46 +138,37 @@ export default function SettingsPage() {
 
 
 
-    const handleRemoveItem = (itemType: 'remove' | 'delete', item: any) => {
-        setDeleteDialog({
-            isOpen: true,
-            title: itemType === 'delete' ? `Delete Page "${item.label}"` : 'Remove from Menu',
-            description: itemType === 'delete'
-                ? `Are you sure you want to permanently delete this page file? This action cannot be undone and will remove the file from your project.`
-                : 'Are you sure you want to remove this item from the navigation menu? The page file will remain.',
-            actionLabel: itemType === 'delete' ? 'Delete Permanently' : 'Remove',
-            variant: itemType === 'delete' ? 'destructive' : 'default',
-            onConfirm: async () => {
-                if (itemType === 'delete') {
-                    const res = await deletePage(item.href);
-                    if (!res.success) {
-                        alert('Error deleting file: ' + res.message);
-                        return;
-                    }
+    const handleRemoveItem = async (itemType: 'remove' | 'delete', item: any) => {
+        const message = itemType === 'delete'
+            ? `Are you sure you want to PERMANENTLY DELETE the page "${item.label}"?\n\nThis action cannot be undone and will remove the file from your project.`
+            : `Are you sure you want to remove "${item.label}" from the menu?\n\nThe page file will remain in your project.`;
+
+        if (window.confirm(message)) {
+            if (itemType === 'delete') {
+                const res = await deletePage(item.href);
+                if (!res.success) {
+                    alert('Error deleting file: ' + res.message);
+                    return;
                 }
-
-                // Helper to recursively remove item from tree
-                const removeItemRecursive = (list: any[]): any[] => {
-                    return list.filter(i => {
-                        // Match roughly by reference or consistent fields
-                        // MenuBuilder passes a flattened item with ID if possible, but here we might get the original object
-                        // or a clone. Safest is label+href match or ID match.
-                        // Assuming unique href/label combo for now or just checking all props.
-                        const isMatch = (i.id && i.id === item.id) || (i.href === item.href && i.label === item.label);
-
-                        if (isMatch) return false;
-
-                        if (i.children) {
-                            i.children = removeItemRecursive(i.children);
-                        }
-                        return true;
-                    });
-                };
-
-                const newItems = removeItemRecursive(navItems);
-                updateNavItems(newItems);
             }
-        });
+
+            // Helper to recursively remove item from tree
+            const removeItemRecursive = (list: any[]): any[] => {
+                return list.filter(i => {
+                    // Match roughly by reference or consistent fields
+                    const isMatch = (i.id && i.id === item.id) || (i.href === item.href && i.label === item.label);
+                    if (isMatch) return false;
+
+                    if (i.children) {
+                        i.children = removeItemRecursive(i.children);
+                    }
+                    return true;
+                });
+            };
+
+            const newItems = removeItemRecursive(navItems);
+            updateNavItems(newItems);
+        }
     };
 
     const handleAddPage = (newItem: any, parentLabel?: string) => {
@@ -923,33 +900,7 @@ export default function SettingsPage() {
                 </div>
             </div >
 
-            {/* Delete Confirmation Dialog */}
-            < Dialog open={deleteDialog.isOpen} onOpenChange={(open) => setDeleteDialog(prev => ({ ...prev, isOpen: open }))
-            }>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{deleteDialog.title}</DialogTitle>
-                        <DialogDescription>
-                            {deleteDialog.description}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="secondary" onClick={() => setDeleteDialog(prev => ({ ...prev, isOpen: false }))}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant={deleteDialog.variant === 'destructive' ? 'tertiary' : 'primary'}
-                            className={deleteDialog.variant === 'destructive' ? "bg-red-600 text-white hover:bg-red-700 border-transparent" : ""}
-                            onClick={() => {
-                                deleteDialog.onConfirm();
-                                setDeleteDialog(prev => ({ ...prev, isOpen: false }));
-                            }}
-                        >
-                            {deleteDialog.actionLabel}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog >
+
 
             {/* Edit Item Dialog */}
             < Dialog open={editDialog.isOpen} onOpenChange={(open) => setEditDialog(prev => ({ ...prev, isOpen: open }))}>

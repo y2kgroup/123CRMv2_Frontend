@@ -36,7 +36,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ImportCompaniesDialog } from '@/components/companies/ImportCompaniesDialog';
 import { AddCompanyDialog } from '@/components/companies/AddCompanyDialog';
 import { AdvancedFilterSheet, FilterRule, MatchType } from '@/components/companies/AdvancedFilterSheet';
-import { AboutCard, AboutCardHeader, AboutCardDetails } from "@/components/companies/detail/AboutCard"; // Import AboutCard
+import { AboutCard, AboutCardHeader, AboutCardDetails } from "@/components/companies/detail/AboutCard";
 import { TasksCard } from '@/components/companies/detail/TasksCard';
 import { NotesCard } from '@/components/companies/detail/NotesCard';
 import { FilesCard } from '@/components/companies/detail/FilesCard';
@@ -45,17 +45,9 @@ import { Separator } from '@/components/ui/separator';
 import Papa from 'papaparse';
 import { MultiSelect } from '@/components/ui/multi-select';
 
+// Requested specific columns only
 const defaultColumns = [
-    { id: 'select', label: 'Select', isMandatory: true, style: { alignment: 'center' } }, // Center alignment for checkbox
-    { id: 'id', label: 'ID', isMandatory: true },
-    { id: 'name', label: 'Company Name', isMandatory: true },
-    { id: 'owner', label: 'Owner' },
-    { id: 'industry', label: 'Industry', type: 'badge' as const },
-    { id: 'website', label: 'Website' },
-    { id: 'services', label: 'Services', type: 'badge' as const },
-    { id: 'email', label: 'Email' },
-    { id: 'phone', label: 'Phone' },
-    { id: 'address', label: 'Address' },
+    { id: 'select', label: 'Select', isMandatory: true, style: { alignment: 'center' } },
     { id: 'createdBy', label: 'Created By' },
     { id: 'createdAt', label: 'Created At' },
     { id: 'editedBy', label: 'Edited By' },
@@ -63,8 +55,7 @@ const defaultColumns = [
     { id: 'actions', label: 'Actions', isMandatory: true },
 ];
 
-// --- Helper Components ---
-
+// Reusing AddressCell helper for consistency if needed in future, though not in current columns
 function AddressCell({ value, onChange }: { value: string, onChange: (val: string) => void }) {
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [suggestions, setSuggestions] = React.useState<string[]>([]);
@@ -141,7 +132,7 @@ function AddressCell({ value, onChange }: { value: string, onChange: (val: strin
     );
 }
 
-export default function CompaniesPage() {
+export default function TemplatesPage() {
     const router = useRouter();
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
@@ -149,25 +140,25 @@ export default function CompaniesPage() {
 
     // --- Table Config ---
     const tableConfig = useTableConfig({
-        tableId: 'companies-updated',
+        tableId: 'templates-data-table',
         defaultColumns: defaultColumns
     });
 
     const [tableData, setTableData] = React.useState<any[]>(() => {
         return Array.from({ length: 50 }).map((_, i) => ({
-            id: `COM${(10000000 + i).toString()}`,
-            name: i < 5 ? ['Acme Corp', 'Globex Corporation', 'Soylent Corp', 'Initech', 'Umbrella Corp'][i] : `Company ${i + 1}`,
+            id: `TMP${(10000000 + i).toString()}`,
+            name: i < 5 ? ['Template A', 'Template B', 'Template C', 'Template D', 'Template E'][i] : `Template ${i + 1}`,
             owner: i < 5 ? ['John Doe', 'Jane Smith', 'Harry Green', 'Peter Gibbons', 'Albert Wesker'][i] : `Owner ${i + 1}`,
-            industry: i < 5 ? ['Technology', 'Manufacturing', 'Food & Beverage', 'Software', 'Pharmaceuticals'][i] : 'Technology',
-            website: `www.company${i + 1}.com`,
+            industry: 'Technology',
+            website: `www.template${i + 1}.com`,
             services: ['Service A', 'Service B'],
-            email: `contact@company${i + 1}.com`,
+            email: `contact@template${i + 1}.com`,
             phone: `+1 555-01${(i + 1).toString().padStart(2, '0')}`,
             address: `${i * 10} Market St, City, ST`,
             createdBy: 'System',
             createdAt: '01/01/2023',
-            editedBy: '',
-            editedAt: ''
+            editedBy: 'Admin',
+            editedAt: '01/05/2023'
         }));
     });
 
@@ -206,7 +197,6 @@ export default function CompaniesPage() {
             setSelectedRows(new Set());
         } else if (deleteConfirm.type === 'single' && deleteConfirm.id) {
             setTableData(prev => prev.filter(row => row.id !== deleteConfirm.id));
-            // Also unselect it if it was selected
             if (selectedRows.has(deleteConfirm.id)) {
                 const newSelected = new Set(selectedRows);
                 newSelected.delete(deleteConfirm.id);
@@ -238,7 +228,6 @@ export default function CompaniesPage() {
                     const itemValue = String(item[rule.columnId as keyof typeof item] || '').toLowerCase();
                     const filterValue = rule.value.toLowerCase();
 
-                    // If no column selected, ignore rule (or treat as true)
                     if (!rule.columnId) return true;
 
                     switch (rule.operator) {
@@ -268,11 +257,11 @@ export default function CompaniesPage() {
 
     // --- Split View State ---
     const [isDetailViewOpen, setIsDetailViewOpen] = React.useState(false);
-    const [showDetailCard, setShowDetailCard] = React.useState(false); // Toggle state for Row Click behavior
+    const [showDetailCard, setShowDetailCard] = React.useState(false);
 
     // Load persisted setting
     React.useEffect(() => {
-        const saved = localStorage.getItem('companies_showDetailCard');
+        const saved = localStorage.getItem('templates_showDetailCard');
         if (saved !== null) {
             setShowDetailCard(JSON.parse(saved));
         }
@@ -318,12 +307,14 @@ export default function CompaniesPage() {
 
     const handleRowClick = (item: any) => {
         if (showDetailCard) {
-            // View Mode: OPEN CARD
             setActiveCompanyId(item.id);
             setIsDetailViewOpen(true);
         } else {
-            // View Mode: NAVIGATE (Default)
-            router.push(`/companies/company-detail?id=${item.id}`);
+            // Default navigate or just select
+            // router.push(`/companies/company-detail?id=${item.id}`);
+            // Since we don't have a template-detail page yet, we'll force Detail Card mode or do nothing
+            setActiveCompanyId(item.id);
+            setIsDetailViewOpen(true);
         }
     };
 
@@ -342,145 +333,6 @@ export default function CompaniesPage() {
                         onClick={(e) => e.stopPropagation()}
                     />
                 </div>
-            ),
-            id: (item: any) => <span className="font-mono text-xs text-slate-500">{item.id}</span>,
-            name: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.name}
-                        onChange={(e) => handleCellChange(item.id, 'name', e.target.value)}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <div className="flex items-center gap-2">
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
-                    </div>
-                )
-            ),
-            owner: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.owner}
-                        onChange={(e) => handleCellChange(item.id, 'owner', e.target.value)}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <span className="text-slate-600 dark:text-slate-400">{item.owner}</span>
-                )
-            ),
-            industry: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.industry}
-                        onChange={(e) => handleCellChange(item.id, 'industry', e.target.value)}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <Badge
-                        variant="secondary"
-                        className="font-normal rounded-full px-3"
-                        style={{
-                            backgroundColor: tableConfig.config?.columns['industry']?.badgeStyle?.backgroundColor || '#f1f5f9', // slate-100
-                            color: tableConfig.config?.columns['industry']?.badgeStyle?.textColor || '#334155', // slate-700
-                            fontSize: tableConfig.config?.columns['industry']?.badgeStyle?.textSize === 'xs' ? '0.75rem' : tableConfig.config?.columns['industry']?.badgeStyle?.textSize === 'sm' ? '0.875rem' : '1rem',
-                            fontWeight: tableConfig.config?.columns['industry']?.badgeStyle?.fontWeight || 'normal',
-                            fontFamily: tableConfig.config?.columns['industry']?.badgeStyle?.fontFamily
-                        }}
-                    >
-                        {item.industry}
-                    </Badge >
-                )
-            ),
-            website: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.website}
-                        onChange={(e) => handleCellChange(item.id, 'website', e.target.value)}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <a href={`https://${item.website}`} className="text-blue-600 hover:underline" onClick={e => e.stopPropagation()}>{item.website}</a>
-                )
-            ),
-            services: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.services?.join(', ') || ''}
-                        onChange={(e) => handleCellChange(item.id, 'services', e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean))}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <div className="flex gap-1 flex-wrap" style={{ justifyContent: tableConfig.config?.columns['services']?.badgeStyle?.alignment === 'center' ? 'center' : tableConfig.config?.columns['services']?.badgeStyle?.alignment === 'right' ? 'flex-end' : 'flex-start' }}>
-                        {item.services?.map((s: string, i: number) => (
-                            <Badge
-                                key={i}
-                                variant="secondary"
-                                className="font-normal rounded-full transition-colors"
-                                style={{
-                                    backgroundColor: tableConfig.config?.columns['services']?.badgeStyle?.backgroundColor || '#e0e7ff',
-                                    color: tableConfig.config?.columns['services']?.badgeStyle?.textColor || '#4338ca', // Fallback to indigo-700
-                                    fontSize: tableConfig.config?.columns['services']?.badgeStyle?.textSize === 'xs' ? '0.75rem' : tableConfig.config?.columns['services']?.badgeStyle?.textSize === 'sm' ? '0.875rem' : '1rem',
-                                    fontWeight: tableConfig.config?.columns['services']?.badgeStyle?.fontWeight || 'normal',
-                                    fontFamily: tableConfig.config?.columns['services']?.badgeStyle?.fontFamily
-                                }}
-                            >
-                                {s}
-                            </Badge>
-                        ))}
-                    </div>
-                )
-            ),
-            email: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.email}
-                        onChange={(e) => handleCellChange(item.id, 'email', e.target.value)}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <div className="flex items-center gap-1.5 text-blue-600">
-                        <a href={`mailto:${item.email}`} onClick={e => e.stopPropagation()} className="hover:underline">{item.email}</a>
-                    </div>
-                )
-            ),
-            phone: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.phone}
-                        onChange={(e) => {
-                            // Phone formatting: (xxx) xxx-xxxx or xxx-xxx-xxxx
-                            // User asked for xxx-xxx-xxxx
-                            let val = e.target.value.replace(/\D/g, '');
-                            if (val.length > 10) val = val.slice(0, 10);
-                            if (val.length > 6) val = `${val.slice(0, 3)}-${val.slice(3, 6)}-${val.slice(6)}`;
-                            else if (val.length > 3) val = `${val.slice(0, 3)}-${val.slice(3)}`;
-                            handleCellChange(item.id, 'phone', val);
-                        }}
-                        className="h-8"
-                        placeholder="xxx-xxx-xxxx"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <span className="text-slate-500">{item.phone}</span>
-                )
-            ),
-            address: (item: any) => (
-                isQuickEditMode ? (
-                    <Input
-                        value={item.address}
-                        onChange={(e) => handleCellChange(item.id, 'address', e.target.value)}
-                        className="h-8"
-                        onClick={(e) => e.stopPropagation()}
-                    />
-                ) : (
-                    <span className="text-slate-500">{item.address}</span>
-                )
             ),
             createdBy: (item: any) => <span className="text-slate-500">{item.createdBy}</span>,
             createdAt: (item: any) => <span className="text-slate-500">{item.createdAt}</span>,
@@ -508,7 +360,7 @@ export default function CompaniesPage() {
                             className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
                         >
                             <DropdownMenuItem
-                                onClick={() => router.push(`/companies/company-detail?id=${item.id}`)}
+                                onClick={() => { setActiveCompanyId(item.id); setIsDetailViewOpen(true); }}
                                 className="cursor-pointer"
                             >
                                 <Eye className="w-4 h-4 mr-2" />
@@ -522,219 +374,18 @@ export default function CompaniesPage() {
                     </DropdownMenu>
                 </div>
             ),
+            // Minimal fallbacks for other columns if user adds them back via config
+            id: (item: any) => <span className="font-mono text-xs text-slate-500">{item.id}</span>,
+            name: (item: any) => <span className="font-medium text-slate-900 dark:text-slate-100">{item.name}</span>,
         };
 
         // Add Custom Columns
         if (tableConfig.config?.columns) {
             Object.values(tableConfig.config.columns).forEach((col) => {
-                // If column exists in config but not in baseColumns, it's a custom column
                 if (!baseColumns[col.id]) {
                     baseColumns[col.id] = (item: any) => {
                         const val = item[col.id];
-
-                        // --- EDIT MODE ---
-                        if (isQuickEditMode) {
-                            // Badge with Options -> Treat like Select
-                            if ((col.type === 'select' || col.type === 'badge') && col.dropdownOptions && col.dropdownOptions.length > 0) {
-                                if (col.isMultiSelect) {
-                                    return (
-                                        <MultiSelect
-                                            options={col.dropdownOptions}
-                                            value={Array.isArray(val) ? val : (val ? [String(val)] : [])}
-                                            onChange={(newValue) => handleCellChange(item.id, col.id, newValue)}
-                                            badgeStyle={{
-                                                backgroundColor: col.badgeStyle?.backgroundColor || '#f1f5f9',
-                                                color: col.badgeStyle?.textColor || '#334155',
-                                                fontSize: col.badgeStyle?.textSize === 'xs' ? '0.75rem' : col.badgeStyle?.textSize === 'sm' ? '0.875rem' : '1rem',
-                                                fontWeight: col.badgeStyle?.fontWeight || 'normal',
-                                                fontFamily: col.badgeStyle?.fontFamily
-                                            }}
-                                        />
-                                    );
-                                }
-
-                                return (
-                                    <Select
-                                        value={val || ''}
-                                        onValueChange={(newValue) => handleCellChange(item.id, col.id, newValue)}
-                                    >
-                                        <SelectTrigger className="h-8 min-w-[120px]">
-                                            <SelectValue placeholder="Select..." />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {col.dropdownOptions.map((opt: string) => (
-                                                <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                );
-                            }
-
-                            if (col.type === 'address') {
-                                return (
-                                    <AddressCell
-                                        value={val || ''}
-                                        onChange={(newVal) => handleCellChange(item.id, col.id, newVal)}
-                                    />
-                                );
-                            }
-
-                            if (col.type === 'phone') {
-                                return (
-                                    <Input
-                                        value={val || ''}
-                                        onChange={(e) => {
-                                            let v = e.target.value.replace(/\D/g, '');
-                                            if (v.length > 10) v = v.slice(0, 10);
-                                            if (v.length > 6) v = `${v.slice(0, 3)}-${v.slice(3, 6)}-${v.slice(6)}`;
-                                            else if (v.length > 3) v = `${v.slice(0, 3)}-${v.slice(3)}`;
-                                            handleCellChange(item.id, col.id, v);
-                                        }}
-                                        className="h-8 min-w-[100px]"
-                                        placeholder="xxx-xxx-xxxx"
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                );
-                            }
-
-                            if (col.type === 'date') {
-                                // Ensure value is YYYY-MM-DD for input type="date"
-                                // If mock data is MM/DD/YYYY, we need to convert it.
-                                // Assuming mock data might be dynamic, safe parsing is needed.
-                                const rawVal = val ? String(val) : '';
-                                let dateVal = rawVal;
-
-                                // Simple check if it looks like MM/DD or MM/DD/YYYY and convert to YYYY-MM-DD
-                                if (rawVal.includes('/')) {
-                                    const parts = rawVal.split('/');
-                                    if (parts.length === 2) {
-                                        // MM/DD -> assume current year
-                                        const date = new Date();
-                                        dateVal = `${date.getFullYear()}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
-                                    } else if (parts.length === 3) {
-                                        // MM/DD/YYYY -> YYYY-MM-DD
-                                        dateVal = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
-                                    }
-                                }
-
-                                return (
-                                    <div className="relative w-full h-8" onClick={(e) => {
-                                        e.stopPropagation();
-                                        const input = e.currentTarget.querySelector('input');
-                                        if (input) {
-                                            try {
-                                                if (input.showPicker) input.showPicker();
-                                                else input.focus();
-                                            } catch (err) { input.focus(); }
-                                        }
-                                    }}>
-                                        <Input
-                                            type="date"
-                                            value={dateVal}
-                                            onChange={(e) => handleCellChange(item.id, col.id, e.target.value)}
-                                            className="h-8 min-w-[100px] w-full cursor-pointer"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                // Try to force picker again on direct click
-                                                try {
-                                                    if (e.currentTarget.showPicker) e.currentTarget.showPicker();
-                                                } catch (e) { }
-                                            }}
-                                        />
-                                    </div>
-                                );
-                            }
-
-                            if (col.type === 'currency') {
-                                return (
-                                    <Input
-                                        value={val || ''}
-                                        onChange={(e) => {
-                                            // Allow only numbers and decimals
-                                            const v = e.target.value;
-                                            if (/^[\d\.,$]*$/.test(v)) {
-                                                handleCellChange(item.id, col.id, v);
-                                            }
-                                        }}
-                                        onBlur={(e) => {
-                                            // Format on blur
-                                            const raw = e.target.value.replace(/[^0-9.]/g, '');
-                                            if (raw) {
-                                                const formatted = Number(raw).toLocaleString('en-US', {
-                                                    style: 'currency',
-                                                    currency: 'USD',
-                                                    minimumFractionDigits: 2
-                                                });
-                                                handleCellChange(item.id, col.id, formatted);
-                                            }
-                                        }}
-                                        className="h-8 min-w-[100px]"
-                                        placeholder="$0.00"
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                );
-                            }
-
-                            return (
-                                <Input
-                                    value={val || ''}
-                                    onChange={(e) => handleCellChange(item.id, col.id, e.target.value)}
-                                    className="h-8 min-w-[100px]"
-                                    onClick={(e) => e.stopPropagation()}
-                                />
-                            );
-                        }
-
-                        // --- VIEW MODE ---
                         if (!val && val !== 0) return <span className="text-slate-400 italic text-xs">Empty</span>;
-
-                        if (col.type === 'badge' || (col.type === 'select' && col.displayStyle === 'badge')) {
-                            const badgeStyle = {
-                                backgroundColor: col.badgeStyle?.backgroundColor || '#f1f5f9',
-                                color: col.badgeStyle?.textColor || '#334155',
-                                fontSize: col.badgeStyle?.textSize === 'xs' ? '0.75rem' : col.badgeStyle?.textSize === 'sm' ? '0.875rem' : '1rem',
-                                fontWeight: col.badgeStyle?.fontWeight || 'normal',
-                                fontFamily: col.badgeStyle?.fontFamily
-                            };
-
-                            if (Array.isArray(val)) {
-                                return (
-                                    <div className="flex gap-1 flex-wrap">
-                                        {val.map((v, i) => (
-                                            <Badge
-                                                key={i}
-                                                variant="secondary"
-                                                className="font-normal rounded-full px-3"
-                                                style={badgeStyle}
-                                            >
-                                                {v}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                );
-                            }
-
-                            return (
-                                <Badge
-                                    variant="secondary"
-                                    className="font-normal rounded-full px-3"
-                                    style={badgeStyle}
-                                >
-                                    {val}
-                                </Badge>
-                            );
-                        }
-
-                        if (col.type === 'currency') {
-                            // Fix: Remove any non-numeric chars before formatting to ensure cleanliness, though val should be saved formatted.
-                            // If val is "100", render "$100.00".
-                            // If val is "$100.00", render as is or re-parse.
-                            const numericVal = typeof val === 'string' ? parseFloat(val.replace(/[^0-9.-]+/g, "")) : Number(val);
-                            return <span className="text-slate-900 dark:text-slate-100 font-mono text-xs">
-                                {isNaN(numericVal) ? val : numericVal.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })}
-                            </span>;
-                        }
-
                         return <span className="text-slate-600 dark:text-slate-400">{val}</span>;
                     };
                 }
@@ -752,20 +403,19 @@ export default function CompaniesPage() {
     const [editingCompany, setEditingCompany] = React.useState<any>(null);
 
     const handleSaveCompany = (companyData: any) => {
-        // Map form data to table row format if needed
         const newEntry = {
             id: companyData.id,
             name: companyData.name,
             owner: companyData.owner,
             industry: companyData.industry,
             website: companyData.website,
-            services: companyData.services, // Array
+            services: companyData.services,
             email: companyData.emails?.[0]?.value || '',
             phone: companyData.phones?.[0]?.value || '',
             address: companyData.addresses?.[0]?.value || '',
             createdBy: 'System',
             createdAt: new Date().toLocaleDateString(),
-            editedBy: 'System', // Could be current user
+            editedBy: 'System',
             editedAt: new Date().toLocaleDateString(),
         };
 
@@ -790,19 +440,13 @@ export default function CompaniesPage() {
                 skipEmptyLines: true,
                 complete: (results) => {
                     const parsedData = results.data.map((row: any, index) => ({
-                        id: row.id || row.ID || index + 1,
-                        name: row.name || row.Name || row['Company Name'],
-                        owner: row.owner || row.Owner,
-                        industry: row.industry || row.Industry,
-                        website: row.website || row.Website,
-                        services: row.services ? row.services.split(',') : (row.Services ? row.Services.split(',') : []),
-                        email: row.email || row.Email,
-                        phone: row.phone || row.Phone,
-                        address: row.address || row.Address,
-                        createdBy: row.createdBy || 'System',
-                        createdAt: row.createdAt || new Date().toLocaleDateString(),
-                        editedBy: row.editedBy || '',
-                        editedAt: row.editedAt || ''
+                        // ... simplistic parsing
+                        id: row.id || index + 1,
+                        name: row.name || 'Imported',
+                        createdBy: 'System',
+                        createdAt: new Date().toLocaleDateString(),
+                        editedBy: '',
+                        editedAt: ''
                     }));
 
                     setTableData(prev => [...prev, ...parsedData]);
@@ -824,7 +468,7 @@ export default function CompaniesPage() {
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', 'companies_export.csv');
+            link.setAttribute('download', 'templates_export.csv');
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -861,7 +505,7 @@ export default function CompaniesPage() {
         const handleFocus = (e: any) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)');
         const handleBlur = (e: any) => (e.currentTarget.style.backgroundColor = 'transparent');
 
-        // Set Header Actions (Add Company Button & Delete Button)
+        // Set Header Actions
         setHeaderActions(
             <div className="flex items-center gap-2">
                 {selectedRows.size > 0 && (
@@ -870,7 +514,6 @@ export default function CompaniesPage() {
                     </Button>
                 )}
 
-                {/* Clear Filter Button */}
                 {filterRules.length > 0 && (
                     <Button
                         variant="tertiary"
@@ -898,10 +541,9 @@ export default function CompaniesPage() {
                     setEditingCompany(undefined);
                     setIsAddCompanyOpen(true);
                 }}>
-                    Add Company
+                    Add Item
                 </Button>
 
-                {/* Filter Button (Action) */}
                 <Button variant="action" icon={Filter} onClick={() => setIsFilterOpen(true)}>
                     Filter
                 </Button>
@@ -920,9 +562,8 @@ export default function CompaniesPage() {
                     onClick={() => {
                         const newState = !showDetailCard;
                         setShowDetailCard(newState);
-                        localStorage.setItem('companies_showDetailCard', JSON.stringify(newState));
-                        // If turning ON, we might want to open the view if a company is active, but let's just toggle the mode.
-                        if (!newState) setIsDetailViewOpen(false); // Close if turning off? Optional.
+                        localStorage.setItem('templates_showDetailCard', JSON.stringify(newState));
+                        if (!newState) setIsDetailViewOpen(false);
                     }}
                 >
                     <CreditCard className="w-4 h-4 mr-2" style={iconStyle} />
@@ -975,19 +616,10 @@ export default function CompaniesPage() {
 
     // Extract column options for the filter
     const filterColumns = useMemo(() => [
-        { id: 'name', label: 'Company Name' },
-        { id: 'email', label: 'Contact Email' },
-        { id: 'phone', label: 'Phone' },
-        { id: 'website', label: 'Website' },
-        { id: 'address', label: 'Address' },
-        { id: 'owner', label: 'Owner' },
-        { id: 'industry', label: 'Industry' },
+        { id: 'createdBy', label: 'Created By' },
+        { id: 'editedBy', label: 'Edited By' },
+        { id: 'name', label: 'Name' } // Include name in filters just in case
     ], []);
-
-    // Ensure menu item updates when state changes
-    React.useEffect(() => {
-        // This effect re-triggers the menu update when showDetailCard changes
-    }, [showDetailCard]);
 
     return (
         <div className="h-full flex flex-col gap-4">
@@ -1008,17 +640,12 @@ export default function CompaniesPage() {
                         className="relative bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 z-20 flex"
                         style={{ width: `${panelWidth}px`, transition: isResizing ? 'none' : 'width 0.3s ease' }}
                     >
-                        {/* Divider Handle */}
                         <div
                             className="w-1.5 h-full bg-slate-200 dark:bg-slate-700 hover:bg-blue-400 dark:hover:bg-blue-600 cursor-ew-resize flex items-center justify-center shrink-0 transition-colors z-30"
                             onMouseDown={startResizing}
-                        >
-                            {/* Visual Handle Grip (Optional, minimal look requested) */}
-                        </div>
+                        />
 
-                        {/* Panel Content - Classic Clean (Flush) */}
                         <div className="flex-1 flex flex-col overflow-hidden relative bg-white dark:bg-slate-900">
-                            {/* Sticky Header */}
                             {activeCompany && (
                                 <div className="shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
                                     <AboutCardHeader company={activeCompany} />
@@ -1047,10 +674,10 @@ export default function CompaniesPage() {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-center text-slate-500 py-20">Select a company to view details</div>
+                                    <div className="text-center text-slate-500 py-20">Select an item to view details</div>
                                 )}
                             </div>
-                        </div>     {/* Footer Action Removed as per request */}
+                        </div>
                     </div>
                 )}
             </div>
@@ -1093,8 +720,8 @@ export default function CompaniesPage() {
                         <DialogTitle>Confirm Deletion</DialogTitle>
                         <DialogDescription>
                             {deleteConfirm.type === 'bulk'
-                                ? `Are you sure you want to delete ${selectedRows.size} selected companies? This action cannot be undone.`
-                                : `Are you sure you want to delete "${deleteConfirm.name}"? This action cannot be undone.`
+                                ? `Are you sure you want to delete ${selectedRows.size} selected items?`
+                                : `Are you sure you want to delete "${deleteConfirm.name}"?`
                             }
                         </DialogDescription>
                     </DialogHeader>

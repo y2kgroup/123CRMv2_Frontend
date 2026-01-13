@@ -40,7 +40,7 @@ export function HorizontalNav() {
                     (activeTheme.horizontalNav as any).menuAlignment === 'right' ? "justify-end" :
                         "justify-center"
             )}>
-                {navItems.map((item: any) => {
+                {navItems.map((item: any, index: number) => {
                     const hasChildren = item.children && item.children.length > 0;
                     const isChildActive = item.children?.some((child: any) => pathname === child.href);
                     const isActive = pathname === item.href || isChildActive;
@@ -51,7 +51,7 @@ export function HorizontalNav() {
                     if (hasChildren) {
                         return (
                             <NavDropdownItem
-                                key={item.id || item.href}
+                                key={`${item.id || item.href}-${index}`}
                                 item={item}
                                 activeTheme={activeTheme}
                                 pathname={pathname}
@@ -77,7 +77,7 @@ export function HorizontalNav() {
 
                     return (
                         <Link
-                            key={item.id || item.href}
+                            key={`${item.id || item.href}-${index}`}
                             href={item.href}
                             onClick={(e) => handleNavigation(e, item.href)}
                             style={itemStyle}

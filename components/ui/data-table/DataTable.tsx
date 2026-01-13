@@ -64,18 +64,36 @@ export function DataTable<T extends { id: string | number }>({
                             {visibleColumns.map((column) => (
                                 <TableHead
                                     key={column.id}
-                                    style={{ width: column.width }}
+                                    style={{
+                                        width: column.width,
+                                        backgroundColor: tableConfig.headerStyle?.backgroundColor,
+                                        color: tableConfig.headerStyle?.textColor,
+                                        fontFamily: tableConfig.headerStyle?.fontFamily
+                                    }}
                                     className={cn(
-                                        "whitespace-nowrap transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer select-none sticky top-0 z-10 bg-slate-50 dark:bg-slate-800 shadow-sm",
-                                        column.style.alignment === 'center' && "text-center",
-                                        column.style.alignment === 'right' && "text-right",
+                                        "whitespace-nowrap transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer select-none sticky top-0 z-10 shadow-sm",
+                                        // Global Header Alignment
+                                        tableConfig.headerStyle?.alignment === 'center' && "text-center",
+                                        tableConfig.headerStyle?.alignment === 'right' && "text-right",
+                                        // Global Header Text Size
+                                        tableConfig.headerStyle?.textSize === 'xs' && "text-xs",
+                                        tableConfig.headerStyle?.textSize === 'sm' && "text-sm",
+                                        tableConfig.headerStyle?.textSize === 'base' && "text-base",
+                                        // Global Header Font Weight
+                                        tableConfig.headerStyle?.fontWeight === 'normal' && "font-normal",
+                                        tableConfig.headerStyle?.fontWeight === 'medium' && "font-medium",
+                                        tableConfig.headerStyle?.fontWeight === 'semibold' && "font-semibold",
+                                        tableConfig.headerStyle?.fontWeight === 'bold' && "font-bold",
+                                        // Default background if not set
+                                        !tableConfig.headerStyle?.backgroundColor && "bg-slate-50 dark:bg-slate-800"
                                     )}
                                     onClick={() => handleSort(column.id)}
                                 >
                                     <div className={cn(
                                         "flex items-center gap-1",
-                                        column.style.alignment === 'center' && "justify-center",
-                                        column.style.alignment === 'right' && "justify-end",
+                                        // Inner Flex Alignment
+                                        tableConfig.headerStyle?.alignment === 'center' && "justify-center",
+                                        tableConfig.headerStyle?.alignment === 'right' && "justify-end",
                                     )}>
                                         {column.id === 'select' ? (
                                             <div onClick={(e) => e.stopPropagation()}>
@@ -120,13 +138,24 @@ export function DataTable<T extends { id: string | number }>({
                                             key={column.id}
                                             className={cn(
                                                 "border-b border-slate-100 dark:border-slate-800",
-                                                column.style.alignment === 'center' && "text-center",
-                                                column.style.alignment === 'right' && "text-right",
-                                                column.style.textSize === 'xs' && "text-xs",
-                                                column.style.textSize === 'sm' && "text-sm",
-                                                column.style.textSize === 'base' && "text-base",
+                                                // Global Row Alignment
+                                                tableConfig.rowStyle?.alignment === 'center' && "text-center",
+                                                tableConfig.rowStyle?.alignment === 'right' && "text-right",
+                                                // Global Row Text Size
+                                                tableConfig.rowStyle?.textSize === 'xs' && "text-xs",
+                                                tableConfig.rowStyle?.textSize === 'sm' && "text-sm",
+                                                tableConfig.rowStyle?.textSize === 'base' && "text-base",
+                                                // Global Row Font Weight
+                                                tableConfig.rowStyle?.fontWeight === 'normal' && "font-normal",
+                                                tableConfig.rowStyle?.fontWeight === 'medium' && "font-medium",
+                                                tableConfig.rowStyle?.fontWeight === 'semibold' && "font-semibold",
+                                                tableConfig.rowStyle?.fontWeight === 'bold' && "font-bold",
                                             )}
-                                            style={{ color: column.style.textColor }}
+                                            style={{
+                                                color: tableConfig.rowStyle?.textColor,
+                                                backgroundColor: tableConfig.rowStyle?.backgroundColor,
+                                                fontFamily: tableConfig.rowStyle?.fontFamily
+                                            }}
                                         >
                                             {columns[column.id] ? columns[column.id](row) : null}
                                         </TableCell>

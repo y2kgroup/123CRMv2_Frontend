@@ -12,7 +12,7 @@ export function ActionBar() {
     return (
         <div
             className={cn(
-                "sticky z-10 pt-6 px-6 pb-6 bg-[var(--page-bg)] transition-colors",
+                "sticky z-10 py-0 px-6 bg-[var(--page-bg)] transition-colors",
                 layoutMode === 'horizontal' ? "top-[120px]" : "top-[70px]"
             )}
         >

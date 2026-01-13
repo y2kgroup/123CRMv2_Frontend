@@ -3,10 +3,16 @@
 import { usePathname } from 'next/navigation';
 import { navItems } from '@/config/navigation';
 import { ChevronRight } from 'lucide-react';
+import { useLayout } from './LayoutContext';
 import { Fragment } from 'react';
 
 export function PageHeading() {
     const pathname = usePathname();
+    const { pageHeadingContent } = useLayout();
+
+    if (pageHeadingContent) {
+        return <>{pageHeadingContent}</>;
+    }
 
     let activeItem: any = navItems[0];
     let breadcrumbs: string[] = [navItems[0].label];

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Plus, FolderPlus } from "lucide-react";
+import { Plus, FolderPlus, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createPage, getAvailablePages } from "@/app/actions/page-management";
+import { createPage, createModule, getModules, getAvailablePages } from "@/app/actions/page-management";
 
 // Available icons
 // Duplicated from SettingsPage for now to allow extraction
@@ -54,114 +54,137 @@ interface PageCreatorProps {
 }
 
 export function PageCreator({ items, onAdd }: PageCreatorProps) {
-    const [mode, setMode] = useState<'create' | 'existing'>('create');
-    const [title, setTitle] = useState('');
-    const [path, setPath] = useState('');
-    const [parent, setParent] = useState('');
+    // mode: 'module' = Create New Module (Tab 1) | 'page' = Add Page to Module (Tab 2)
+    const [mode, setMode] = useState<'module' | 'page'>('module');
+
+    // Module Creation State
+    const [moduleName, setModuleName] = useState('');
+
+    // Page Creation State
+    const [pageTitle, setPageTitle] = useState('');
+    const [selectedModule, setSelectedModule] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // New: Existing Page State
+    const [creationType, setCreationType] = useState<'new' | 'existing'>('new');
     const [existingPages, setExistingPages] = useState<string[]>([]);
-    const [selectedPage, setSelectedPage] = useState('');
-    const [existingLabel, setExistingLabel] = useState('');
-    const [selectedIconName, setSelectedIconName] = useState('FileText');
+    const [selectedExistingPage, setSelectedExistingPage] = useState(''); // href
+
+    // Helper Data
+    const [availableModules, setAvailableModules] = useState<string[]>([]);
+    const [selectedIconName, setSelectedIconName] = useState('FileText'); // For Module creation
+
+    // Fetch modules and pages when switching to Page mode or on mount
+    const fetchHelpers = async () => {
+        const modRes = await getModules();
+        if (modRes.success && modRes.modules) {
+            setAvailableModules(modRes.modules);
+        }
+
+        const pageRes = await getAvailablePages();
+        if (pageRes.success && pageRes.pages) {
+            setExistingPages(pageRes.pages);
+        }
+    };
 
     useEffect(() => {
-        if (mode === 'existing') {
-            getAvailablePages().then(res => {
-                if (res.success && res.pages) {
-                    setExistingPages(res.pages);
-                }
-            });
-        }
+        fetchHelpers();
     }, [mode]);
 
-    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        setTitle(val);
-        setPath(val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''));
-    };
-
-    // Helper to find label by href for the onAdd callback
-    const findLabelByHref = (items: any[], href: string): string | null => {
-        for (const item of items) {
-            if (item.href === href) return item.label;
-            if (item.children) {
-                const found = findLabelByHref(item.children, href);
-                if (found) return found;
-            }
-        }
-        return null;
-    };
-
-    const handleCreateSubmit = async (e: React.FormEvent) => {
+    // --- Tab 1: Create Module ---
+    const handleCreateModule = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title || !path) return;
+        if (!moduleName) return;
         setLoading(true);
 
         try {
-            let finalPath = path;
-            let fullHref = `/${path}`;
-            let parentLabel = undefined;
-
-            if (parent) {
-                // Parent is now the HREF of the parent
-                // Remove leading slash for file creation logic if present
-                const cleanParentPath = parent.startsWith('/') ? parent.slice(1) : parent;
-                finalPath = `${cleanParentPath}/${path}`;
-
-                // Ensure parent href handling for the new item's href
-                const parentHrefPrefix = parent.startsWith('/') ? parent : `/${parent}`;
-                fullHref = `${parentHrefPrefix}/${path}`;
-
-                // Find label for menu nesting
-                const foundLabel = findLabelByHref(items, parent);
-                if (foundLabel) parentLabel = foundLabel;
-            }
-
-            const res = await createPage(finalPath, title);
+            const res = await createModule(moduleName);
             if (res.success) {
-                onAdd({ label: title, href: fullHref, iconName: selectedIconName }, parentLabel);
-                setTitle('');
-                setPath('');
-                setParent('');
+                // Determine HREF for module (folder path)
+                const sanitized = moduleName.toLowerCase().replace(/[^a-z0-9\-]/g, '');
+                const href = `/${sanitized}`;
+
+                onAdd({ label: moduleName, href: href, iconName: selectedIconName });
+                setModuleName('');
                 setSelectedIconName('FileText');
-                alert('Page created successfully!');
+                alert('Module created and added to menu!');
+                fetchHelpers(); // Refresh list
             } else {
                 alert(res.message);
             }
         } catch (err) {
             console.error(err);
-            alert('Failed to create page');
+            alert('Failed to create module');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleExistingSubmit = (e: React.FormEvent) => {
+    // --- Tab 2: Add Page to Module ---
+    const handleAddPageToModule = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedPage || !existingLabel) return;
 
-        let parentLabel = undefined;
-        if (parent) {
-            const foundLabel = findLabelByHref(items, parent);
-            if (foundLabel) parentLabel = foundLabel;
-        }
+        // Validation based on type
+        if (!selectedModule) return;
+        if (creationType === 'new' && !pageTitle) return;
+        if (creationType === 'existing' && (!selectedExistingPage || !pageTitle)) return; // pageTitle acts as Label here
 
-        onAdd({ label: existingLabel, href: selectedPage, iconName: selectedIconName }, parentLabel);
-        setExistingLabel('');
-        setSelectedPage('');
-        setParent('');
-        setSelectedIconName('FileText');
-        alert('Existing page added to menu!');
-    };
+        setLoading(true);
 
-    const renderOptionsWithValues = (opts: any[], prefix = '') => {
-        return opts.reduce((acc: any[], item: any) => {
-            acc.push(<option key={item.href} value={item.href}>{prefix + item.label}</option>);
-            if (item.children) {
-                acc.push(...renderOptionsWithValues(item.children, prefix + '\u00A0\u00A0\u00A0'));
+        try {
+            let fullHref = '';
+
+            if (creationType === 'new') {
+                // Path: module/page-name
+                const pageSlug = pageTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                const fullPath = `${selectedModule}/${pageSlug}`;
+                fullHref = `/${fullPath}`;
+
+                // Create File
+                const res = await createPage(fullPath, pageTitle, 'default');
+                if (!res.success) {
+                    alert(res.message);
+                    setLoading(false);
+                    return;
+                }
+            } else {
+                // Existing Page
+                fullHref = selectedExistingPage;
+                // No file creation needed
             }
-            return acc;
-        }, []);
+
+            // Parent is the Module Label.
+            const moduleHref = `/${selectedModule}`;
+
+            // Helper to find label in items tree
+            const findLabel = (list: any[]): string | undefined => {
+                for (const item of list) {
+                    if (item.href === moduleHref || item.label.toLowerCase() === selectedModule.toLowerCase()) return item.label;
+                    if (item.children) {
+                        const found = findLabel(item.children);
+                        if (found) return found;
+                    }
+                }
+                return undefined;
+            };
+
+            const parentLabel = findLabel(items) || selectedModule;
+
+            onAdd({ label: pageTitle, href: fullHref, iconName: 'FileText' }, parentLabel);
+
+            // Reset
+            setPageTitle('');
+            setSelectedExistingPage('');
+            setCreationType('new'); // Reset to default
+
+            alert(creationType === 'new' ? 'Page created and added to module!' : 'Existing page added to module!');
+
+        } catch (err) {
+            console.error(err);
+            alert('Failed to add page');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -169,109 +192,142 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
             <div className="flex gap-6 border-b border-gray-200 dark:border-gray-700 mb-6">
                 <button
                     type="button"
-                    onClick={() => setMode('create')}
-                    className={cn("flex items-center gap-2 pb-2 border-b-2 text-sm font-medium transition-colors", mode === 'create' ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700")}
+                    onClick={() => setMode('module')}
+                    className={cn("flex items-center gap-2 pb-2 border-b-2 text-sm font-medium transition-colors", mode === 'module' ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700")}
                 >
-                    <Plus className="w-4 h-4" /> Create New Page
+                    <FolderPlus className="w-4 h-4" /> Create New Module
                 </button>
                 <button
                     type="button"
-                    onClick={() => setMode('existing')}
-                    className={cn("flex items-center gap-2 pb-2 border-b-2 text-sm font-medium transition-colors", mode === 'existing' ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700")}
+                    onClick={() => setMode('page')}
+                    className={cn("flex items-center gap-2 pb-2 border-b-2 text-sm font-medium transition-colors", mode === 'page' ? "border-blue-500 text-blue-600 dark:text-blue-400" : "border-transparent text-gray-500 hover:text-gray-700")}
                 >
-                    <FolderPlus className="w-4 h-4" /> Add Existing Page
+                    <Plus className="w-4 h-4" /> Add/Edit Page to Module
                 </button>
             </div>
 
-            {mode === 'create' ? (
-                <form onSubmit={handleCreateSubmit} className="space-y-4">
+            {mode === 'module' ? (
+                <form onSubmit={handleCreateModule} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">Page Title</label>
-                            <input type="text" placeholder="e.g. About Us" value={title} onChange={handleTitleChange} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500" />
+                        <div className="space-y-1 lg:col-span-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-400">Module Name</label>
+                            <input
+                                type="text"
+                                placeholder="e.g. Demo"
+                                value={moduleName}
+                                onChange={e => setModuleName(e.target.value)}
+                                className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                            />
+                            <p className="text-[10px] text-gray-500 mt-1">Creates a top-level menu item and folder.</p>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">URL Path</label>
-                            <div className="flex items-center text-sm text-gray-500 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded px-3 py-2">
-                                <span className="mr-1">/</span>
-                                <input type="text" value={path} readOnly className="bg-transparent border-none p-0 focus:ring-0 w-full" />
-                            </div>
-                        </div>
+
                         <div className="space-y-1">
                             <label className="text-[10px] uppercase font-bold text-gray-400">Icon</label>
                             <select value={selectedIconName} onChange={e => setSelectedIconName(e.target.value)} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500">
                                 {ICON_OPTIONS.map(opt => (
                                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                                 ))}
-                            </select>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">Parent Page (Optional)</label>
-                            <select
-                                value={parent}
-                                onChange={e => setParent(e.target.value)}
-                                className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
-                            >
-                                <option value="">Top Level (Root)</option>
-                                {renderOptionsWithValues(items)}
                             </select>
                         </div>
                     </div>
                     <div className="flex justify-end">
                         <Button type="submit" disabled={loading} className="w-full md:w-auto" variant="primary">
-                            {loading ? 'Creating...' : 'Create Page & Add to Menu'}
+                            {loading ? 'Creating...' : 'Create Module'}
                         </Button>
                     </div>
                 </form>
             ) : (
-                <form onSubmit={handleExistingSubmit} className="space-y-4">
+                <form onSubmit={handleAddPageToModule} className="space-y-4">
+                    {/* Creation Type Toggle */}
+                    <div className="flex gap-4 mb-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="creationType"
+                                value="new"
+                                checked={creationType === 'new'}
+                                onChange={() => setCreationType('new')}
+                                className="accent-blue-600"
+                            />
+                            <span className="text-sm">Create New Page</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="radio"
+                                name="creationType"
+                                value="existing"
+                                checked={creationType === 'existing'}
+                                onChange={() => setCreationType('existing')}
+                                className="accent-blue-600"
+                            />
+                            <span className="text-sm">Add Existing Page</span>
+                        </label>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">Select Page</label>
+                        <div className="space-y-1 lg:col-span-2">
+                            <label className="text-[10px] uppercase font-bold text-gray-400">Select Module</label>
                             <select
-                                value={selectedPage}
-                                onChange={e => {
-                                    const p = e.target.value;
-                                    setSelectedPage(p);
-                                    if (p) {
-                                        const segments = p.split('/').filter(Boolean);
-                                        const last = segments[segments.length - 1] || 'Home';
-                                        setExistingLabel(last.charAt(0).toUpperCase() + last.slice(1).replace(/-/g, ' '));
-                                    }
-                                }}
+                                value={selectedModule}
+                                onChange={e => setSelectedModule(e.target.value)}
                                 className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
                             >
-                                <option value="">-- Select a Page --</option>
-                                {existingPages.map(p => <option key={p} value={p}>{p}</option>)}
-                            </select>
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">Menu Label</label>
-                            <input type="text" value={existingLabel} onChange={e => setExistingLabel(e.target.value)} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500" />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">Icon</label>
-                            <select value={selectedIconName} onChange={e => setSelectedIconName(e.target.value)} className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500">
-                                {ICON_OPTIONS.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                <option value="">-- Select a Module --</option>
+                                {availableModules.map(m => (
+                                    <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
                                 ))}
                             </select>
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-gray-400">Parent Page (Optional)</label>
-                            <select
-                                value={parent}
-                                onChange={e => setParent(e.target.value)}
-                                className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
-                            >
-                                <option value="">Top Level (Root)</option>
-                                {renderOptionsWithValues(items)}
-                            </select>
-                        </div>
+
+                        {creationType === 'new' ? (
+                            <div className="space-y-1 lg:col-span-2">
+                                <label className="text-[10px] uppercase font-bold text-gray-400">Page Name</label>
+                                <input
+                                    type="text"
+                                    value={pageTitle}
+                                    onChange={e => setPageTitle(e.target.value)}
+                                    placeholder="e.g. My New Page"
+                                    className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                        ) : (
+                            <>
+                                <div className="space-y-1 lg:col-span-1">
+                                    <label className="text-[10px] uppercase font-bold text-gray-400">Select Existing Page</label>
+                                    <select
+                                        value={selectedExistingPage}
+                                        onChange={e => {
+                                            setSelectedExistingPage(e.target.value);
+                                            // Auto-fill label if empty
+                                            if (!pageTitle) {
+                                                const label = e.target.value.split('/').pop()?.replace(/-/g, ' ');
+                                                if (label) setPageTitle(label.charAt(0).toUpperCase() + label.slice(1));
+                                            }
+                                        }}
+                                        className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="">-- Select Page --</option>
+                                        {existingPages.map(p => (
+                                            <option key={p} value={p}>{p}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="space-y-1 lg:col-span-1">
+                                    <label className="text-[10px] uppercase font-bold text-gray-400">Menu Label</label>
+                                    <input
+                                        type="text"
+                                        value={pageTitle}
+                                        onChange={e => setPageTitle(e.target.value)}
+                                        placeholder="Label in Menu"
+                                        className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                     <div className="flex justify-end">
-                        <Button type="submit" disabled={!selectedPage} className="w-full md:w-auto" variant="primary">
-                            Add to Menu
+                        <Button type="submit" disabled={!selectedModule || !pageTitle || loading || (creationType === 'existing' && !selectedExistingPage)} className="w-full md:w-auto" variant="primary">
+                            {loading ? 'Adding...' : 'Add Page to Menu'}
                         </Button>
                     </div>
                 </form>
