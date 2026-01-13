@@ -259,7 +259,7 @@ export function FilesCard() {
 
                     <DialogFooter>
                         <Button
-                            variant="outline"
+                            variant="secondary"
                             onClick={handleOpenInNewTab}
                             disabled={!previewFile?.url}
                             icon={ExternalLink}
