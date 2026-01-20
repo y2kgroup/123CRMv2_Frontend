@@ -1,6 +1,7 @@
 'use client';
 
-import { useLayout, CustomTheme } from "@/components/layout/LayoutContext";
+import { useLayout } from "@/components/layout/LayoutContext";
+import { CustomTheme } from "@/config/theme";
 import { Button } from "@/components/ui/button";
 import { Check, Settings as SettingsIcon, Save, Upload, Trash2, Image as ImageIcon, MoreVertical, Plus, FolderPlus, FilePlus, FileText } from "lucide-react";
 import { useRef, useState, useEffect } from "react";

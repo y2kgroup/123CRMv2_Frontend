@@ -36,10 +36,9 @@ const DEFAULT_SERVICES_STYLE: GlobalStyle = {
 };
 
 export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps) {
-    const [config, setConfig] = useState<TableConfig | null>(null);
+    const [config, setConfig] = useState<TableConfig | null>(() => {
+        if (typeof window === 'undefined') return null;
 
-    // Initialize config from localStorage or defaults
-    useEffect(() => {
         const saved = localStorage.getItem(`table-config-${tableId}`);
         if (saved) {
             try {
@@ -63,14 +62,13 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
                     }
                 });
 
-                setConfig({
+                return {
                     ...parsed,
                     columns: mergedColumns,
                     headerStyle: parsed.headerStyle || DEFAULT_HEADER_STYLE,
                     rowStyle: parsed.rowStyle || DEFAULT_ROW_STYLE,
                     servicesStyle: parsed.servicesStyle || DEFAULT_SERVICES_STYLE
-                });
-                return;
+                };
             } catch (e) {
                 console.error("Failed to parse table config", e);
             }
@@ -85,7 +83,7 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
             }
         });
 
-        setConfig({
+        return {
             id: tableId,
             columns: cols,
             headerStyle: DEFAULT_HEADER_STYLE,
@@ -93,8 +91,8 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
             servicesStyle: DEFAULT_SERVICES_STYLE,
             sort: { key: null, direction: null },
             pagination: { pageSize: 10 }
-        });
-    }, [tableId, defaultColumns]);
+        };
+    });
 
     // Save to localStorage on change
     useEffect(() => {

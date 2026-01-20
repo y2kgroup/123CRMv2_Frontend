@@ -2,7 +2,9 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
 import { FileText } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 type LayoutMode = 'horizontal' | 'vertical';
 type LayoutWidth = 'full' | 'boxed';
@@ -12,6 +14,80 @@ type Theme = 'light' | 'dark';
 import { defaultTheme, ThemeConfig, CustomTheme, ColorSettings, MenuSettings, ButtonSettings, AlertSettings, DropdownSettings, themeVersion } from '@/config/theme';
 
 import { navItems as initialNavItems } from '@/config/navigation';
+
+export interface NavItem {
+    label: string;
+    href: string;
+    description?: string;
+    icon?: any;
+    iconName?: string;
+    children?: NavItem[];
+    id?: string;
+}
+
+// --- Icon Restoration Logic ---
+// --- Icon Restoration Logic ---
+// Helper to find original icon
+const findOriginalIcon = (href: string, list: NavItem[]): any => {
+    for (const item of list) {
+        if (item.href === href) return item.icon;
+        if (item.children) {
+            const found = findOriginalIcon(href, item.children);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+// Helper to restore icons recursively
+const restoreIcons = (items: NavItem[]): NavItem[] => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const IconsMap = LucideIcons as Record<string, any>;
+
+    return items.map((item: NavItem) => {
+        let Icon = FileText;
+
+        // 1. Try to restore from 'iconName' if present (user selected icon)
+        if (item.iconName && IconsMap[item.iconName]) {
+            Icon = IconsMap[item.iconName];
+        }
+        // 2. Or try to find original icon from config (built-in pages)
+        else {
+            const originalIcon = findOriginalIcon(item.href, initialNavItems);
+            if (originalIcon) Icon = originalIcon;
+        }
+
+        return {
+            ...item,
+            icon: Icon,
+            children: item.children ? restoreIcons(item.children) : undefined
+        };
+    });
+};
+
+// Helper to remove duplicates (sibling-level only)
+const removeDuplicates = (items: NavItem[]): NavItem[] => {
+    const seenInThisLevel = new Set<string>();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return items.reduce((acc: any[], item: NavItem) => {
+        // Use ID or Href for uniqueness
+        const key = item.href || item.label;
+
+        // Only filter if we've seen this exact key AT THIS LEVEL
+        if (key && seenInThisLevel.has(key)) {
+            return acc;
+        }
+        if (key) seenInThisLevel.add(key);
+
+        const newItem = { ...item };
+        if (newItem.children) {
+            // Recursively clean children with a FRESH set for that level
+            newItem.children = removeDuplicates(newItem.children);
+        }
+        acc.push(newItem);
+        return acc;
+    }, []);
+};
 
 // ... (existing interfaces)
 
@@ -50,8 +126,8 @@ interface LayoutContextType {
     pageHeadingContent: React.ReactNode;
     setPageHeadingContent: (content: React.ReactNode) => void;
     // Dynamic Nav
-    navItems: any[];
-    updateNavItems: (items: any[]) => void;
+    navItems: NavItem[];
+    updateNavItems: (items: NavItem[]) => void;
     resetNavItems: () => void;
 }
 
@@ -72,49 +148,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const [headerMenuItems, setHeaderMenuItems] = useState<React.ReactNode>(null);
     const [pageHeadingContent, setPageHeadingContent] = useState<React.ReactNode>(null);
 
+
     // Apply CSS Variables
     useEffect(() => {
         const root = document.documentElement;
 
-        // --- Initialization Logic ---
-        if (!isInitialized) {
-            // Check Version
-            const savedVersion = parseInt(localStorage.getItem('themeVersion') || '0', 10);
+        // Skip applying CSS if not initialized (to avoid flashing defaults before load)
+        // Actually, defaults are fine, but let's wait for init to be consistent
+        if (!isInitialized) return;
 
-            // If local version is stale, we force update to defaultTheme (Server Config)
-            if (themeVersion > savedVersion) {
-                // Determine theme mode (light/dark) - prioritize local preference if possible, or default to light
-                const savedThemeMode = localStorage.getItem('theme') as Theme || 'light';
-
-                // Set logic
-                setCustomTheme(defaultTheme);
-                setThemeState(savedThemeMode);
-
-                // Update local storage to match new defaults
-                localStorage.setItem('customTheme', JSON.stringify(defaultTheme));
-                localStorage.setItem('themeVersion', String(themeVersion));
-
-                console.log('Theme configuration updated from server (Version ' + themeVersion + ')');
-            } else {
-                // Versions match, load local overrides if present
-                const savedCustomTheme = localStorage.getItem('customTheme');
-                if (savedCustomTheme) {
-                    try {
-                        setCustomTheme(JSON.parse(savedCustomTheme));
-                    } catch (e) {
-                        console.error('Failed to parse saved theme', e);
-                        setCustomTheme(defaultTheme);
-                    }
-                }
-
-                const savedTheme = localStorage.getItem('theme') as Theme;
-                if (savedTheme) {
-                    setThemeState(savedTheme);
-                }
-            }
-
-            setIsInitialized(true);
-        }
         const setVar = (name: string, value: string) => {
             if (value) root.style.setProperty(name, value);
         };
@@ -258,23 +300,36 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
             setVar(`--alert-${variant}-font-weight`, settings.boldText ? '700' : '500');
         });
 
-    }, [customTheme, theme]);
+    }, [customTheme, theme, isInitialized]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         const savedMode = localStorage.getItem('layoutMode') as LayoutMode;
         const savedWidth = localStorage.getItem('layoutWidth') as LayoutWidth;
         const savedTheme = localStorage.getItem('theme') as Theme;
         const savedCustomTheme = localStorage.getItem('customTheme');
 
-        if (savedMode) setLayoutModeState(savedMode);
-        if (savedWidth) setLayoutWidthState(savedWidth);
-        if (savedTheme) {
-            setThemeState(savedTheme);
-            if (savedTheme === 'dark') document.documentElement.classList.add('dark');
+        const savedVersion = parseInt(localStorage.getItem('themeVersion') || '0', 10);
+        const pTheme = savedTheme;
+
+        // If local version is stale, we force update to defaultTheme (Server Config)
+        if (themeVersion > savedVersion) {
+            localStorage.setItem('customTheme', JSON.stringify(defaultTheme));
+            localStorage.setItem('themeVersion', String(themeVersion));
+            console.log('Theme configuration updated from server (Version ' + themeVersion + ')');
         }
 
+        if (savedMode) setLayoutModeState(savedMode);
+        if (savedWidth) setLayoutWidthState(savedWidth);
+        if (pTheme) {
+            setThemeState(pTheme);
+            if (pTheme === 'dark') document.documentElement.classList.add('dark');
+        }
+
+
+
         // Deep merge saved theme with default theme
-        if (savedCustomTheme) {
+        if (savedCustomTheme && themeVersion <= savedVersion) {
             try {
                 const parsed = JSON.parse(savedCustomTheme);
                 // Handle Migration from Old Theme Structure
@@ -454,92 +509,23 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
     // Dynamic Navigation State
-    const [navItems, setNavItems] = useState<any[]>(initialNavItems);
-
-    // Persist navItems changes (optional, or just keep in state for session)
-    // For now, let's persist to localStorage so edits survive refresh, similar to theme
-    // --- Icon Restoration Logic ---
-    const ICON_MAP: Record<string, any> = {
-        FileText, LayoutDashboard: require('lucide-react').LayoutDashboard, Users: require('lucide-react').Users, Building2: require('lucide-react').Building2, Factory: require('lucide-react').Factory, Calculator: require('lucide-react').Calculator, Store: require('lucide-react').Store, CalendarDays: require('lucide-react').CalendarDays, Settings: require('lucide-react').Settings, PieChart: require('lucide-react').PieChart, Bell: require('lucide-react').Bell, Briefcase: require('lucide-react').Briefcase, Circle: require('lucide-react').Circle, Clipboard: require('lucide-react').Clipboard, Globe: require('lucide-react').Globe, Home: require('lucide-react').Home, Image: require('lucide-react').Image, Inbox: require('lucide-react').Inbox, Layers: require('lucide-react').Layers, Link: require('lucide-react').Link, Lock: require('lucide-react').Lock, Mail: require('lucide-react').Mail, Map: require('lucide-react').Map, MessageSquare: require('lucide-react').MessageSquare, Package: require('lucide-react').Package, Search: require('lucide-react').Search, Server: require('lucide-react').Server, Smartphone: require('lucide-react').Smartphone, Star: require('lucide-react').Star, Tag: require('lucide-react').Tag, Terminal: require('lucide-react').Terminal, Tool: require('lucide-react').Tool, Trash2: require('lucide-react').Trash2, Truck: require('lucide-react').Truck, User: require('lucide-react').User, Video: require('lucide-react').Video, Wifi: require('lucide-react').Wifi
-    };
-
-    // Helper to find original icon
-    const findOriginalIcon = (href: string, list: any[]): any => {
-        for (const item of list) {
-            if (item.href === href) return item.icon;
-            if (item.children) {
-                const found = findOriginalIcon(href, item.children);
-                if (found) return found;
-            }
-        }
-        return null;
-    };
-
-    // Helper to restore icons recursively
-    const restoreIcons = (items: any[]): any[] => {
-        return items.map((item: any) => {
-            let Icon = FileText;
-
-            // 1. Try to restore from 'iconName' if present (user selected icon)
-            if (item.iconName && ICON_MAP[item.iconName]) {
-                Icon = ICON_MAP[item.iconName];
-            }
-            // 2. Or try to find original icon from config (built-in pages)
-            else {
-                const originalIcon = findOriginalIcon(item.href, initialNavItems);
-                if (originalIcon) Icon = originalIcon;
-            }
-
-            return {
-                ...item,
-                icon: Icon,
-                children: item.children ? restoreIcons(item.children) : undefined
-            };
-        });
-    };
-
-    // Helper to remove duplicates (sibling-level only)
-    const removeDuplicates = (items: any[]): any[] => {
-        const seenInThisLevel = new Set<string>();
-        return items.reduce((acc: any[], item: any) => {
-            // Use ID or Href for uniqueness
-            const key = item.href || item.label;
-
-            // Only filter if we've seen this exact key AT THIS LEVEL
-            if (key && seenInThisLevel.has(key)) {
-                return acc;
-            }
-            if (key) seenInThisLevel.add(key);
-
-            const newItem = { ...item };
-            if (newItem.children) {
-                // Recursively clean children with a FRESH set for that level
-                newItem.children = removeDuplicates(newItem.children);
-            }
-            acc.push(newItem);
-            return acc;
-        }, []);
-    };
-
-    // Persist navItems changes (optional, or just keep in state for session)
-    // For now, let's persist to localStorage so edits survive refresh, similar to theme
-    // Persist navItems changes (optional, or just keep in state for session)
-    // For now, let's persist to localStorage so edits survive refresh, similar to theme
-    useEffect(() => {
+    const [navItems, setNavItems] = useState<NavItem[]>(() => {
+        if (typeof window === 'undefined') return initialNavItems;
         const savedNav = localStorage.getItem('navItems');
         if (savedNav) {
             try {
                 const parsed = JSON.parse(savedNav);
                 // First deduplicate, then restore icons
                 const uniqueItems = removeDuplicates(parsed);
-                setNavItems(restoreIcons(uniqueItems));
+                return restoreIcons(uniqueItems);
             } catch (e) {
                 console.error("Failed to parse saved nav items", e);
             }
         }
-    }, []);
+        return initialNavItems;
+    });
 
-    const updateNavItems = (newItems: any[]) => {
+    const updateNavItems = (newItems: NavItem[]) => {
         // ALWAYS hydrate icons before setting state, because inputs (e.g. from JSON.clone) might lack them.
         // Also deduplicate to prevent key errors
         const uniqueItems = removeDuplicates(newItems);

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useLayout } from './LayoutContext';
+import { useLayout, NavItem } from './LayoutContext';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import React from 'react';
 import {
@@ -94,10 +94,10 @@ export function Sidebar() {
                 </div>
 
                 <nav className="flex flex-col gap-1 px-2">
-                    {navItems.map((item: any) => {
+                    {navItems.map((item: NavItem) => {
                         const hasChildren = item.children && item.children.length > 0;
                         const isOpen = openSubMenus.includes(item.label);
-                        const isChildActive = item.children?.some((child: any) => pathname === child.href);
+                        const isChildActive = item.children?.some((child: NavItem) => pathname === child.href);
                         const isActive = pathname === item.href || isChildActive;
                         const Icon = item.icon || FileText;
 
@@ -173,7 +173,7 @@ export function Sidebar() {
                                     <DropdownMenuContent side="right" className="bg-[#1e2329] border-slate-700 text-slate-200 min-w-[200px] ml-2">
                                         <DropdownMenuLabel>{item.label}</DropdownMenuLabel>
                                         <DropdownMenuSeparator className="bg-slate-700" />
-                                        {item.children.map((child: any) => (
+                                        {item.children!.map((child: NavItem) => (
                                             <DropdownMenuItem
                                                 key={child.href}
                                                 className="cursor-pointer hover:bg-white/10 focus:bg-white/10 focus:text-white"
@@ -197,7 +197,7 @@ export function Sidebar() {
                                 {/* Submenu */}
                                 {hasChildren && !isSidebarCollapsed && isOpen && (
                                     <div className="ml-9 mt-1 flex flex-col gap-1 border-l border-white/10 pl-2">
-                                        {item.children!.map((child: any) => (
+                                        {item.children!.map((child: NavItem) => (
                                             <Link
                                                 key={child.href}
                                                 href={child.href}

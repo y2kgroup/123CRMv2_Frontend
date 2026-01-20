@@ -9,16 +9,22 @@ export function Breadcrumbs() {
     const pathname = usePathname();
     const { navItems } = useLayout();
 
+    interface NavItem {
+        href: string;
+        label: string;
+        children?: NavItem[];
+    }
+
     // Helper to find label for a path segment
     const getLabel = (path: string, segment: string) => {
         // Try to match exact path
-        const directMatch = navItems.find((item: any) => item.href === path);
+        const directMatch = navItems.find((item: NavItem) => item.href === path);
         if (directMatch) return directMatch.label;
 
         // Try to find in children
-        for (const item of navItems) {
+        for (const item of navItems as NavItem[]) {
             if (item.children) {
-                const childMatch = item.children.find((child: any) => child.href === path);
+                const childMatch = item.children.find((child: NavItem) => child.href === path);
                 if (childMatch) return childMatch.label;
             }
         }

@@ -15,7 +15,7 @@ export async function saveThemeConfig(theme: any) {
 
         const newVersion = Date.now();
 
-        let fileContent = `import { FileText, LayoutDashboard, Users, Building2, Factory, Calculator, Store, CalendarDays, Settings, PieChart, Bell, Briefcase, Circle, Clipboard, Globe, Home, Image, Inbox, Layers, Link, Lock, Mail, Map, MessageSquare, Package, Search, Server, Smartphone, Star, Tag, Terminal, Trash2, Truck, User, Video, Wifi } from 'lucide-react';
+        const fileContent = `import { FileText, LayoutDashboard, Users, Building2, Factory, Calculator, Store, CalendarDays, Settings, PieChart, Bell, Briefcase, Circle, Clipboard, Globe, Home, Image, Inbox, Layers, Link, Lock, Mail, Map, MessageSquare, Package, Search, Server, Smartphone, Star, Tag, Terminal, Trash2, Truck, User, Video, Wifi } from 'lucide-react';
 
 export const themeVersion = ${newVersion};
 

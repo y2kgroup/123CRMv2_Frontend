@@ -18,7 +18,7 @@ import {
     useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Settings2, GripVertical, AlignLeft, AlignCenter, AlignRight, Type, Palette, Plus, Pencil, Pin } from 'lucide-react';
+import { Settings2, GripVertical, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Pin } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -44,8 +44,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
@@ -58,7 +57,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from '@/lib/utils';
 import { useTableConfig } from './useTableConfig';
-import { ColumnConfig, GlobalStyle, ColumnType } from './types';
+import { ColumnConfig, GlobalStyle, ColumnType, CellStyle } from './types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -125,7 +124,7 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                         <Label htmlFor="type" className="text-right">
                             Type
                         </Label>
-                        <Select value={type} onValueChange={(val: any) => setType(val)}>
+                        <Select value={type} onValueChange={(val: ColumnType) => setType(val)}>
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Select type" />
                             </SelectTrigger>
@@ -147,7 +146,7 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                             <Label htmlFor="displayStyle" className="text-right">
                                 Style
                             </Label>
-                            <Select value={displayStyle} onValueChange={(val: any) => setDisplayStyle(val)}>
+                            <Select value={displayStyle} onValueChange={(val: 'text' | 'badge') => setDisplayStyle(val)}>
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Display Style" />
                                 </SelectTrigger>
@@ -249,7 +248,7 @@ function EditColumnDialog({ column, onUpdate, children }: { column: ColumnConfig
                         <Label htmlFor="edit-type" className="text-right">
                             Type
                         </Label>
-                        <Select value={type} onValueChange={(val: any) => setType(val)}>
+                        <Select value={type} onValueChange={(val: ColumnType) => setType(val)}>
                             <SelectTrigger className="col-span-3">
                                 <SelectValue placeholder="Select type" />
                             </SelectTrigger>
@@ -271,7 +270,7 @@ function EditColumnDialog({ column, onUpdate, children }: { column: ColumnConfig
                             <Label htmlFor="edit-displayStyle" className="text-right">
                                 Style
                             </Label>
-                            <Select value={displayStyle} onValueChange={(val: any) => setDisplayStyle(val)}>
+                            <Select value={displayStyle} onValueChange={(val: 'text' | 'badge') => setDisplayStyle(val)}>
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Display Style" />
                                 </SelectTrigger>
@@ -398,7 +397,7 @@ function GlobalStyleSection({
                     <Label className="text-xs text-gray-500">Text Size</Label>
                     <Select
                         value={style.textSize || 'sm'}
-                        onValueChange={(val: any) => onUpdate({ textSize: val })}
+                        onValueChange={(val: string) => onUpdate({ textSize: val as GlobalStyle['textSize'] })}
                     >
                         <SelectTrigger className="h-8 text-xs">
                             <SelectValue placeholder="Size" />
@@ -416,7 +415,7 @@ function GlobalStyleSection({
                     <Label className="text-xs text-gray-500">Font Weight</Label>
                     <Select
                         value={style.fontWeight || 'normal'}
-                        onValueChange={(val: any) => onUpdate({ fontWeight: val })}
+                        onValueChange={(val: string) => onUpdate({ fontWeight: val as GlobalStyle['fontWeight'] })}
                     >
                         <SelectTrigger className="h-8 text-xs">
                             <SelectValue placeholder="Weight" />
@@ -435,7 +434,7 @@ function GlobalStyleSection({
                     <Label className="text-xs text-gray-500">Font Type</Label>
                     <Select
                         value={style.fontFamily || 'inherit'}
-                        onValueChange={(val: any) => onUpdate({ fontFamily: val === 'inherit' ? undefined : val })}
+                        onValueChange={(val: string) => onUpdate({ fontFamily: val === 'inherit' ? undefined : val })}
                     >
                         <SelectTrigger className="h-8 text-xs">
                             <SelectValue placeholder="Font" />
@@ -538,20 +537,7 @@ function SortableColumnItem({
                     </div>
                 )}
 
-                {/* Pin Toggle */}
-                {onUpdateColumn && (
-                    <Button
-                        variant="tertiary"
-                        className={cn(
-                            "h-6 w-6 p-0 mr-1 flex items-center justify-center transition-colors",
-                            column.isPinned ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                        )}
-                        onClick={() => onUpdateColumn(column.id, { isPinned: !column.isPinned })}
-                        title={column.isPinned ? "Unpin Column" : "Pin Column"}
-                    >
-                        <Pin className={cn("h-3.5 w-3.5", column.isPinned && "fill-current")} />
-                    </Button>
-                )}
+
 
                 {/* Label - flex-1 to push toggles to the right */}
                 <div className="flex-1 font-medium text-sm flex items-center gap-2 group/label min-w-0">
@@ -632,7 +618,7 @@ function SortableColumnItem({
                     <div className="flex items-center gap-1 border-l pl-3 dark:border-gray-700 ml-auto">
                         <Select
                             value={column.style.textSize || 'sm'}
-                            onValueChange={(val: any) => onUpdateStyle(column.id, { textSize: val })}
+                            onValueChange={(val: string) => onUpdateStyle(column.id, { textSize: val as CellStyle['textSize'] })}
                         >
                             <SelectTrigger className="h-7 w-[70px] text-xs">
                                 <SelectValue placeholder="Size" />
@@ -684,7 +670,7 @@ function SortableColumnItem({
 }
 
 export function DataTableViewOptions({ config, trigger, mode = 'sheet' }: DataTableViewOptionsProps) {
-    const { sortedColumns, reorderColumns, updateColumn, updateColumnStyle, addColumn } = config;
+    const { sortedColumns, reorderColumns, updateColumn, addColumn } = config;
 
     const handleAddColumn = (name: string, type: ColumnType, extra?: { displayStyle?: 'text' | 'badge'; dropdownOptions?: string[]; isMultiSelect?: boolean }) => {
         if (addColumn) {
@@ -733,14 +719,7 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet' }: DataTa
         }
     };
 
-    const triggerElement = trigger ? (
-        trigger
-    ) : (
-        <Button variant="action" className="hidden h-9 lg:flex gap-2 text-xs">
-            <Settings2 className="h-4 w-4" />
-            Page Settings
-        </Button>
-    );
+
 
     const content = (
         <Tabs defaultValue="columns" className="w-full">

@@ -1,10 +1,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useLayout } from './LayoutContext';
+import { useLayout, NavItem } from './LayoutContext';
 import { ActionButtons } from './ActionButtons';
 import { ChevronRight, ChevronDown, FileText } from 'lucide-react';
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useRef } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -105,10 +105,10 @@ export function HorizontalNav() {
     );
 }
 
-function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displayMode }: any) {
+function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displayMode }: { item: NavItem, activeTheme: any, pathname: string, handleNavigation: any, displayMode: string }) {
     const { triggerMode } = (activeTheme.horizontalNav as any).dropdown || { triggerMode: 'click' };
     const [isOpen, setIsOpen] = useState(false);
-    let timeoutId: NodeJS.Timeout;
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const isActive = pathname === item.href || item.children?.some((child: any) => pathname === child.href);
     const Icon = item.icon || FileText;
@@ -130,14 +130,14 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
 
     const handleMouseEnter = () => {
         if (triggerMode === 'hover') {
-            clearTimeout(timeoutId);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
             setIsOpen(true);
         }
     };
 
     const handleMouseLeave = () => {
         if (triggerMode === 'hover') {
-            timeoutId = setTimeout(() => setIsOpen(false), 150); // Small delay for UX
+            timeoutRef.current = setTimeout(() => setIsOpen(false), 150); // Small delay for UX
         }
     };
 
@@ -184,7 +184,7 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
                     onMouseEnter={handleMouseEnter} // Keep open when hovering content
                     onMouseLeave={handleMouseLeave}
                 >
-                    {item.children.map((child: any) => (
+                    {item.children?.map((child: NavItem) => (
                         <Link key={child.id || child.href} href={child.href} onClick={(e) => {
                             setIsOpen(false);
                             handleNavigation(e, child.href);

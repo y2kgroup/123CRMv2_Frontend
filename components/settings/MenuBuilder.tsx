@@ -74,7 +74,7 @@ function flatten(
 
     return items.reduce<FlattenedItem[]>((acc, item, index) => {
         // Generate a stable ID if not present. Ideally, href + label
-        let id = item.id || `${item.href}-${item.label}`;
+        const id = item.id || `${item.href}-${item.label}`;
 
         // Ensure uniqueness for this pass
         let uniqueId = id;

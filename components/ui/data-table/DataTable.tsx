@@ -21,7 +21,7 @@ interface DataTableProps<T> {
         setSort: (sort: SortConfig) => void;
         sortedColumns: ColumnConfig[];
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     columns: Record<string, (item: T) => React.ReactNode>; // Map column ID to render function
     onRowClick?: (item: T) => void;
     isAllSelected?: boolean;
@@ -52,7 +52,7 @@ export function DataTable<T extends { id: string | number }>({
         const visibleCols = sortedColumns.filter(c => c.isVisible);
 
         visibleCols.forEach((col, index) => {
-            if (col.isPinned) {
+            if (col.pinned) {
                 offsets[col.id] = currentOffset;
                 // Add the width of this column to the offset for the NEXT pinned column
                 // We measure the actual rendered width from the DOM
@@ -98,16 +98,16 @@ export function DataTable<T extends { id: string | number }>({
                                         color: tableConfig.headerStyle?.textColor,
                                         fontFamily: tableConfig.headerStyle?.fontFamily,
                                         // Sticky Logic
-                                        position: column.isPinned ? 'sticky' : undefined,
-                                        left: column.isPinned ? stickyOffsets[column.id] || 0 : undefined,
-                                        zIndex: column.isPinned ? 20 : 10,
+                                        position: column.pinned ? 'sticky' : undefined,
+                                        left: column.pinned ? stickyOffsets[column.id] || 0 : undefined,
+                                        zIndex: column.pinned ? 20 : 10,
                                         // Add a right border if it's the last pinned column? Or visually separate all pinned
-                                        boxShadow: column.isPinned ? '2px 0 5px -2px rgba(0,0,0,0.1)' : undefined
+                                        boxShadow: column.pinned ? '2px 0 5px -2px rgba(0,0,0,0.1)' : undefined
                                     }}
                                     className={cn(
                                         "whitespace-nowrap transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer select-none top-0 shadow-sm",
-                                        !column.isPinned && "sticky z-10", // Normal sticky header
-                                        column.isPinned && "border-r border-slate-200 dark:border-slate-700",
+                                        !column.pinned && "sticky z-10", // Normal sticky header
+                                        column.pinned && "border-r border-slate-200 dark:border-slate-700",
                                         // Global Header Alignment
                                         tableConfig.headerStyle?.alignment === 'center' && "text-center",
                                         tableConfig.headerStyle?.alignment === 'right' && "text-right",
@@ -194,8 +194,8 @@ export function DataTable<T extends { id: string | number }>({
                                                 color: tableConfig.rowStyle?.textColor,
                                                 backgroundColor: column.pinned ? (tableConfig.rowStyle?.backgroundColor || 'var(--card-bg, white)') : tableConfig.rowStyle?.backgroundColor,
                                                 fontFamily: tableConfig.rowStyle?.fontFamily,
-                                                left: column.pinned === 'left' ? stickyOffsets.left[column.id] || 0 : undefined,
-                                                right: column.pinned === 'right' ? stickyOffsets.right[column.id] || 0 : undefined,
+                                                left: column.pinned === 'left' ? stickyOffsets[column.id] || 0 : undefined,
+                                                right: undefined, // Right pinning not fully implemented yet
                                                 boxShadow: column.pinned === 'left'
                                                     ? '2px 0 5px -2px rgba(0,0,0,0.1)'
                                                     : column.pinned === 'right'
