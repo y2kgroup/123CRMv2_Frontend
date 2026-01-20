@@ -37,6 +37,34 @@ export function DataTable<T extends { id: string | number }>({
     onSelectAll
 }: DataTableProps<T>) {
     const { config: tableConfig, setSort, sortedColumns } = config;
+    const [stickyOffsets, setStickyOffsets] = React.useState<Record<string, number>>({});
+    const headerRef = React.useRef<HTMLTableRowElement>(null);
+
+    // Measure sticky columns
+    React.useLayoutEffect(() => {
+        if (!headerRef.current) return;
+
+        const offsets: Record<string, number> = {};
+        let currentOffset = 0;
+        const cells = Array.from(headerRef.current.children) as HTMLElement[];
+
+        // Iterate through visible columns to calculate offsets for pinned ones
+        const visibleCols = sortedColumns.filter(c => c.isVisible);
+
+        visibleCols.forEach((col, index) => {
+            if (col.isPinned) {
+                offsets[col.id] = currentOffset;
+                // Add the width of this column to the offset for the NEXT pinned column
+                // We measure the actual rendered width from the DOM
+                const cell = cells[index];
+                if (cell) {
+                    currentOffset += cell.getBoundingClientRect().width;
+                }
+            }
+        });
+
+        setStickyOffsets(offsets);
+    }, [sortedColumns, tableConfig?.headerStyle, tableConfig?.rowStyle, data]); // Re-measure on data/style/column change
 
     if (!tableConfig) return null;
 
@@ -58,9 +86,9 @@ export function DataTable<T extends { id: string | number }>({
     return (
         <div className="rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1e2329] overflow-hidden h-full flex flex-col">
             <div className="flex-1 overflow-auto relative">
-                <table className="w-full caption-bottom text-sm text-left">
+                <table className="w-full caption-bottom text-sm text-left relative">
                     <TableHeader className="bg-slate-50 dark:bg-slate-800">
-                        <TableRow>
+                        <TableRow ref={headerRef}>
                             {visibleColumns.map((column) => (
                                 <TableHead
                                     key={column.id}
@@ -68,10 +96,18 @@ export function DataTable<T extends { id: string | number }>({
                                         width: column.width,
                                         backgroundColor: tableConfig.headerStyle?.backgroundColor,
                                         color: tableConfig.headerStyle?.textColor,
-                                        fontFamily: tableConfig.headerStyle?.fontFamily
+                                        fontFamily: tableConfig.headerStyle?.fontFamily,
+                                        // Sticky Logic
+                                        position: column.isPinned ? 'sticky' : undefined,
+                                        left: column.isPinned ? stickyOffsets[column.id] || 0 : undefined,
+                                        zIndex: column.isPinned ? 20 : 10,
+                                        // Add a right border if it's the last pinned column? Or visually separate all pinned
+                                        boxShadow: column.isPinned ? '2px 0 5px -2px rgba(0,0,0,0.1)' : undefined
                                     }}
                                     className={cn(
-                                        "whitespace-nowrap transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer select-none sticky top-0 z-10 shadow-sm",
+                                        "whitespace-nowrap transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer select-none top-0 shadow-sm",
+                                        !column.isPinned && "sticky z-10", // Normal sticky header
+                                        column.isPinned && "border-r border-slate-200 dark:border-slate-700",
                                         // Global Header Alignment
                                         tableConfig.headerStyle?.alignment === 'center' && "text-center",
                                         tableConfig.headerStyle?.alignment === 'right' && "text-right",
@@ -137,7 +173,10 @@ export function DataTable<T extends { id: string | number }>({
                                         <TableCell
                                             key={column.id}
                                             className={cn(
-                                                "border-b border-slate-100 dark:border-slate-800",
+                                                "border-b border-slate-100 dark:border-slate-800 whitespace-nowrap",
+                                                column.pinned && "sticky z-10",
+                                                column.pinned === 'left' && "border-r border-slate-100 dark:border-slate-800",
+                                                column.pinned === 'right' && "border-l border-slate-100 dark:border-slate-800",
                                                 // Global Row Alignment
                                                 tableConfig.rowStyle?.alignment === 'center' && "text-center",
                                                 tableConfig.rowStyle?.alignment === 'right' && "text-right",
@@ -153,8 +192,15 @@ export function DataTable<T extends { id: string | number }>({
                                             )}
                                             style={{
                                                 color: tableConfig.rowStyle?.textColor,
-                                                backgroundColor: tableConfig.rowStyle?.backgroundColor,
-                                                fontFamily: tableConfig.rowStyle?.fontFamily
+                                                backgroundColor: column.pinned ? (tableConfig.rowStyle?.backgroundColor || 'var(--card-bg, white)') : tableConfig.rowStyle?.backgroundColor,
+                                                fontFamily: tableConfig.rowStyle?.fontFamily,
+                                                left: column.pinned === 'left' ? stickyOffsets.left[column.id] || 0 : undefined,
+                                                right: column.pinned === 'right' ? stickyOffsets.right[column.id] || 0 : undefined,
+                                                boxShadow: column.pinned === 'left'
+                                                    ? '2px 0 5px -2px rgba(0,0,0,0.1)'
+                                                    : column.pinned === 'right'
+                                                        ? '-2px 0 5px -2px rgba(0,0,0,0.1)'
+                                                        : undefined
                                             }}
                                         >
                                             {columns[column.id] ? columns[column.id](row) : null}

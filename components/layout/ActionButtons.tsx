@@ -14,7 +14,7 @@ import {
 export function ActionButtons() {
     const { resetTheme, hasChanges, saveTheme, headerMenuItems } = useLayout();
     const pathname = usePathname();
-    const isSettingsPage = pathname?.startsWith('/settings');
+
 
     return (
         <div className="flex items-center gap-2">
@@ -48,33 +48,7 @@ export function ActionButtons() {
                         borderWidth: 'var(--h-nav-dropdown-border-width)',
                     }}
                 >
-                    {isSettingsPage ? (
-                        <DropdownMenuItem
-                            onClick={() => {
-                                if (confirm("Are you sure you want to reset to default brand colors?")) {
-                                    resetTheme();
-                                }
-                            }}
-                            className="text-gray-700 dark:text-gray-200 cursor-pointer focus:outline-none"
-                            style={{
-                                color: 'var(--h-nav-dropdown-text)',
-                                fontWeight: 'var(--h-nav-dropdown-font-weight)',
-                            } as React.CSSProperties}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                            onFocus={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
-                            onBlur={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                        >
-                            <RotateCcw
-                                className="w-4 h-4 mr-2"
-                                style={{
-                                    color: 'var(--h-nav-dropdown-icon)',
-                                    opacity: 1
-                                }}
-                            />
-                            Change to Default
-                        </DropdownMenuItem>
-                    ) : headerMenuItems ? (
+                    {headerMenuItems ? (
                         headerMenuItems
                     ) : (
                         <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">

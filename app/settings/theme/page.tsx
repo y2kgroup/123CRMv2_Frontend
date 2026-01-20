@@ -7,6 +7,8 @@ import { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { createPage, deletePage, getAvailablePages } from "@/app/actions/page-management";
+import { saveNavigationConfig } from "@/app/actions/navigation-config";
+import { saveThemeConfig } from "@/app/actions/theme-config";
 import { MenuBuilder } from "@/components/settings/MenuBuilder";
 import { PageCreator } from "@/components/settings/PageCreator";
 import {
@@ -179,7 +181,8 @@ export default function SettingsPage() {
         } else {
             const findAndAdd = (list: any[]) => {
                 for (const item of list) {
-                    if (item.label === parentLabel) {
+                    // Match loosely by label (case-insensitive) just in case
+                    if (item.label.toLowerCase() === parentLabel.toLowerCase()) {
                         if (!item.children) item.children = [];
                         item.children.push(newItem);
                         return true;
@@ -188,9 +191,21 @@ export default function SettingsPage() {
                 }
                 return false;
             };
-            findAndAdd(newItems);
+
+            if (!findAndAdd(newItems)) {
+                // Parent module not found in menu! Create it.
+                // Assuming standard slug format for href
+                const slug = parentLabel.toLowerCase().replace(/[^a-z0-9-]/g, '');
+                const newModule = {
+                    label: parentLabel,
+                    href: `/${slug}`,
+                    iconName: 'LayoutDashboard', // Default icon
+                    children: [newItem]
+                };
+                newItems.push(newModule);
+                // alert(`Note: Module "${parentLabel}" was missing from the menu, so it has been recreated.`);
+            }
         }
-        updateNavItems(newItems);
         updateNavItems(newItems);
     };
 
@@ -207,9 +222,15 @@ export default function SettingsPage() {
         if (!editDialog.item) return;
 
         // Recursive update
+        // Recursive update
         const updateItemInTree = (list: any[]): any[] => {
             return list.map(i => {
-                if (i.id === editDialog.item.id) {
+                // Match by ID if present, otherwise by strict reference or unique HREF check
+                // Since we don't have unique IDs for all items yet, use HREF as a fallback key
+                const isMatch = (i.id && i.id === editDialog.item.id) ||
+                    (!i.id && i.href === editDialog.item.href && i.label === editDialog.item.label);
+
+                if (isMatch) {
                     return { ...i, label: editDialog.label, iconName: editDialog.iconName };
                 }
                 if (i.children) {
@@ -229,8 +250,8 @@ export default function SettingsPage() {
             <div className="flex-1 bg-white dark:bg-card-bg rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col">
                 <div className="flex-1 overflow-y-auto relative">
                     <Tabs defaultValue="layout" className="flex flex-col min-h-full w-full">
-                        <div className="sticky top-0 z-10 bg-white dark:bg-card-bg px-6 pt-6 border-b border-gray-100 dark:border-gray-800">
-                            <TabsList className="bg-transparent p-0 mb-4 w-full justify-start h-auto flex-wrap gap-6">
+                        <div className="sticky top-0 z-10 bg-white dark:bg-card-bg px-6 pt-6 border-b border-gray-100 dark:border-gray-800 flex flex-row justify-between items-start gap-4">
+                            <TabsList className="bg-transparent p-0 mb-4 justify-start h-auto flex-wrap gap-6">
                                 <TabsTrigger value="layout" className="px-4 py-2">Layout Options</TabsTrigger>
                                 <TabsTrigger value="branding" className="px-4 py-2">Branding</TabsTrigger>
                                 <TabsTrigger value="header_footer" className="px-4 py-2">Header & Footer</TabsTrigger>
@@ -238,6 +259,23 @@ export default function SettingsPage() {
                                 <TabsTrigger value="menus" className="px-4 py-2">Menus</TabsTrigger>
                                 <TabsTrigger value="components" className="px-4 py-2">Components</TabsTrigger>
                             </TabsList>
+                            <Button
+                                variant="secondary"
+                                onClick={async () => {
+                                    if (confirm('Are you sure you want to save the current theme settings as the PROJECT DEFAULT? This will update the code configuration file.')) {
+                                        const res = await saveThemeConfig(customTheme);
+                                        if (res.success) {
+                                            alert('Theme saved as default! It will now persist even after a reset.');
+                                        } else {
+                                            alert('Failed to save: ' + res.message);
+                                        }
+                                    }
+                                }}
+                                className="text-xs bg-green-50 text-green-700 hover:bg-green-100 border-green-200 shrink-0"
+                            >
+                                <Save className="w-4 h-4 mr-2" />
+                                Save Theme as Default
+                            </Button>
                         </div>
                         <div className="p-6">
 
@@ -867,17 +905,35 @@ export default function SettingsPage() {
                                             Customize the labels and links for your application navigation. Use drag-and-drop to reorder and nest items.
                                         </p>
                                     </div>
-                                    <Button
-                                        variant="secondary"
-                                        onClick={() => {
-                                            if (confirm('Are you sure you want to reset the menu structure to default?')) {
-                                                resetNavItems();
-                                            }
-                                        }}
-                                        className="text-xs"
-                                    >
-                                        Reset to Defaults
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="secondary"
+                                            onClick={async () => {
+                                                if (confirm('Are you sure you want to save the current menu as the PROJECT DEFAULT? This will update the code configuration file.')) {
+                                                    const res = await saveNavigationConfig(navItems);
+                                                    if (res.success) {
+                                                        alert('Menu saved as default! It will now persist even after a reset.');
+                                                    } else {
+                                                        alert('Failed to save: ' + res.message);
+                                                    }
+                                                }
+                                            }}
+                                            className="text-xs bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
+                                        >
+                                            Save as Project Default
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => {
+                                                if (confirm('Are you sure you want to reset the menu structure to default?')) {
+                                                    resetNavItems();
+                                                }
+                                            }}
+                                            className="text-xs"
+                                        >
+                                            Reset to Defaults
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <PageCreator items={navItems} onAdd={handleAddPage} />

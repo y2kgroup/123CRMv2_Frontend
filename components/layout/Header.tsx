@@ -1,6 +1,6 @@
 'use client';
 
-import { Search, Bell, User, Settings, Menu, ChevronDown, UserCircle, Moon, Sun, LayoutGrid, LogOut } from 'lucide-react';
+import { Search, Bell, User, Settings, Menu, ChevronDown, UserCircle, Moon, Sun, LayoutGrid, LogOut, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
@@ -8,7 +8,7 @@ import { useLayout } from './LayoutContext';
 
 export function Header() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const { toggleLayoutMode, layoutMode, theme, toggleTheme, customTheme, isSidebarCollapsed, toggleMobileMenu, headerActions } = useLayout();
+    const { toggleLayoutMode, layoutMode, theme, toggleTheme, customTheme, isSidebarCollapsed, toggleMobileMenu, headerActions, resetTheme, resetNavItems } = useLayout();
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown when clicking outside
@@ -39,7 +39,12 @@ export function Header() {
 
     return (
         <header
-            className="h-[70px] flex items-center px-4 md:px-6 fixed top-0 left-0 right-0 z-50 transition-colors"
+            className={cn(
+                "h-[70px] flex items-center px-4 md:px-6 fixed top-0 right-0 z-50 transition-all duration-300 ease-in-out",
+                layoutMode === 'vertical'
+                    ? (isSidebarCollapsed ? "left-0 md:left-[70px]" : "left-0 md:left-[250px]")
+                    : "left-0"
+            )}
             style={{
                 backgroundColor: 'var(--header-bg)',
                 color: 'var(--header-text)',
@@ -57,7 +62,7 @@ export function Header() {
                 </button>
 
                 {/* Logo */}
-                <div className="flex items-center gap-2 mr-8">
+                <div className={cn("flex items-center gap-2 mr-8", layoutMode === 'vertical' && "md:hidden")}>
                     {/* Dynamic Logo Logic */}
                     {logoSrc ? (
                         <img
@@ -112,6 +117,18 @@ export function Header() {
                                     <p className="text-sm font-semibold">My Account</p>
                                 </div>
                                 <div className="py-1">
+                                    <button
+                                        onClick={() => {
+                                            // Directly reset without confirm to avoid browser blocking issues
+                                            resetTheme();
+                                            resetNavItems();
+                                            window.location.reload();
+                                        }}
+                                        className="w-full px-4 py-2 text-sm text-left flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-orange-600 dark:text-orange-400"
+                                    >
+                                        <RotateCcw className="w-4 h-4" />
+                                        Developer Mode - Reset to Defaults
+                                    </button>
                                     <button className="w-full px-4 py-2 text-sm text-left flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300">
                                         <UserCircle className="w-4 h-4" />
                                         Profile

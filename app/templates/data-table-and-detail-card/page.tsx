@@ -334,10 +334,10 @@ export default function TemplatesPage() {
                     />
                 </div>
             ),
-            createdBy: (item: any) => <span className="text-slate-500">{item.createdBy}</span>,
-            createdAt: (item: any) => <span className="text-slate-500">{item.createdAt}</span>,
-            editedBy: (item: any) => <span className="text-slate-500">{item.editedBy}</span>,
-            editedAt: (item: any) => <span className="text-slate-500">{item.editedAt}</span>,
+            createdBy: (item: any) => item ? <span className="text-slate-500">{item.createdBy}</span> : null,
+            createdAt: (item: any) => item ? <span className="text-slate-500">{item.createdAt}</span> : null,
+            editedBy: (item: any) => item ? <span className="text-slate-500">{item.editedBy}</span> : null,
+            editedAt: (item: any) => item ? <span className="text-slate-500">{item.editedAt}</span> : null,
             actions: (item: any) => (
                 <div className="flex items-center gap-2 justify-end">
                     <button

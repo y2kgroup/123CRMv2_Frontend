@@ -11,9 +11,9 @@ interface UseTableConfigProps {
 const DEFAULT_HEADER_STYLE: GlobalStyle = {
     alignment: 'left',
     textSize: 'sm',
-    textColor: undefined,
-    backgroundColor: undefined,
-    fontWeight: 'semibold',
+    textColor: '#2563eb', // Blue-600 to match main menu
+    backgroundColor: '#ffffff', // White to match main menu
+    fontWeight: 'bold',
     fontFamily: undefined
 };
 
@@ -211,7 +211,23 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
     }, [tableId, defaultColumns]);
 
     const sortedColumns = useMemo(() => config
-        ? Object.values(config.columns).sort((a, b) => a.order - b.order)
+        ? Object.values(config.columns).sort((a, b) => {
+            // Priority 1: Pinned status
+            const aPin = a.pinned || null;
+            const bPin = b.pinned || null;
+
+            if (aPin === bPin) {
+                // Same pin state, sort by order
+                return a.order - b.order;
+            }
+
+            if (aPin === 'left') return -1;
+            if (bPin === 'left') return 1;
+            if (aPin === 'right') return 1;
+            if (bPin === 'right') return -1;
+
+            return a.order - b.order;
+        })
         : [], [config]);
 
     return useMemo(() => ({

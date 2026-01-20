@@ -18,7 +18,7 @@ import {
     useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Settings2, GripVertical, AlignLeft, AlignCenter, AlignRight, Type, Palette, Plus, Pencil } from 'lucide-react';
+import { Settings2, GripVertical, AlignLeft, AlignCenter, AlignRight, Type, Palette, Plus, Pencil, Pin } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -538,17 +538,53 @@ function SortableColumnItem({
                     </div>
                 )}
 
+                {/* Pin Toggle */}
+                {onUpdateColumn && (
+                    <Button
+                        variant="tertiary"
+                        className={cn(
+                            "h-6 w-6 p-0 mr-1 flex items-center justify-center transition-colors",
+                            column.isPinned ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        )}
+                        onClick={() => onUpdateColumn(column.id, { isPinned: !column.isPinned })}
+                        title={column.isPinned ? "Unpin Column" : "Pin Column"}
+                    >
+                        <Pin className={cn("h-3.5 w-3.5", column.isPinned && "fill-current")} />
+                    </Button>
+                )}
+
                 {/* Label - flex-1 to push toggles to the right */}
-                <div className="flex-1 font-medium text-sm flex items-center gap-2 group/label">
-                    {column.label}
-                    {onUpdateColumn && (
+                <div className="flex-1 font-medium text-sm flex items-center gap-2 group/label min-w-0">
+                    {onUpdateColumn ? (
                         <EditColumnDialog column={column} onUpdate={onUpdateColumn}>
-                            <Button variant="tertiary" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-slate-600 flex items-center justify-center">
-                                <Pencil className="h-3 w-3" />
-                            </Button>
+                            <button className="hover:underline hover:text-blue-600 truncate text-left focus:outline-none">
+                                {column.label}
+                            </button>
                         </EditColumnDialog>
+                    ) : (
+                        <span className="truncate">{column.label}</span>
                     )}
                 </div>
+
+                {/* Pin Toggle - Moved to Right */}
+                {onUpdateColumn && (
+                    <Button
+                        variant="tertiary"
+                        className={cn(
+                            "h-6 w-6 p-0 mr-1 flex items-center justify-center transition-colors shrink-0",
+                            column.pinned === 'left' ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20" :
+                                column.pinned === 'right' ? "text-green-600 bg-green-50 dark:bg-green-900/20" :
+                                    "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                        )}
+                        onClick={() => {
+                            const nextState = column.pinned === 'left' ? 'right' : column.pinned === 'right' ? null : 'left';
+                            onUpdateColumn(column.id, { pinned: nextState });
+                        }}
+                        title={column.pinned === 'left' ? "Pinned Left (Click to Pin Right)" : column.pinned === 'right' ? "Pinned Right (Click to Unpin)" : "Pin Column"}
+                    >
+                        <Pin className={cn("h-3.5 w-3.5", column.pinned && "fill-current")} />
+                    </Button>
+                )}
 
                 {/* Styling Options Trigger - Moved before switch */}
                 {((column.type === 'badge') || (column.type === 'select' && column.displayStyle === 'badge')) && onUpdateColumn && (

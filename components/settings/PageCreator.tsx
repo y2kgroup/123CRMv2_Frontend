@@ -170,7 +170,10 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
 
             const parentLabel = findLabel(items) || selectedModule;
 
-            onAdd({ label: pageTitle, href: fullHref, iconName: 'FileText' }, parentLabel);
+            // Use the EXPLICIT pageTitle (which acts as Menu Label in "existing" mode) or fallback to name
+            const finalLabel = pageTitle;
+
+            onAdd({ label: finalLabel, href: fullHref, iconName: 'FileText' }, parentLabel);
 
             // Reset
             setPageTitle('');
@@ -313,12 +316,12 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
                                     </select>
                                 </div>
                                 <div className="space-y-1 lg:col-span-1">
-                                    <label className="text-[10px] uppercase font-bold text-gray-400">Menu Label</label>
+                                    <label className="text-[10px] uppercase font-bold text-gray-400">Menu Label (Editable)</label>
                                     <input
                                         type="text"
                                         value={pageTitle}
                                         onChange={e => setPageTitle(e.target.value)}
-                                        placeholder="Label in Menu"
+                                        placeholder="Type label here..."
                                         className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
                                     />
                                 </div>

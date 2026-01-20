@@ -44,6 +44,7 @@ export interface ColumnConfig {
     id: string;
     label: string;
     isVisible: boolean;
+    pinned?: 'left' | 'right' | null;
     order: number;
     isMandatory?: boolean; // If true, cannot be hidden (e.g. ID or Name)
     style: CellStyle;

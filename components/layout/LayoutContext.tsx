@@ -8,181 +8,8 @@ type LayoutMode = 'horizontal' | 'vertical';
 type LayoutWidth = 'full' | 'boxed';
 type Theme = 'light' | 'dark';
 
-export interface ColorSettings {
-    bg: string;
-    text: string;
-    icon: string;
-    border?: string;
-    boldText?: boolean;
-}
 
-export interface DropdownSettings {
-    bg: string;
-    text: string;
-    icon: string;
-    border: string;
-    borderWidth?: string;
-    bold?: boolean;
-    activeBackground?: string;
-    triggerMode?: 'click' | 'hover';
-}
-
-export interface MenuSettings extends ColorSettings {
-    activeBorder?: string;
-    activeText?: string;
-    activeBackground?: string;
-    activeBorderThickness?: string;
-    displayMode: 'icon' | 'text' | 'both';
-    menuAlignment?: 'left' | 'center' | 'right';
-    dropdown?: DropdownSettings;
-}
-
-export interface ButtonSettings {
-    bg: string;
-    text: string;
-    icon: string;
-    border: string;
-    borderWidth?: string;
-    displayMode?: 'icon' | 'text' | 'both';
-    boldText?: boolean;
-    size?: 'small' | 'medium' | 'large';
-}
-
-export interface AlertSettings {
-    bg: string;
-    text: string;
-    border: string;
-    boldText?: boolean;
-}
-
-
-export interface ThemeConfig {
-    header: ColorSettings;
-    horizontalNav: MenuSettings;
-    verticalNav: MenuSettings;
-    footer: ColorSettings;
-    buttons: {
-        primary: ButtonSettings;
-        secondary: ButtonSettings;
-        tertiary: ButtonSettings;
-        action: ButtonSettings;
-        actionCard: ButtonSettings;
-    };
-    alerts: {
-        primary: AlertSettings;
-        secondary: AlertSettings;
-        success: AlertSettings;
-        danger: AlertSettings;
-    };
-}
-
-export interface CustomTheme {
-    light: ThemeConfig;
-    dark: ThemeConfig;
-    branding: {
-        logoLight: string;
-        logoDark: string;
-        logoCollapsedLight: string;
-        logoCollapsedDark: string;
-        favicon: string;
-    };
-}
-
-const defaultThemeConfig: ThemeConfig = {
-    header: { bg: '#405189', text: '#FFFFFF', icon: '#FFFFFF', boldText: true },
-    horizontalNav: {
-        bg: '#FFFFFF', text: '#2563EB', icon: '#2563EB',
-        activeBorder: '#2563EB', activeText: '#2563EB',
-        activeBackground: '#DDE8FD',
-        activeBorderThickness: '3px',
-        displayMode: 'both',
-        menuAlignment: 'center',
-        boldText: true,
-        dropdown: {
-            bg: '#FFFFFF',
-            text: '#1F2937', // gray-800
-            icon: '#6B7280', // gray-500
-            border: '#E5E7EB', // gray-200
-            borderWidth: '1px',
-            bold: false,
-            activeBackground: '#F3F4F6', // gray-100
-            triggerMode: 'click'
-        }
-    },
-    verticalNav: {
-        bg: '#405189', text: '#FFFFFF', icon: '#FFFFFF',
-        displayMode: 'both',
-        boldText: true
-    },
-    footer: { bg: '#405189', text: '#FFFFFF', icon: '#6F6772', boldText: true },
-    buttons: {
-        primary: { bg: '#D5F2EE', text: '#059669', icon: '#059669', border: '#10B981', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
-        secondary: { bg: '#FEF2E0', text: '#D97706', icon: '#D97706', border: '#D97706', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
-        tertiary: { bg: '#FDE5ED', text: '#DC2626', icon: '#DC2626', border: '#DC2626', displayMode: 'both', boldText: true, borderWidth: '3px', size: 'medium' },
-        action: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' },
-        actionCard: { bg: '#DDE8FD', text: '#2563EB', icon: '#2563EB', border: '#2563EB', displayMode: 'both', boldText: false, borderWidth: '1px', size: 'medium' }
-    },
-    alerts: {
-        primary: { bg: '#EEF2FF', text: '#3730A3', border: '#E0E7FF', boldText: true },
-        secondary: { bg: '#FEF2E0', text: '#D97706', border: '#DBEAFE', boldText: true },
-        success: { bg: '#ECFDF5', text: '#065F46', border: '#D1FAE5', boldText: true },
-        danger: { bg: '#FEF2F2', text: '#991B1B', border: '#FEE2E2', boldText: true }
-    }
-};
-
-const defaultTheme: CustomTheme = {
-    light: defaultThemeConfig,
-    dark: {
-        header: { bg: '#212529', text: '#ced4da', icon: '#ced4da', boldText: false },
-        horizontalNav: {
-            bg: '#212529', text: '#ced4da', icon: '#ced4da',
-            activeBorder: '#405189', activeText: '#ffffff',
-            activeBackground: '#405189',
-            activeBorderThickness: '3px',
-            displayMode: 'both',
-            menuAlignment: 'center',
-            boldText: false,
-            dropdown: {
-                bg: '#1F2937', // gray-800
-                text: '#F3F4F6', // gray-100
-                icon: '#9CA3AF', // gray-400
-                border: '#374151', // gray-700
-                borderWidth: '1px',
-                bold: false,
-                activeBackground: '#374151', // gray-700
-                triggerMode: 'click'
-            }
-        },
-        verticalNav: {
-            bg: '#212529', text: '#ced4da', icon: '#ced4da',
-            displayMode: 'both',
-            boldText: false,
-            // Add active states for vertical nav if needed by interface, though currently Sidebar uses simple highlighting
-            activeBackground: '#405189', activeText: '#ffffff'
-        },
-        footer: { bg: '#212529', text: '#adb5bd', icon: '#adb5bd', boldText: false },
-        buttons: {
-            primary: { bg: '#405189', text: '#ffffff', icon: '#ffffff', border: '#405189', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
-            secondary: { bg: '#3577f1', text: '#ffffff', icon: '#ffffff', border: '#3577f1', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
-            tertiary: { bg: '#299cdb', text: '#ffffff', icon: '#ffffff', border: '#299cdb', displayMode: 'both', boldText: true, borderWidth: '1px', size: 'medium' },
-            action: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'icon', boldText: false, borderWidth: '1px', size: 'medium' },
-            actionCard: { bg: '#2c3034', text: '#ced4da', icon: '#ced4da', border: '#343a40', displayMode: 'both', boldText: false, borderWidth: '1px', size: 'medium' }
-        },
-        alerts: {
-            primary: { bg: '#405189', text: '#ffffff', border: '#405189', boldText: true },
-            secondary: { bg: '#3577f1', text: '#ffffff', border: '#3577f1', boldText: true },
-            success: { bg: '#0ab39c', text: '#ffffff', border: '#0ab39c', boldText: true },
-            danger: { bg: '#f06548', text: '#ffffff', border: '#f06548', boldText: true }
-        }
-    },
-    branding: {
-        logoLight: '',
-        logoDark: '',
-        logoCollapsedLight: '',
-        logoCollapsedDark: '',
-        favicon: ''
-    }
-};
+import { defaultTheme, ThemeConfig, CustomTheme, ColorSettings, MenuSettings, ButtonSettings, AlertSettings, DropdownSettings, themeVersion } from '@/config/theme';
 
 import { navItems as initialNavItems } from '@/config/navigation';
 
@@ -248,6 +75,46 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     // Apply CSS Variables
     useEffect(() => {
         const root = document.documentElement;
+
+        // --- Initialization Logic ---
+        if (!isInitialized) {
+            // Check Version
+            const savedVersion = parseInt(localStorage.getItem('themeVersion') || '0', 10);
+
+            // If local version is stale, we force update to defaultTheme (Server Config)
+            if (themeVersion > savedVersion) {
+                // Determine theme mode (light/dark) - prioritize local preference if possible, or default to light
+                const savedThemeMode = localStorage.getItem('theme') as Theme || 'light';
+
+                // Set logic
+                setCustomTheme(defaultTheme);
+                setThemeState(savedThemeMode);
+
+                // Update local storage to match new defaults
+                localStorage.setItem('customTheme', JSON.stringify(defaultTheme));
+                localStorage.setItem('themeVersion', String(themeVersion));
+
+                console.log('Theme configuration updated from server (Version ' + themeVersion + ')');
+            } else {
+                // Versions match, load local overrides if present
+                const savedCustomTheme = localStorage.getItem('customTheme');
+                if (savedCustomTheme) {
+                    try {
+                        setCustomTheme(JSON.parse(savedCustomTheme));
+                    } catch (e) {
+                        console.error('Failed to parse saved theme', e);
+                        setCustomTheme(defaultTheme);
+                    }
+                }
+
+                const savedTheme = localStorage.getItem('theme') as Theme;
+                if (savedTheme) {
+                    setThemeState(savedTheme);
+                }
+            }
+
+            setIsInitialized(true);
+        }
         const setVar = (name: string, value: string) => {
             if (value) root.style.setProperty(name, value);
         };
@@ -631,17 +498,23 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
-    // Helper to remove duplicates to prevent key errors
-    const removeDuplicates = (items: any[], seenHrefs: Set<string>): any[] => {
+    // Helper to remove duplicates (sibling-level only)
+    const removeDuplicates = (items: any[]): any[] => {
+        const seenInThisLevel = new Set<string>();
         return items.reduce((acc: any[], item: any) => {
-            if (item.href && seenHrefs.has(item.href)) {
+            // Use ID or Href for uniqueness
+            const key = item.href || item.label;
+
+            // Only filter if we've seen this exact key AT THIS LEVEL
+            if (key && seenInThisLevel.has(key)) {
                 return acc;
             }
-            if (item.href) seenHrefs.add(item.href);
+            if (key) seenInThisLevel.add(key);
 
             const newItem = { ...item };
             if (newItem.children) {
-                newItem.children = removeDuplicates(newItem.children, seenHrefs);
+                // Recursively clean children with a FRESH set for that level
+                newItem.children = removeDuplicates(newItem.children);
             }
             acc.push(newItem);
             return acc;
@@ -650,13 +523,15 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
     // Persist navItems changes (optional, or just keep in state for session)
     // For now, let's persist to localStorage so edits survive refresh, similar to theme
+    // Persist navItems changes (optional, or just keep in state for session)
+    // For now, let's persist to localStorage so edits survive refresh, similar to theme
     useEffect(() => {
         const savedNav = localStorage.getItem('navItems');
         if (savedNav) {
             try {
                 const parsed = JSON.parse(savedNav);
                 // First deduplicate, then restore icons
-                const uniqueItems = removeDuplicates(parsed, new Set());
+                const uniqueItems = removeDuplicates(parsed);
                 setNavItems(restoreIcons(uniqueItems));
             } catch (e) {
                 console.error("Failed to parse saved nav items", e);
@@ -667,7 +542,7 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     const updateNavItems = (newItems: any[]) => {
         // ALWAYS hydrate icons before setting state, because inputs (e.g. from JSON.clone) might lack them.
         // Also deduplicate to prevent key errors
-        const uniqueItems = removeDuplicates(newItems, new Set());
+        const uniqueItems = removeDuplicates(newItems);
         const hydratedItems = restoreIcons(uniqueItems);
 
         setNavItems(hydratedItems);
