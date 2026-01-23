@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Trash2, Filter, X } from 'lucide-react';
+import { Plus, Trash2, Filter, X } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -36,16 +37,15 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ImportCompaniesDialog } from '@/components/companies/ImportCompaniesDialog';
 import { AddCompanyDialog } from '@/components/companies/AddCompanyDialog';
 import { AdvancedFilterSheet, FilterRule, MatchType } from '@/components/companies/AdvancedFilterSheet';
-import { AboutCard, AboutCardHeader, AboutCardDetails } from "@/components/companies/detail/AboutCard"; // Import AboutCard
+import { AboutCardDetails } from "@/components/companies/detail/AboutCard";
 import { TasksCard } from '@/components/companies/detail/TasksCard';
 import { NotesCard } from '@/components/companies/detail/NotesCard';
 import { FilesCard } from '@/components/companies/detail/FilesCard';
-import { Maximize2, Minimize2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+
 import Papa from 'papaparse';
 import { MultiSelect } from '@/components/ui/multi-select';
 
-const defaultColumns = [
+export const defaultColumns = [
     { id: 'select', label: 'Select', isMandatory: true, style: { alignment: 'center' } }, // Center alignment for checkbox
     { id: 'id', label: 'ID', isMandatory: true },
     { id: 'name', label: 'Company Name', isMandatory: true },
@@ -145,7 +145,6 @@ export default function CompaniesPage() {
     const router = useRouter();
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
-    const actionButtonStyles = activeTheme.buttons.action;
 
     // --- Table Config ---
     const tableConfig = useTableConfig({
@@ -932,6 +931,8 @@ export default function CompaniesPage() {
                 <DataTableViewOptions
                     config={tableConfig}
                     mode="dialog"
+                    showDetailCard={showDetailCard}
+                    onShowDetailCardChange={setShowDetailCard}
                     trigger={
                         <div
                             className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 cursor-pointer focus:outline-none"
@@ -974,15 +975,16 @@ export default function CompaniesPage() {
     }, [tableConfig, selectedRows.size, setHeaderMenuItems, setHeaderActions, isQuickEditMode, filterRules.length, isDetailViewOpen, activeCompanyId]);
 
     // Extract column options for the filter
-    const filterColumns = useMemo(() => [
-        { id: 'name', label: 'Company Name' },
-        { id: 'email', label: 'Contact Email' },
-        { id: 'phone', label: 'Phone' },
-        { id: 'website', label: 'Website' },
-        { id: 'address', label: 'Address' },
-        { id: 'owner', label: 'Owner' },
-        { id: 'industry', label: 'Industry' },
-    ], []);
+    const filterColumns = useMemo(() => {
+        if (!tableConfig.sortedColumns) return [];
+        return tableConfig.sortedColumns
+            .filter(col => col.id !== 'select' && col.id !== 'actions' && col.isVisible) // Exclude system columns & hidden columns if desired, or allow filtering hidden ones. User said "all columns that we have on the table". Let's show visible ones or all? "Dynamic and get the column list of the page". Usually filtering hidden columns is useful. I'll include all non-system ones.
+            .filter(col => col.id !== 'select' && col.id !== 'actions')
+            .map(col => ({
+                id: col.id,
+                label: col.label
+            }));
+    }, [tableConfig.sortedColumns]);
 
     // Ensure menu item updates when state changes
     React.useEffect(() => {
@@ -1018,31 +1020,44 @@ export default function CompaniesPage() {
 
                         {/* Panel Content - Classic Clean (Flush) */}
                         <div className="flex-1 flex flex-col overflow-hidden relative bg-white dark:bg-slate-900">
-                            {/* Sticky Header */}
-                            {activeCompany && (
-                                <div className="shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
-                                    <AboutCardHeader company={activeCompany} />
-                                </div>
-                            )}
-
                             <div className="flex-1 overflow-y-auto p-0 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                                 {activeCompany ? (
                                     <div className="h-full flex flex-col">
                                         <div className="shrink-0">
-                                            <AboutCardDetails company={activeCompany} />
+                                            <AboutCardDetails
+                                                company={activeCompany}
+                                                detailLayout={tableConfig.config?.entityConfig?.detailLayout}
+                                                detailStyles={tableConfig.config?.entityConfig?.detailStyles}
+                                                columns={tableConfig.config?.columns}
+                                            />
                                         </div>
 
                                         <div className="p-0 bg-slate-50 dark:bg-slate-900/50 flex-1">
                                             <div className="p-6 space-y-6">
-                                                <div className="h-[500px]">
-                                                    <TasksCard />
-                                                </div>
-                                                <div className="h-[500px]">
-                                                    <NotesCard />
-                                                </div>
-                                                <div className="h-[500px]">
-                                                    <FilesCard />
-                                                </div>
+                                                {(tableConfig.config?.entityConfig?.cardsLayout || ['tasks', 'notes', 'files']).map(cardId => {
+                                                    switch (cardId) {
+                                                        case 'tasks':
+                                                            return (
+                                                                <div key="tasks" className="h-[500px]">
+                                                                    <TasksCard />
+                                                                </div>
+                                                            );
+                                                        case 'notes':
+                                                            return (
+                                                                <div key="notes" className="h-[500px]">
+                                                                    <NotesCard />
+                                                                </div>
+                                                            );
+                                                        case 'files':
+                                                            return (
+                                                                <div key="files" className="h-[500px]">
+                                                                    <FilesCard />
+                                                                </div>
+                                                            );
+                                                        default:
+                                                            return null;
+                                                    }
+                                                })}
                                             </div>
                                         </div>
                                     </div>
@@ -1069,6 +1084,7 @@ export default function CompaniesPage() {
             />
 
             <AddCompanyDialog
+                key={editingCompany?.id || 'new-company'}
                 open={isAddCompanyOpen}
                 onOpenChange={(open) => { setIsAddCompanyOpen(open); if (!open) setEditingCompany(null); }}
                 onSubmit={handleSaveCompany}

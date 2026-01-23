@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Trash2, Plus, Upload, Circle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+
 import { Textarea } from '@/components/ui/textarea'; // Assuming we have or will use native textarea styled like input
 
 interface ContactField {
@@ -31,66 +31,27 @@ interface ContactField {
 interface AddCompanyDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSubmit: (data: any) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initialData?: any;
 }
 
 export function AddCompanyDialog({ open, onOpenChange, onSubmit, initialData }: AddCompanyDialogProps) {
     // Form State
-    const [companyId, setCompanyId] = useState('COM29195636'); // Mock ID
-    const [companyName, setCompanyName] = useState('');
-    const [owner, setOwner] = useState('');
-    const [industry, setIndustry] = useState('');
-    const [website, setWebsite] = useState('');
-    const [services, setServices] = useState('');
+    const [companyId, setCompanyId] = useState(() => initialData?.id || 'COM' + Math.floor(Math.random() * 10000000));
+    const [companyName, setCompanyName] = useState(initialData?.name || '');
+    const [owner, setOwner] = useState(initialData?.owner || '');
+    const [industry, setIndustry] = useState(initialData?.industry || '');
+    const [website, setWebsite] = useState(initialData?.website || '');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const [services, setServices] = useState(Array.isArray(initialData?.services) ? (initialData.services as any[]).join('\n') : (initialData?.services || ''));
     const [logo, setLogo] = useState<File | null>(null);
 
     // Dynamic Lists
-    const [emails, setEmails] = useState<ContactField[]>([
-        { id: '1', value: '', type: 'Work', isPrimary: true }
-    ]);
-    const [phones, setPhones] = useState<ContactField[]>([
-        { id: '1', value: '', type: 'Work', isPrimary: true }
-    ]);
-    const [addresses, setAddresses] = useState<ContactField[]>([
-        { id: '1', value: '', type: 'Work', isPrimary: true }
-    ]);
-
-    useEffect(() => {
-        if (open) {
-            if (initialData) {
-                setCompanyId(initialData.id || 'COM' + Math.floor(Math.random() * 10000000));
-                setCompanyName(initialData.name || '');
-                setOwner(initialData.owner || '');
-                setIndustry(initialData.industry || '');
-                setWebsite(initialData.website || '');
-                setServices(Array.isArray(initialData.services) ? initialData.services.join('\n') : (initialData.services || ''));
-                // For complex lists (emails, phones, addresses), if they exist in initialData use them, else default.
-                // Assuming initialData might have them or we map them.
-                // For now, if initialData doesn't have them in the correct format, we might need to map simply or keep defaults.
-                // Let's assume for this "v1" they might be simple strings in the table row but we want to edit them as lists?
-                // The table row has `email`, `phone`, `address` as visible strings.
-                // We should probably populate the first item of the list with that string implementation.
-                setEmails(initialData.emails || [{ id: '1', value: initialData.email || '', type: 'Work', isPrimary: true }]);
-                setPhones(initialData.phones || [{ id: '1', value: initialData.phone || '', type: 'Work', isPrimary: true }]);
-                setAddresses(initialData.addresses || [{ id: '1', value: initialData.address || '', type: 'Work', isPrimary: true }]);
-
-                setLogo(null); // Reset logo or handle existing URL if we had one
-            } else {
-                // Reset to defaults for "Add New"
-                setCompanyId('COM' + Math.floor(Math.random() * 10000000));
-                setCompanyName('');
-                setOwner('');
-                setIndustry('');
-                setWebsite('');
-                setServices('');
-                setLogo(null);
-                setEmails([{ id: '1', value: '', type: 'Work', isPrimary: true }]);
-                setPhones([{ id: '1', value: '', type: 'Work', isPrimary: true }]);
-                setAddresses([{ id: '1', value: '', type: 'Work', isPrimary: true }]);
-            }
-        }
-    }, [open, initialData]);
+    const [emails, setEmails] = useState<ContactField[]>(initialData?.emails || [{ id: '1', value: initialData?.email || '', type: 'Work', isPrimary: true }]);
+    const [phones, setPhones] = useState<ContactField[]>(initialData?.phones || [{ id: '1', value: initialData?.phone || '', type: 'Work', isPrimary: true }]);
+    const [addresses, setAddresses] = useState<ContactField[]>(initialData?.addresses || [{ id: '1', value: initialData?.address || '', type: 'Work', isPrimary: true }]);
 
     // Handlers
     const handleAddField = (
@@ -115,6 +76,7 @@ export function AddCompanyDialog({ open, onOpenChange, onSubmit, initialData }: 
         list: ContactField[],
         id: string,
         key: keyof ContactField,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         value: any
     ) => {
         setList(list.map(item => item.id === id ? { ...item, [key]: value } : item));

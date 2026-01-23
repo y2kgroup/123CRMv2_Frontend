@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import React, { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, Trash2, Filter, X } from 'lucide-react';
+import { Plus, Filter, X, ExternalLink, FileText, Trash2, Pencil } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -31,17 +33,18 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreVertical, Settings, FileDown, FileUp, CreditCard, Pencil, Eye } from 'lucide-react';
+import { FileDown, FileUp, CreditCard, Settings, MoreVertical } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImportCompaniesDialog } from '@/components/companies/ImportCompaniesDialog';
-import { AddCompanyDialog } from '@/components/companies/AddCompanyDialog';
+import { GenericEntityDialog } from '@/components/ui/data-table/GenericEntityDialog';
 import { AdvancedFilterSheet, FilterRule, MatchType } from '@/components/companies/AdvancedFilterSheet';
-import { AboutCard, AboutCardHeader, AboutCardDetails } from "@/components/companies/detail/AboutCard";
+import { AboutCardDetails } from "@/components/companies/detail/AboutCard";
+import { cn } from '@/lib/utils';
+
 import { TasksCard } from '@/components/companies/detail/TasksCard';
 import { NotesCard } from '@/components/companies/detail/NotesCard';
 import { FilesCard } from '@/components/companies/detail/FilesCard';
-import { Maximize2, Minimize2 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
+
 import Papa from 'papaparse';
 import { MultiSelect } from '@/components/ui/multi-select';
 
@@ -55,88 +58,11 @@ const defaultColumns = [
     { id: 'actions', label: 'Actions', isMandatory: true },
 ];
 
-// Reusing AddressCell helper for consistency if needed in future, though not in current columns
-function AddressCell({ value, onChange }: { value: string, onChange: (val: string) => void }) {
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    const [suggestions, setSuggestions] = React.useState<string[]>([]);
-    const [showSuggestions, setShowSuggestions] = React.useState(false);
 
-    React.useEffect(() => {
-        if (typeof window !== 'undefined' && (window as any).google && (window as any).google.maps && inputRef.current) {
-            try {
-                const autocomplete = new (window as any).google.maps.places.Autocomplete(inputRef.current, {
-                    types: ['address'],
-                });
-                autocomplete.addListener('place_changed', () => {
-                    const place = autocomplete.getPlace();
-                    if (place && place.formatted_address) {
-                        onChange(place.formatted_address);
-                    }
-                });
-            } catch (e) {
-                console.warn('Google Maps Autocomplete failed to init', e);
-            }
-        }
-    }, [onChange]);
-
-    // Mock suggestions when Google is not available
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const val = e.target.value;
-        onChange(val);
-
-        if (!((window as any).google && (window as any).google.maps)) {
-            if (val.length > 2) {
-                // Mock Data
-                const mock = [
-                    `${val} St, New York, NY`,
-                    `${val} Ave, Los Angeles, CA`,
-                    `123 ${val} Blvd, Miami, FL`,
-                    `${val} Rd, London, UK`
-                ];
-                setSuggestions(mock);
-                setShowSuggestions(true);
-            } else {
-                setShowSuggestions(false);
-            }
-        }
-    };
-
-    return (
-        <div className="relative">
-            <Input
-                ref={inputRef}
-                value={value}
-                onChange={handleInputChange}
-                className="h-8 min-w-[150px]"
-                placeholder="Search Place..."
-                onClick={(e) => e.stopPropagation()}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-            />
-            {showSuggestions && (
-                <div className="absolute z-50 mt-1 w-full bg-white dark:bg-slate-800 border rounded-md shadow-lg max-h-40 overflow-auto">
-                    {suggestions.map((s, i) => (
-                        <div
-                            key={i}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer text-xs"
-                            onClick={() => {
-                                onChange(s);
-                                setShowSuggestions(false);
-                            }}
-                        >
-                            {s}
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-}
 
 export default function TemplatesPage() {
-    const router = useRouter();
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
-    const actionButtonStyles = activeTheme.buttons.action;
 
     // --- Table Config ---
     const tableConfig = useTableConfig({
@@ -338,45 +264,124 @@ export default function TemplatesPage() {
             createdAt: (item: any) => item ? <span className="text-slate-500">{item.createdAt}</span> : null,
             editedBy: (item: any) => item ? <span className="text-slate-500">{item.editedBy}</span> : null,
             editedAt: (item: any) => item ? <span className="text-slate-500">{item.editedAt}</span> : null,
-            actions: (item: any) => (
-                <div className="flex items-center gap-2 justify-end">
-                    <button
-                        className="h-8 w-8 p-0 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); handleEditRow(item); }}
-                    >
-                        <Pencil className="h-4 w-4 text-slate-500" />
-                    </button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <button
-                                className="h-8 w-8 p-0 flex items-center justify-center rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                                <MoreVertical className="h-4 w-4 text-slate-500" />
-                            </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                            align="end"
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                        >
-                            <DropdownMenuItem
-                                onClick={() => { setActiveCompanyId(item.id); setIsDetailViewOpen(true); }}
-                                className="cursor-pointer"
-                            >
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteRow(item.id, item.name)} className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/10 cursor-pointer">
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            ),
+            actions: (item: any) => {
+                const actionsConfig = tableConfig.config?.actions || [];
+                // Backward compatibility: isVisibleInTable -> tableDisplayMode
+                const effectiveActions = actionsConfig.map(a => ({
+                    ...a,
+                    mode: a.tableDisplayMode || (a.isVisibleInTable ? 'primary' : 'none')
+                }));
+
+                const primaryActions = effectiveActions.filter(a => a.mode === 'primary');
+                const menuActions = effectiveActions.filter(a => a.mode === 'menu');
+
+                // Helper for click handling (kept local to avoid dependency issues for now)
+                const handleClick = (e: React.MouseEvent, action: any) => {
+                    e.stopPropagation();
+                    switch (action.id) {
+                        case 'view':
+                            setActiveCompanyId(item.id);
+                            setIsDetailViewOpen(true);
+                            break;
+                        case 'edit':
+                            handleEditRow(item);
+                            break;
+                        case 'delete':
+                            handleDeleteRow(item.id, item.name);
+                            break;
+                        case 'email':
+                            if (item.email) window.location.href = `mailto:${item.email}`;
+                            else if (item.emails?.[0]?.value) window.location.href = `mailto:${item.emails[0].value}`;
+                            break;
+                        case 'call':
+                            if (item.phone) window.location.href = `tel:${item.phone}`;
+                            else if (item.phones?.[0]?.value) window.location.href = `tel:${item.phones[0].value}`;
+                            break;
+                        default:
+                            if (action.customUrl) {
+                                window.open(action.customUrl.replace('{id}', item.id), '_blank');
+                            }
+                            break;
+                    }
+                };
+
+                return (
+                    <div className="flex items-center gap-1 justify-end">
+                        {primaryActions.map(action => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const IconComp = action.icon && (LucideIcons as any)[action.icon] ? (LucideIcons as any)[action.icon] : null;
+                            if (!IconComp) return null;
+
+                            return (
+                                <button
+                                    key={action.id}
+                                    className={cn(
+                                        "h-8 w-8 p-0 flex items-center justify-center rounded-md transition-colors",
+                                        action.variant === 'default'
+                                            ? "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                            : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    )}
+                                    title={action.label}
+                                    onClick={(e) => handleClick(e, action)}
+                                >
+                                    <IconComp className="h-4 w-4" />
+                                </button>
+                            );
+                        })}
+
+                        {menuActions.length > 0 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        className="h-8 w-8 p-0 flex items-center justify-center rounded-md bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500"
+                                    >
+                                        <MoreVertical className="h-4 w-4" />
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="end"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                                >
+                                    {menuActions.map(action => {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                        const IconComp = action.icon && (LucideIcons as any)[action.icon] ? (LucideIcons as any)[action.icon] : null;
+                                        return (
+                                            <DropdownMenuItem
+                                                key={action.id}
+                                                onClick={(e) => handleClick(e as any, action)}
+                                                className={cn(
+                                                    "cursor-pointer",
+                                                    action.variant === 'default' && ""
+                                                )}
+                                            >
+                                                {IconComp && <IconComp className="w-4 h-4 mr-2" />}
+                                                {action.label}
+                                            </DropdownMenuItem>
+                                        );
+                                    })}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                    </div>
+                );
+            },
             // Minimal fallbacks for other columns if user adds them back via config
             id: (item: any) => <span className="font-mono text-xs text-slate-500">{item.id}</span>,
-            name: (item: any) => <span className="font-medium text-slate-900 dark:text-slate-100">{item.name}</span>,
+            name: (item: any) => {
+                if (isQuickEditMode) {
+                    return (
+                        <div onClick={(e) => e.stopPropagation()}>
+                            <Input
+                                value={item.name}
+                                onChange={(e) => handleCellChange(item.id, 'name', e.target.value)}
+                                className="h-8 w-full font-medium"
+                            />
+                        </div>
+                    );
+                }
+                return <span className="font-medium text-slate-900 dark:text-slate-100">{item.name}</span>;
+            },
         };
 
         // Add Custom Columns
@@ -385,8 +390,202 @@ export default function TemplatesPage() {
                 if (!baseColumns[col.id]) {
                     baseColumns[col.id] = (item: any) => {
                         const val = item[col.id];
-                        if (!val && val !== 0) return <span className="text-slate-400 italic text-xs">Empty</span>;
-                        return <span className="text-slate-600 dark:text-slate-400">{val}</span>;
+
+                        // Prepare Badge Style
+                        const badgeStyleCfg = (col as any).badgeStyle || (col as any).style || {};
+                        const computedBadgeStyle: React.CSSProperties = {
+                            backgroundColor: badgeStyleCfg.backgroundColor,
+                            color: badgeStyleCfg.textColor || badgeStyleCfg.color,
+                            fontSize: badgeStyleCfg.textSize === 'xs' ? '0.75rem' : badgeStyleCfg.textSize === 'sm' ? '0.875rem' : badgeStyleCfg.textSize === 'base' ? '1rem' : undefined,
+                            fontWeight: badgeStyleCfg.fontWeight,
+                            fontFamily: badgeStyleCfg.fontFamily,
+                            textAlign: badgeStyleCfg.alignment as any
+                        };
+
+                        // --- MERGED COLUMN LOGIC ---
+                        let mergedContent = null;
+                        if (col.mergeWithColumnId && tableConfig.config?.columns) {
+                            const mergedCol = Object.values(tableConfig.config.columns).find(c => c.id === col.mergeWithColumnId);
+                            if (mergedCol) {
+                                const mergedVal = item[mergedCol.id];
+                                if (mergedVal) {
+                                    if (mergedCol.type === 'image') {
+                                        mergedContent = (
+                                            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0">
+                                                <img src={mergedVal} alt="Merged" className="w-full h-full object-cover" />
+                                            </div>
+                                        );
+                                    } else if (mergedCol.type === 'select' && mergedCol.displayStyle === 'badge') {
+                                        mergedContent = <span className="text-xs text-slate-500 font-medium">{String(mergedVal)}</span>;
+                                    } else {
+                                        mergedContent = <span className="text-sm text-slate-500">{String(mergedVal)}</span>;
+                                    }
+                                }
+                            }
+                        }
+
+                        const mainContent = (() => {
+                            // --- QUICK EDIT MODE ---
+                            if (isQuickEditMode) {
+                                // Handler wrapper
+                                const handleChange = (v: any) => handleCellChange(item.id, col.id, v);
+
+                                // Handle Multi-Select (Badge or Select types)
+                                if (col.isMultiSelect && (col.type === 'select' || col.type === 'badge')) {
+                                    return (
+                                        <div onClick={(e) => e.stopPropagation()} className="min-w-[200px]">
+                                            <MultiSelect
+                                                options={col.dropdownOptions || []}
+                                                value={Array.isArray(val) ? val : (val ? [val] : [])}
+                                                onChange={handleChange}
+                                                placeholder="Select..."
+                                                className="h-auto min-h-8 py-1"
+                                                badgeStyle={computedBadgeStyle}
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                // Handle Single-Select (Badge or Select types) with options
+                                if ((col.type === 'select' || col.type === 'badge') && col.dropdownOptions && col.dropdownOptions.length > 0) {
+                                    return (
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <Select
+                                                value={val || ''}
+                                                onValueChange={handleChange}
+                                            >
+                                                <SelectTrigger className="h-8 w-full min-w-[120px]">
+                                                    <SelectValue placeholder="Select..." />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {col.dropdownOptions.map(opt => (
+                                                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    );
+                                }
+
+                                // Fallback for empty dropdown options in Select/Badge type -> render Text Input so they can at least edit or see why
+                                if (col.type === 'select' || col.type === 'badge') {
+                                    return (
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <Input
+                                                value={val || ''}
+                                                onChange={(e) => handleChange(e.target.value)}
+                                                className="h-8 w-full min-w-[100px]"
+                                                placeholder="No options configured"
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                if (col.type === 'date') {
+                                    return (
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <Input
+                                                type="date"
+                                                value={val || ''}
+                                                onChange={(e) => handleChange(e.target.value)}
+                                                className="h-8 w-full"
+                                            />
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <Input
+                                            type={col.type === 'number' ? 'number' : 'text'}
+                                            value={val || ''}
+                                            onChange={(e) => handleChange(e.target.value)}
+                                            className="h-8 w-full min-w-[100px]"
+                                        />
+                                    </div>
+                                );
+                            }
+
+                            // --- READ ONLY MODE ---
+                            if (!val && val !== 0) return <span className="text-slate-400 italic text-xs">Empty</span>;
+
+                            if (col.type === 'image') {
+                                return (
+                                    <div className="flex items-center justify-center">
+                                        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+                                            <img src={val} alt="Avatar" className="w-full h-full object-cover" />
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            if (col.type === 'currency') {
+                                const formatted = new Intl.NumberFormat('en-US', {
+                                    style: 'currency',
+                                    currency: 'USD'
+                                }).format(Number(val) || 0);
+                                return <span className="text-slate-600 dark:text-slate-400 font-mono">{formatted}</span>;
+                            }
+
+                            if (col.type === 'badge' || (col.type === 'select' && (col.displayStyle === 'badge' || Array.isArray(val)))) {
+                                const values = Array.isArray(val) ? val : [val];
+                                return (
+                                    <div className="flex flex-wrap gap-1">
+                                        {values.map((v: string, i: number) => (
+                                            <Badge key={i} variant="secondary" className="px-1.5 py-0 border-transparent transition-colors" style={computedBadgeStyle}>
+                                                {v}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                );
+                            }
+
+                            if (col.type === 'url') {
+                                const href = val.startsWith('http') ? val : `https://${val}`;
+                                return (
+                                    <a href={href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-blue-600 hover:underline hover:text-blue-700 text-xs" onClick={(e) => e.stopPropagation()}>
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                        <span className="truncate max-w-[150px]">{String(val).replace(/^https?:\/\/(www\.)?/, '')}</span>
+                                    </a>
+                                );
+                            }
+
+                            if (col.type === 'file') {
+                                return (
+                                    <a href={val} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-blue-600 hover:underline hover:text-blue-700 text-xs" onClick={(e) => e.stopPropagation()}>
+                                        <FileText className="w-3.5 h-3.5" />
+                                        <span>View File</span>
+                                    </a>
+                                );
+                            }
+
+                            if (Array.isArray(val)) {
+                                return (
+                                    <div className="flex flex-wrap gap-1">
+                                        {val.map((v: any, i: number) => {
+                                            const displayVal = (typeof v === 'object' && v !== null && 'value' in v) ? v.value : v;
+                                            if (typeof displayVal === 'object') return null;
+                                            return (
+                                                <Badge key={i} variant="secondary" className="px-1.5 py-0 border-transparent transition-colors font-normal bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                                    {String(displayVal)}
+                                                </Badge>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            }
+
+                            if (typeof val === 'object') return <span className="text-slate-400 text-xs">Complex Data</span>;
+
+                            return <span className="text-slate-600 dark:text-slate-400">{String(val)}</span>;
+                        })();
+
+                        return (
+                            <div className="flex items-center gap-3">
+                                {mergedContent}
+                                {mainContent}
+                            </div>
+                        );
                     };
                 }
             });
@@ -403,18 +602,40 @@ export default function TemplatesPage() {
     const [editingCompany, setEditingCompany] = React.useState<any>(null);
 
     const handleSaveCompany = (companyData: any) => {
+        // Process any File objects in companyData into Blob URLs for display
+        const processedData = { ...companyData };
+        Object.keys(processedData).forEach(key => {
+            const value = processedData[key];
+            if (value instanceof File) {
+                processedData[key] = URL.createObjectURL(value);
+            }
+        });
+
+        // Auto-generate IDs for custom ID columns if this is a new entry or they are missing
+        if (tableConfig.config?.columns) {
+            Object.values(tableConfig.config.columns).forEach(col => {
+                // If it's a Custom ID column
+                if (col.type === 'id') {
+                    // Generate if it's a new entry (ignore form value) OR if it's missing on an edit (unlikely but safe)
+                    if (!editingCompany || !processedData[col.id] || processedData[col.id] === 'Auto-generated') {
+                        const prefix = col.idPrefix || '';
+                        const randomPart = Math.random().toString(36).substr(2, 6).toUpperCase();
+                        processedData[col.id] = `${prefix}${randomPart}`;
+                    }
+                }
+            });
+        }
+
         const newEntry = {
-            id: companyData.id,
-            name: companyData.name,
-            owner: companyData.owner,
-            industry: companyData.industry,
-            website: companyData.website,
-            services: companyData.services,
-            email: companyData.emails?.[0]?.value || '',
-            phone: companyData.phones?.[0]?.value || '',
-            address: companyData.addresses?.[0]?.value || '',
-            createdBy: 'System',
-            createdAt: new Date().toLocaleDateString(),
+            ...processedData, // Include all custom fields and raw data
+            // Ensure standard fields are formatted correctly for the table (e.g. taking first email/phone)
+            email: companyData.emails?.[0]?.value || companyData.email || '',
+            phone: companyData.phones?.[0]?.value || companyData.phone || '',
+            address: companyData.addresses?.[0]?.value || companyData.address || '',
+
+            // Metadata
+            createdBy: editingCompany?.createdBy || 'System',
+            createdAt: editingCompany?.createdAt || new Date().toLocaleDateString(),
             editedBy: 'System',
             editedAt: new Date().toLocaleDateString(),
         };
@@ -541,7 +762,7 @@ export default function TemplatesPage() {
                     setEditingCompany(undefined);
                     setIsAddCompanyOpen(true);
                 }}>
-                    Add Item
+                    Add {tableConfig.config?.entityConfig?.singularName || 'Item'}
                 </Button>
 
                 <Button variant="action" icon={Filter} onClick={() => setIsFilterOpen(true)}>
@@ -573,6 +794,12 @@ export default function TemplatesPage() {
                 <DataTableViewOptions
                     config={tableConfig}
                     mode="dialog"
+                    showDetailCard={showDetailCard}
+                    onShowDetailCardChange={(show) => {
+                        setShowDetailCard(show);
+                        localStorage.setItem('templates_showDetailCard', JSON.stringify(show));
+                        if (!show) setIsDetailViewOpen(false);
+                    }}
                     trigger={
                         <div
                             className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 cursor-pointer focus:outline-none"
@@ -615,11 +842,45 @@ export default function TemplatesPage() {
     }, [tableConfig, selectedRows.size, setHeaderMenuItems, setHeaderActions, isQuickEditMode, filterRules.length, isDetailViewOpen, activeCompanyId]);
 
     // Extract column options for the filter
-    const filterColumns = useMemo(() => [
-        { id: 'createdBy', label: 'Created By' },
-        { id: 'editedBy', label: 'Edited By' },
-        { id: 'name', label: 'Name' } // Include name in filters just in case
-    ], []);
+    // Extract column options for the filter
+    const filterColumns = useMemo(() => {
+        if (!tableConfig.sortedColumns) return [];
+        return tableConfig.sortedColumns
+            .filter(col => col.id !== 'select' && col.id !== 'actions' && col.isVisible)
+            .filter(col => col.id !== 'select' && col.id !== 'actions')
+            .map(col => ({
+                id: col.id,
+                label: col.label
+            }));
+    }, [tableConfig.sortedColumns]);
+
+    const handleCardAction = (actionId: string, item: any) => {
+        const action = tableConfig.config?.actions?.find(a => a.id === actionId);
+        switch (actionId) {
+            case 'view':
+                // Already in view
+                break;
+            case 'edit':
+                handleEditRow(item);
+                break;
+            case 'delete':
+                handleDeleteRow(item.id, item.name);
+                break;
+            case 'email':
+                if (item.email) window.location.href = `mailto:${item.email}`;
+                else if (item.emails?.[0]?.value) window.location.href = `mailto:${item.emails[0].value}`;
+                break;
+            case 'call':
+                if (item.phone) window.location.href = `tel:${item.phone}`;
+                else if (item.phones?.[0]?.value) window.location.href = `tel:${item.phones[0].value}`;
+                break;
+            default:
+                if (action?.customUrl) {
+                    window.open(action.customUrl.replace('{id}', item.id), '_blank');
+                }
+                break;
+        }
+    };
 
     return (
         <div className="h-full flex flex-col gap-4">
@@ -646,30 +907,47 @@ export default function TemplatesPage() {
                         />
 
                         <div className="flex-1 flex flex-col overflow-hidden relative bg-white dark:bg-slate-900">
-                            {activeCompany && (
-                                <div className="shrink-0 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-10">
-                                    <AboutCardHeader company={activeCompany} />
-                                </div>
-                            )}
-
                             <div className="flex-1 overflow-y-auto p-0 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
                                 {activeCompany ? (
                                     <div className="h-full flex flex-col">
                                         <div className="shrink-0">
-                                            <AboutCardDetails company={activeCompany} />
+                                            <AboutCardDetails
+                                                company={activeCompany}
+                                                detailLayout={tableConfig.config?.entityConfig?.detailLayout}
+                                                detailStyles={tableConfig.config?.entityConfig?.detailStyles}
+                                                buttonStyles={tableConfig.config?.entityConfig?.buttonStyles}
+                                                columns={tableConfig.config?.columns}
+                                                actions={tableConfig.config?.actions}
+                                                onAction={handleCardAction}
+                                            />
                                         </div>
 
                                         <div className="p-0 bg-slate-50 dark:bg-slate-900/50 flex-1">
                                             <div className="p-6 space-y-6">
-                                                <div className="h-[500px]">
-                                                    <TasksCard />
-                                                </div>
-                                                <div className="h-[500px]">
-                                                    <NotesCard />
-                                                </div>
-                                                <div className="h-[500px]">
-                                                    <FilesCard />
-                                                </div>
+                                                {(tableConfig.config?.entityConfig?.cardsLayout || ['tasks', 'notes', 'files']).map(cardId => {
+                                                    switch (cardId) {
+                                                        case 'tasks':
+                                                            return (
+                                                                <div key="tasks" className="h-[500px]">
+                                                                    <TasksCard />
+                                                                </div>
+                                                            );
+                                                        case 'notes':
+                                                            return (
+                                                                <div key="notes" className="h-[500px]">
+                                                                    <NotesCard />
+                                                                </div>
+                                                            );
+                                                        case 'files':
+                                                            return (
+                                                                <div key="files" className="h-[500px]">
+                                                                    <FilesCard />
+                                                                </div>
+                                                            );
+                                                        default:
+                                                            return null;
+                                                    }
+                                                })}
                                             </div>
                                         </div>
                                     </div>
@@ -695,11 +973,12 @@ export default function TemplatesPage() {
                 onImport={handleImportFile}
             />
 
-            <AddCompanyDialog
+            <GenericEntityDialog
                 open={isAddCompanyOpen}
                 onOpenChange={(open) => { setIsAddCompanyOpen(open); if (!open) setEditingCompany(null); }}
                 onSubmit={handleSaveCompany}
                 initialData={editingCompany}
+                entityConfig={tableConfig.config?.entityConfig || { singularName: 'Item', pluralName: 'Items', layout: [] }}
             />
 
             <AdvancedFilterSheet

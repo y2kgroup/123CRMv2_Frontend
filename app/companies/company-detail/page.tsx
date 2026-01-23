@@ -20,6 +20,9 @@ import {
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { useLayout } from '@/components/layout/LayoutContext';
 import { Globe, Building2, Pencil, Check, Settings, ArrowLeft } from 'lucide-react';
+import { useTableConfig } from '@/components/ui/data-table/useTableConfig';
+import { defaultColumns } from '@/app/companies/page';
+
 
 // Sub Components
 import { AboutCard } from '@/components/companies/detail/AboutCard';
@@ -84,6 +87,13 @@ export default function DetailPage() {
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [tiles, setTiles] = useState<TileConfig[]>(DEFAULT_LAYOUT);
+
+    // Get Table Config for AboutCard Layout
+    const tableConfig = useTableConfig({
+        tableId: 'companies-updated',
+        defaultColumns: defaultColumns
+    });
+
 
     // Load Company Data
     useEffect(() => {
@@ -212,7 +222,7 @@ export default function DetailPage() {
 
     const renderTileContent = (id: string) => {
         switch (id) {
-            case 'about': return <AboutCard company={company} />;
+            case 'about': return <AboutCard company={company} detailLayout={tableConfig.config?.entityConfig?.detailLayout} columns={tableConfig.config?.columns} />;
             case 'tasks': return <TasksCard />;
             case 'notes': return <NotesCard />;
             case 'files': return <FilesCard />;

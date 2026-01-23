@@ -1,6 +1,6 @@
+import { FileText, LayoutDashboard, Users, Building2, Factory, Calculator, Store, CalendarDays, Settings, PieChart, Bell, Briefcase, Circle, Clipboard, Globe, Home, Image, Inbox, Layers, Link, Lock, Mail, Map, MessageSquare, Package, Search, Server, Smartphone, Star, Tag, Terminal, Trash2, Truck, User, Video, Wifi } from 'lucide-react';
 
-
-export const themeVersion = 1768330779681;
+export const themeVersion = 1769142693542;
 
 export interface ColorSettings {
     bg: string;
@@ -179,25 +179,25 @@ export const defaultThemeConfig: ThemeConfig = {
         "primary": {
             "bg": "#EEF2FF",
             "text": "#3730A3",
-            "border": "#E0E7FF",
+            "border": "#ffffff",
             "boldText": false
         },
         "secondary": {
             "bg": "#FEF2E0",
             "text": "#D97706",
-            "border": "#DBEAFE",
+            "border": "#ffffff",
             "boldText": false
         },
         "success": {
             "bg": "#ECFDF5",
             "text": "#065F46",
-            "border": "#D1FAE5",
+            "border": "#ffffff",
             "boldText": false
         },
         "danger": {
             "bg": "#FEF2F2",
             "text": "#991B1B",
-            "border": "#FEE2E2",
+            "border": "#ffffff",
             "boldText": false
         }
     }
@@ -302,25 +302,25 @@ export const defaultTheme: CustomTheme = {
             "primary": {
                 "bg": "#EEF2FF",
                 "text": "#3730A3",
-                "border": "#E0E7FF",
+                "border": "#ffffff",
                 "boldText": false
             },
             "secondary": {
                 "bg": "#FEF2E0",
                 "text": "#D97706",
-                "border": "#DBEAFE",
+                "border": "#ffffff",
                 "boldText": false
             },
             "success": {
                 "bg": "#ECFDF5",
                 "text": "#065F46",
-                "border": "#D1FAE5",
+                "border": "#ffffff",
                 "boldText": false
             },
             "danger": {
                 "bg": "#FEF2F2",
                 "text": "#991B1B",
-                "border": "#FEE2E2",
+                "border": "#ffffff",
                 "boldText": false
             }
         }

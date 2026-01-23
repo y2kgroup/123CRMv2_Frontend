@@ -12,6 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ColumnConfig, SortConfig, TableConfig } from './types';
 import { ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface DataTableProps<T> {
@@ -97,6 +98,7 @@ export function DataTable<T extends { id: string | number }>({
                                         backgroundColor: tableConfig.headerStyle?.backgroundColor,
                                         color: tableConfig.headerStyle?.textColor,
                                         fontFamily: tableConfig.headerStyle?.fontFamily,
+                                        whiteSpace: tableConfig.headerStyle?.textWrap === 'wrap' ? 'normal' : 'nowrap',
                                         // Sticky Logic
                                         position: column.pinned ? 'sticky' : undefined,
                                         left: column.pinned ? stickyOffsets[column.id] || 0 : undefined,
@@ -140,6 +142,9 @@ export function DataTable<T extends { id: string | number }>({
                                             </div>
                                         ) : (
                                             <>
+                                                {column.showIconInTable && column.icon && (LucideIcons as any)[column.icon] && (
+                                                    React.createElement((LucideIcons as any)[column.icon], { className: "w-4 h-4 mr-1 text-slate-400" })
+                                                )}
                                                 {column.label}
                                                 {tableConfig.sort.key === column.id ? (
                                                     tableConfig.sort.direction === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
@@ -194,6 +199,7 @@ export function DataTable<T extends { id: string | number }>({
                                                 color: tableConfig.rowStyle?.textColor,
                                                 backgroundColor: column.pinned ? (tableConfig.rowStyle?.backgroundColor || 'var(--card-bg, white)') : tableConfig.rowStyle?.backgroundColor,
                                                 fontFamily: tableConfig.rowStyle?.fontFamily,
+                                                whiteSpace: tableConfig.rowStyle?.textWrap === 'wrap' ? 'normal' : 'nowrap',
                                                 left: column.pinned === 'left' ? stickyOffsets[column.id] || 0 : undefined,
                                                 right: undefined, // Right pinning not fully implemented yet
                                                 boxShadow: column.pinned === 'left'

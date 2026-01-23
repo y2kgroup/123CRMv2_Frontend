@@ -38,7 +38,7 @@ export interface CellStyle {
 }
 
 // Main Column Configuration Interface
-export type ColumnType = 'text' | 'number' | 'badge' | 'date' | 'phone' | 'address' | 'select' | 'currency' | 'link' | 'user' | 'action';
+export type ColumnType = 'text' | 'number' | 'badge' | 'date' | 'phone' | 'email' | 'address' | 'select' | 'currency' | 'link' | 'user' | 'action' | 'file' | 'image' | 'id' | 'url';
 
 export interface ColumnConfig {
     id: string;
@@ -56,6 +56,26 @@ export interface ColumnConfig {
     displayStyle?: 'text' | 'badge'; // For 'select' type: how to display the selected value
     dropdownOptions?: string[]; // For 'select' type: available options
     isMultiSelect?: boolean; // For 'select' or 'badge' type: allow multiple values
+    // Icon Configuration
+    icon?: string; // Lucide icon name
+    showIconInTable?: boolean; // Show in table header
+    showIconInCard?: boolean; // Show in detail card
+    // ID Configuration
+    idPrefix?: string; // For 'id' type: prefix for generated ID
+    // Merging
+    mergeWithColumnId?: string; // ID of the column to merge with this one (displayed before/after)
+}
+
+export interface ActionButtonConfig {
+    id: string; // 'edit', 'delete', 'view', 'email', 'call' or custom
+    label: string;
+    icon?: string; // Lucide icon name
+    actionType: 'system' | 'custom'; // 'system' triggers internal logic
+    variant?: 'default' | 'primary' | 'secondary' | 'tertiary' | 'actionCard';
+    tableDisplayMode: 'primary' | 'menu' | 'none';
+    isVisibleInTable?: boolean; // Deprecated, used for migration
+    isVisibleInCard: boolean;
+    customUrl?: string; // For custom link actions
 }
 
 export interface GlobalStyle {
@@ -65,12 +85,14 @@ export interface GlobalStyle {
     backgroundColor?: string;
     fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
     fontFamily?: string;
+    textWrap?: 'wrap' | 'nowrap';
 }
 
 // Global configuration for a specific table instance
 export interface TableConfig {
     id: string; // Unique ID for storage (e.g. "companies-table-v1")
     columns: Record<string, ColumnConfig>; // Map column ID to config
+    actions: ActionButtonConfig[]; // Configured actions
     headerStyle?: GlobalStyle;
     rowStyle?: GlobalStyle;
     servicesStyle?: GlobalStyle; // Specific style for Service badges
@@ -78,6 +100,63 @@ export interface TableConfig {
     pagination: {
         pageSize: number;
     };
+    entityConfig?: EntityConfig;
+}
+
+export interface FormLayoutItem {
+    id: string; // matches column ID or standard field key (name, owner, etc.)
+    label?: string; // Label override
+    visible: boolean;
+    isCustom: boolean; // true if it's a dynamic table column
+    type?: ColumnType;
+    required?: boolean;
+    // Dropdown props synced from ColumnConfig
+    dropdownOptions?: string[];
+    isMultiSelect?: boolean;
+}
+
+export interface DetailLayout {
+    top: string[];
+    left: string[];
+    right: string[];
+}
+
+export interface DetailSectionStyle {
+    alignment: 'left' | 'center' | 'right';
+    backgroundColor?: string;
+    textColor?: string;
+    title?: string;
+}
+
+export interface EntityConfig {
+    singularName: string;
+    pluralName: string;
+    layout: FormLayoutItem[]; // Form Layout
+    detailLayout?: DetailLayout; // Detail Card Layout
+    cardsLayout?: string[]; // IDs of visible cards in order (e.g. ['tasks', 'notes', 'files'])
+    detailStyles?: {
+        top?: DetailSectionStyle;
+        left?: DetailSectionStyle;
+        right?: DetailSectionStyle;
+    };
+    buttonStyles?: {
+        primary?: ButtonStyle;
+        secondary?: ButtonStyle;
+        tertiary?: ButtonStyle;
+        default?: ButtonStyle;
+    };
+}
+
+export interface ButtonStyle {
+    backgroundColor?: string;
+    textColor?: string;
+    iconColor?: string;
+    borderColor?: string;
+    activeBorderThickness?: string;
+    displayMode?: 'icon-only' | 'text-only' | 'icon-text';
+    iconPosition?: 'left' | 'right' | 'center';
+    size?: 'sm' | 'md' | 'lg';
+    fontWeight?: 'normal' | 'medium' | 'bold';
 }
 
 // Helper to get default config
