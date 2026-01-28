@@ -39,8 +39,8 @@ const DEFAULT_ACTIONS: import('./types').ActionButtonConfig[] = [
     { id: 'view', label: 'View Details', icon: 'Eye', actionType: 'system', variant: 'default', tableDisplayMode: 'primary', isVisibleInCard: false },
     { id: 'edit', label: 'Edit', icon: 'Pencil', actionType: 'system', variant: 'default', tableDisplayMode: 'primary', isVisibleInCard: false },
     { id: 'delete', label: 'Delete', icon: 'Trash2', actionType: 'system', variant: 'default', tableDisplayMode: 'primary', isVisibleInCard: false },
-    { id: 'email', label: 'Send Email', icon: 'Mail', actionType: 'system', variant: 'primary', tableDisplayMode: 'menu', isVisibleInCard: true },
-    { id: 'call', label: 'Call', icon: 'Phone', actionType: 'system', variant: 'primary', tableDisplayMode: 'menu', isVisibleInCard: true },
+    { id: 'email', label: 'Send Email', icon: 'Mail', actionType: 'system', variant: 'default', tableDisplayMode: 'menu', isVisibleInCard: true },
+    { id: 'call', label: 'Call', icon: 'Phone', actionType: 'system', variant: 'default', tableDisplayMode: 'menu', isVisibleInCard: true },
 ];
 
 const DEFAULT_ENTITY_CONFIG: EntityConfig = {
@@ -65,6 +65,7 @@ const DEFAULT_ENTITY_CONFIG: EntityConfig = {
         right: ['address', 'owner']
     },
     cardsLayout: ['tasks', 'notes', 'files'],
+    hiddenLabels: [],
     detailStyles: {
         top: { alignment: 'left', textColor: '#000000', backgroundColor: '#ffffff' },
         left: { alignment: 'left', textColor: '#000000', backgroundColor: '#ffffff' },
@@ -74,7 +75,7 @@ const DEFAULT_ENTITY_CONFIG: EntityConfig = {
         primary: { backgroundColor: '#ffffff', textColor: '#0f172a', iconColor: '#64748b', borderColor: '#e2e8f0', activeBorderThickness: '0px', displayMode: 'icon-text', iconPosition: 'left', fontWeight: 'medium' },
         secondary: { backgroundColor: '#ffffff', textColor: '#0f172a', iconColor: '#64748b', borderColor: '#e2e8f0', activeBorderThickness: '0px', displayMode: 'icon-text', iconPosition: 'left', fontWeight: 'medium' },
         tertiary: { backgroundColor: '#ffffff', textColor: '#0f172a', iconColor: '#64748b', borderColor: '#e2e8f0', activeBorderThickness: '0px', displayMode: 'icon-text', iconPosition: 'left', fontWeight: 'medium' },
-        default: { backgroundColor: '#ffffff', textColor: '#0f172a', iconColor: '#64748b', borderColor: '#e2e8f0', activeBorderThickness: '0px', displayMode: 'icon-text', iconPosition: 'left', fontWeight: 'medium' }
+        default: { backgroundColor: '#ffffff', textColor: '#0f172a', iconColor: '#64748b', borderColor: '#e2e8f0', activeBorderThickness: '0px', displayMode: 'icon-text', iconPosition: 'center', fontWeight: 'medium' }
     }
 };
 
@@ -456,6 +457,94 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
         });
     }, []);
 
+    const resetColumns = useCallback(() => {
+        setConfig(prev => {
+            if (!prev) return null;
+            const cols: Record<string, ColumnConfig> = {};
+            defaultColumns.forEach((col, index) => {
+                cols[col.id] = getDefaultColumnConfig(col.id, col.label, index, col.isMandatory, col.type);
+                if (col.type === 'badge') {
+                    cols[col.id].badgeStyle = DEFAULT_SERVICES_STYLE;
+                }
+            });
+
+            // Resync layout to remove phantom fields from deleted columns
+            const currentEntityConfig = prev.entityConfig || DEFAULT_ENTITY_CONFIG;
+            const syncedLayout = syncEntityLayout(currentEntityConfig, cols);
+
+            return {
+                ...prev,
+                columns: cols,
+                entityConfig: {
+                    ...currentEntityConfig,
+                    layout: syncedLayout
+                }
+            };
+        });
+    }, [defaultColumns]);
+
+    const resetStyles = useCallback(() => {
+        setConfig(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                headerStyle: DEFAULT_HEADER_STYLE,
+                rowStyle: DEFAULT_ROW_STYLE,
+                servicesStyle: DEFAULT_SERVICES_STYLE,
+                entityConfig: {
+                    ...prev.entityConfig,
+                    detailStyles: DEFAULT_ENTITY_CONFIG.detailStyles,
+                    buttonStyles: DEFAULT_ENTITY_CONFIG.buttonStyles
+                } as EntityConfig
+            };
+        });
+    }, []);
+
+    const resetForm = useCallback(() => {
+        setConfig(prev => {
+            if (!prev) return null;
+
+            // Re-sync from scratch to get default order and visibility
+            const defaultWithCurrentColumns = {
+                ...DEFAULT_ENTITY_CONFIG,
+                layout: DEFAULT_ENTITY_CONFIG.layout ? [...DEFAULT_ENTITY_CONFIG.layout] : []
+            };
+            const syncedLayout = syncEntityLayout(defaultWithCurrentColumns, prev.columns);
+
+            return {
+                ...prev,
+                entityConfig: {
+                    ...prev.entityConfig,
+                    layout: syncedLayout
+                } as EntityConfig
+            };
+        });
+    }, []);
+
+    const resetDetailLayout = useCallback(() => {
+        setConfig(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                entityConfig: {
+                    ...prev.entityConfig,
+                    detailLayout: DEFAULT_ENTITY_CONFIG.detailLayout,
+                    hiddenLabels: DEFAULT_ENTITY_CONFIG.hiddenLabels
+                } as EntityConfig
+            };
+        });
+    }, []);
+
+    const resetActions = useCallback(() => {
+        setConfig(prev => {
+            if (!prev) return null;
+            return {
+                ...prev,
+                actions: [...DEFAULT_ACTIONS]
+            };
+        });
+    }, []);
+
     const resetToDefaults = useCallback(() => {
         localStorage.removeItem(`table-config-${tableId}`);
         const cols: Record<string, ColumnConfig> = {};
@@ -526,7 +615,12 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
             };
         }),
         resetToDefaults,
+        resetColumns,
+        resetStyles,
+        resetForm,
+        resetDetailLayout,
+        resetActions,
         removeColumn,
         sortedColumns
-    }), [config, updateColumn, updateColumnStyle, updateGlobalStyle, addColumn, reorderColumns, setSort, setPageSize, updateEntityConfig, resetToDefaults, removeColumn, sortedColumns]);
+    }), [config, updateColumn, updateColumnStyle, updateGlobalStyle, addColumn, reorderColumns, setSort, setPageSize, updateEntityConfig, resetToDefaults, resetColumns, resetStyles, resetForm, resetDetailLayout, resetActions, removeColumn, sortedColumns]);
 }

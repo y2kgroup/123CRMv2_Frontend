@@ -1,6 +1,6 @@
 import { FileText, LayoutDashboard, Users, Building2, Factory, Calculator, Store, CalendarDays, Settings, PieChart, Bell, Briefcase, Circle, Clipboard, Globe, Home, Image, Inbox, Layers, Link, Lock, Mail, Map, MessageSquare, Package, Search, Server, Smartphone, Star, Tag, Terminal, Trash2, Truck, User, Video, Wifi } from 'lucide-react';
 
-export const themeVersion = 1769142693542;
+export const themeVersion = 1769559711851;
 
 export interface ColorSettings {
     bg: string;

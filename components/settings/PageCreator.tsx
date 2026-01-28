@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus, FolderPlus, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createPage, createModule, getModules, getAvailablePages } from "@/app/actions/page-management";
+import { createPage, createModule, getModules, getAvailablePages } from "@/actions/page-management";
 
 // Available icons
 // Duplicated from SettingsPage for now to allow extraction

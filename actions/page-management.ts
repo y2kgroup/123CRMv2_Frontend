@@ -15,7 +15,69 @@ export async function createPage(pagePath: string, title: string, template: 'def
         return { success: false, message: 'Invalid path.' };
     }
 
-    const fullPath = path.join(process.cwd(), 'app', sanitizedPath);
+    // Determine target directory (check (modules) first)
+    const modulesDir = path.join(process.cwd(), 'app', '(modules)');
+    const rootDir = path.join(process.cwd(), 'app');
+
+    // Split path to find root segment
+    const parts = sanitizedPath.split('/');
+    const rootSegment = parts[0];
+
+    let targetBase = rootDir;
+
+    // Check if the module exists in (modules)
+    try {
+        await fs.access(path.join(modulesDir, rootSegment));
+        targetBase = modulesDir;
+    } catch {
+        // If not in (modules), stick to app root (or we could enforce creation in modules for new folders?)
+        // For now, let's prefer (modules) for NEW top-level folders too if creation happens
+        // But createPage implies folder might not exist.
+        // Let's rely on createModule for creating the root segment.
+        // If I am creating 'tasks/subpage', 'tasks' works.
+        // If I am creating 'newpage', it goes to root app/newpage?
+        // Let's enable (modules) preference.
+        if (parts.length > 1) {
+            // Subpage. Check root segment.
+        }
+    }
+
+    // BETTER LOGIC: 
+    // If we are nested, check where the parent is.
+    // If top level, default to (modules) if it exists, otherwise keep old behavior?
+    // Actually simplicity: usage of route groups implies grouping.
+    // Let's construct the full path dynamically.
+
+    let fullPath = path.join(rootDir, sanitizedPath);
+
+    // Check if it exists in (modules) first to respect precedence
+    const modulePath = path.join(modulesDir, sanitizedPath);
+    // Or check if the root segment exists in modules
+    try {
+        await fs.access(path.join(modulesDir, rootSegment));
+        // It exists in modules, so target modules
+        fullPath = modulePath;
+    } catch {
+        // Does not exist in modules. 
+        // If we are creating a fresh top-level page, do we want it in (modules)?
+        // Probably yes for "clean explorer".
+        // Let's force (modules) for pretty much everything except reserved names?
+        // But user might want /about.
+        // Let's check if (modules) dir itself exists.
+        try {
+            await fs.access(modulesDir);
+            // (modules) system is active.
+            // If path is not reserved, put it in (modules).
+            const reserved = ['layout.tsx', 'page.tsx', 'loading.tsx', 'not-found.tsx', 'error.tsx', 'global-error.tsx', 'route.ts'];
+            // These are files.
+
+            // Let's assume if we are creating a FOLDER, it goes to (modules).
+            fullPath = modulePath;
+        } catch {
+            // (modules) folder missing, use root
+        }
+    }
+
     const pageFile = path.join(fullPath, 'page.tsx');
 
     try {
@@ -299,7 +361,17 @@ export async function deletePage(pagePath: string) {
         return { success: false, message: 'Cannot delete core system pages.' };
     }
 
-    const fullPath = path.join(process.cwd(), 'app', sanitizedPath);
+    const appDir = path.join(process.cwd(), 'app');
+    const modulesDir = path.join(appDir, '(modules)');
+
+    // Check (modules) first
+    let fullPath = path.join(modulesDir, sanitizedPath);
+    try {
+        await fs.access(fullPath);
+    } catch {
+        // Fallback to root
+        fullPath = path.join(appDir, sanitizedPath);
+    }
 
     try {
         await fs.access(fullPath);
@@ -357,9 +429,14 @@ export async function createModule(moduleName: string) {
         return { success: false, message: 'Invalid module name.' };
     }
 
-    const fullPath = path.join(process.cwd(), 'app', sanitizedName);
+    // Default to (modules) for new modules
+    const modulesDir = path.join(process.cwd(), 'app', '(modules)');
+    const fullPath = path.join(modulesDir, sanitizedName);
 
     try {
+        // Ensure (modules) exists
+        await fs.mkdir(modulesDir, { recursive: true });
+
         await fs.mkdir(fullPath, { recursive: true });
 
         // Create a default page.tsx for the module to prevent VS Code folder compaction
@@ -389,21 +466,44 @@ export default function ModulePage() {
 }
 
 export async function getModules() {
+    // Scan app/(modules) instead of app
+    const modulesDir = path.join(process.cwd(), 'app', '(modules)');
     const appDir = path.join(process.cwd(), 'app');
     const modules: string[] = [];
     const protectedDirs = ['api', 'actions', 'fonts', 'lib', 'components', 'hooks', 'types', 'utils', 'styles', 'favicon.ico', 'globals.css', 'layout.tsx', 'page.tsx'];
 
     try {
-        const entries = await fs.readdir(appDir, { withFileTypes: true });
-        for (const entry of entries) {
-            if (entry.isDirectory()) {
-                if (entry.name.startsWith('.') || entry.name.startsWith('_')) continue;
-                if (protectedDirs.includes(entry.name)) continue;
+        // Try scanning (modules)
+        try {
+            const entries = await fs.readdir(modulesDir, { withFileTypes: true });
+            for (const entry of entries) {
+                if (entry.isDirectory()) {
+                    if (entry.name.startsWith('.') || entry.name.startsWith('_')) continue;
+                    modules.push(entry.name);
+                }
+            }
+        } catch {
+            // (modules) might not exist yet, ignore
+        }
 
-                // Modules are just folders in app (e.g. 'companies', 'settings', 'demo')
-                modules.push(entry.name);
+        // Also scan root app for legacy/mixed modules?
+        // User wants cleanliness. Let's ONLY scan (modules) + specific root ones if needed.
+        // But for now, let's scan root too but filter duplicates or protected.
+        // Actually, if we moved distinct folders, root should be clean.
+        // Let's also scan root for anything that LOOKS like a module (not in protectedDirs).
+
+        const rootEntries = await fs.readdir(appDir, { withFileTypes: true });
+        for (const entry of rootEntries) {
+            if (entry.isDirectory()) {
+                if (entry.name.startsWith('.') || entry.name.startsWith('_') || entry.name === '(modules)') continue;
+                if (protectedDirs.includes(entry.name)) continue;
+                // Avoid duplicates
+                if (!modules.includes(entry.name)) {
+                    modules.push(entry.name);
+                }
             }
         }
+
         return { success: true, modules: modules.sort() };
     } catch (error: any) {
         console.error('Error scanning modules:', error);

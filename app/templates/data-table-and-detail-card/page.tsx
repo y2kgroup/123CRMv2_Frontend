@@ -51,10 +51,10 @@ import { MultiSelect } from '@/components/ui/multi-select';
 // Requested specific columns only
 const defaultColumns = [
     { id: 'select', label: 'Select', isMandatory: true, style: { alignment: 'center' } },
-    { id: 'createdBy', label: 'Created By' },
-    { id: 'createdAt', label: 'Created At' },
-    { id: 'editedBy', label: 'Edited By' },
-    { id: 'editedAt', label: 'Edited At' },
+    { id: 'createdBy', label: 'Created By', isMandatory: true },
+    { id: 'createdAt', label: 'Created At', isMandatory: true },
+    { id: 'editedBy', label: 'Edited By', isMandatory: true },
+    { id: 'editedAt', label: 'Edited At', isMandatory: true },
     { id: 'actions', label: 'Actions', isMandatory: true },
 ];
 
@@ -66,26 +66,12 @@ export default function TemplatesPage() {
 
     // --- Table Config ---
     const tableConfig = useTableConfig({
-        tableId: 'templates-data-table',
+        tableId: 'templates-data-table-v2',
         defaultColumns: defaultColumns
     });
 
     const [tableData, setTableData] = React.useState<any[]>(() => {
-        return Array.from({ length: 50 }).map((_, i) => ({
-            id: `TMP${(10000000 + i).toString()}`,
-            name: i < 5 ? ['Template A', 'Template B', 'Template C', 'Template D', 'Template E'][i] : `Template ${i + 1}`,
-            owner: i < 5 ? ['John Doe', 'Jane Smith', 'Harry Green', 'Peter Gibbons', 'Albert Wesker'][i] : `Owner ${i + 1}`,
-            industry: 'Technology',
-            website: `www.template${i + 1}.com`,
-            services: ['Service A', 'Service B'],
-            email: `contact@template${i + 1}.com`,
-            phone: `+1 555-01${(i + 1).toString().padStart(2, '0')}`,
-            address: `${i * 10} Market St, City, ST`,
-            createdBy: 'System',
-            createdAt: '01/01/2023',
-            editedBy: 'Admin',
-            editedAt: '01/05/2023'
-        }));
+        return [];
     });
 
     // --- Selection State ---
@@ -261,9 +247,9 @@ export default function TemplatesPage() {
                 </div>
             ),
             createdBy: (item: any) => item ? <span className="text-slate-500">{item.createdBy}</span> : null,
-            createdAt: (item: any) => item ? <span className="text-slate-500">{item.createdAt}</span> : null,
+            createdAt: (item: any) => item ? <span className="text-slate-500">{new Date(item.createdAt).toLocaleString()}</span> : null,
             editedBy: (item: any) => item ? <span className="text-slate-500">{item.editedBy}</span> : null,
-            editedAt: (item: any) => item ? <span className="text-slate-500">{item.editedAt}</span> : null,
+            editedAt: (item: any) => item ? <span className="text-slate-500">{new Date(item.editedAt).toLocaleString()}</span> : null,
             actions: (item: any) => {
                 const actionsConfig = tableConfig.config?.actions || [];
                 // Backward compatibility: isVisibleInTable -> tableDisplayMode
@@ -560,17 +546,39 @@ export default function TemplatesPage() {
                             }
 
                             if (Array.isArray(val)) {
+                                // For Badge/Select types, use badges
+                                if ((col.type as string) === 'badge' || (col.type === 'select' && col.displayStyle === 'badge')) {
+                                    return (
+                                        <div className="flex flex-wrap gap-1">
+                                            {val.map((v: any, i: number) => {
+                                                const displayVal = (typeof v === 'object' && v !== null && 'value' in v) ? v.value : v;
+                                                if (typeof displayVal === 'object') return null;
+                                                return (
+                                                    <Badge key={i} variant="secondary" className="px-1.5 py-0 border-transparent transition-colors font-normal bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                                        {String(displayVal)}
+                                                    </Badge>
+                                                );
+                                            })}
+                                        </div>
+                                    );
+                                }
+
+                                // For other multi-entry types (Email, Phone, Address), render seamlessly as text
+                                let displayValues = val;
+                                if (col.multiEntryDisplay === 'primary') {
+                                    const primaryItem = val.find((v: any) => v && typeof v === 'object' && v.isPrimary);
+                                    // Use primary item, or fallback to first item if exists
+                                    displayValues = primaryItem ? [primaryItem] : (val.length > 0 ? [val[0]] : []);
+                                }
+
                                 return (
-                                    <div className="flex flex-wrap gap-1">
-                                        {val.map((v: any, i: number) => {
-                                            const displayVal = (typeof v === 'object' && v !== null && 'value' in v) ? v.value : v;
-                                            if (typeof displayVal === 'object') return null;
-                                            return (
-                                                <Badge key={i} variant="secondary" className="px-1.5 py-0 border-transparent transition-colors font-normal bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                                    {String(displayVal)}
-                                                </Badge>
-                                            );
-                                        })}
+                                    <div className="flex flex-col gap-0.5">
+                                        <span className="text-slate-600 dark:text-slate-400 text-sm truncate">
+                                            {displayValues.map((v: any) => {
+                                                const displayVal = (typeof v === 'object' && v !== null && 'value' in v) ? v.value : v;
+                                                return String(displayVal);
+                                            }).join(', ')}
+                                        </span>
                                     </div>
                                 );
                             }
@@ -919,6 +927,7 @@ export default function TemplatesPage() {
                                                 columns={tableConfig.config?.columns}
                                                 actions={tableConfig.config?.actions}
                                                 onAction={handleCardAction}
+                                                hiddenLabels={tableConfig.config?.entityConfig?.hiddenLabels}
                                             />
                                         </div>
 

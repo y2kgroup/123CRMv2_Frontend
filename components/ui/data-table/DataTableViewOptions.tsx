@@ -18,7 +18,7 @@ import {
     useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Settings2, GripVertical, AlignLeft, AlignCenter, AlignRight, Palette, Plus, Pin, Trash2, ArrowUp, X, Eye, Settings } from 'lucide-react';
+import { Settings2, Plus, GripVertical, Download, Eye, EyeOff, RotateCcw, Trash2, Pin, Palette, AlignLeft, AlignCenter, AlignRight, Save, Settings, ArrowUp, X } from "lucide-react";
 import * as LucideIcons from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -104,8 +104,7 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="secondary" className="w-full text-xs dashed border-dashed bg-transparent border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800">
-                    <Plus className="w-3.5 h-3.5 mr-2" />
+                <Button variant="primary" className="w-full text-xs" icon={Plus}>
                     Add Column
                 </Button>
             </DialogTrigger>
@@ -248,6 +247,7 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
 
     // Merge State
     const [mergeWithColumnId, setMergeWithColumnId] = useState(column.mergeWithColumnId || 'none');
+    const [multiEntryDisplay, setMultiEntryDisplay] = useState<'all' | 'primary'>(column.multiEntryDisplay || 'all');
 
     const [open, setOpen] = useState(false);
 
@@ -264,7 +264,8 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
             icon,
             showIconInTable,
             showIconInCard,
-            mergeWithColumnId: mergeWithColumnId === 'none' ? undefined : mergeWithColumnId
+            mergeWithColumnId: mergeWithColumnId === 'none' ? undefined : mergeWithColumnId,
+            multiEntryDisplay
         });
         setOpen(false);
     };
@@ -428,6 +429,23 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
                                     }
                                 </span>
                             </div>
+                        </div>
+                    )}
+
+                    {(type === 'email' || type === 'phone' || type === 'address') && isMultiSelect && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="edit-multiEntryDisplay" className="text-right">
+                                Display
+                            </Label>
+                            <Select value={multiEntryDisplay} onValueChange={(val: 'all' | 'primary') => setMultiEntryDisplay(val)}>
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Display Mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Show All</SelectItem>
+                                    <SelectItem value="primary">Primary Only</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     )}
 
@@ -634,6 +652,43 @@ function GlobalStyleSection({
                             {style.textWrap === 'wrap' ? 'Wrap' : 'No Wrap'}
                         </span>
                     </div>
+                </div>
+
+                {/* Spacing */}
+                <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-500">Spacing</Label>
+                    <Select
+                        value={style.spacing || 'normal'}
+                        onValueChange={(val: string) => onUpdate({ spacing: val as GlobalStyle['spacing'] })}
+                    >
+                        <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Spacing" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="compact">Compact</SelectItem>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="relaxed">Relaxed</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Image Size */}
+                <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-500">Image Size (Logo Only)</Label>
+                    <Select
+                        value={style.imageSize || 'md'}
+                        onValueChange={(val: string) => onUpdate({ imageSize: val as GlobalStyle['imageSize'] })}
+                    >
+                        <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="sm">Small</SelectItem>
+                            <SelectItem value="md">Medium</SelectItem>
+                            <SelectItem value="lg">Large</SelectItem>
+                            <SelectItem value="xl">Extra Large</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
         </div>
@@ -1065,6 +1120,21 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                         </div>
                     </div>
                 </div>
+                <div className="pt-4 border-t mt-6">
+                    <Button
+                        type="button"
+                        variant="tertiary"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        onClick={() => {
+                            if (confirm('Are you sure you want to reset the form layout to defaults?')) {
+                                config.resetForm?.();
+                            }
+                        }}
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Restore Form to Default
+                    </Button>
+                </div>
             </TabsContent>
 
             <TabsContent value="columns" className="space-y-6">
@@ -1101,6 +1171,22 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                             </div>
                         </SortableContext>
                     </DndContext>
+                </div>
+
+                <div className="pt-4 border-t">
+                    <Button
+                        type="button"
+                        variant="tertiary"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        onClick={() => {
+                            if (confirm('Are you sure you want to reset columns to defaults? Custom columns will be removed.')) {
+                                config.resetColumns?.();
+                            }
+                        }}
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Restore Columns to Default
+                    </Button>
                 </div>
             </TabsContent>
 
@@ -1254,9 +1340,40 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                         </div>
                     </div>
                 </div>
+                <div className="pt-4 border-t">
+                    <Button
+                        type="button"
+                        variant="tertiary"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        onClick={() => {
+                            if (confirm('Are you sure you want to reset all table styles to defaults?')) {
+                                config.resetStyles?.();
+                            }
+                        }}
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Restore Styles to Default
+                    </Button>
+                </div>
             </TabsContent>
             <TabsContent value="detail" className="flex-1 overflow-auto p-4 space-y-6 pt-2">
                 <DetailLayoutSection config={config} />
+
+                <div className="pt-4 border-t">
+                    <Button
+                        type="button"
+                        variant="tertiary"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        onClick={() => {
+                            if (confirm('Are you sure you want to reset the detail card layout to defaults?')) {
+                                config.resetDetailLayout?.();
+                            }
+                        }}
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Restore Detail Card to Default
+                    </Button>
+                </div>
             </TabsContent>
 
             <TabsContent value="actions" className="space-y-6">
@@ -1272,8 +1389,7 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                             const currentActions = config.config?.actions || [];
                             config.updateActions?.([...currentActions, newAction]);
                         }}>
-                            <Button variant="secondary" className="h-8 gap-2">
-                                <Plus className="h-4 w-4" />
+                            <Button variant="primary" className="h-8 shadow-sm" icon={Plus}>
                                 Add Action
                             </Button>
                         </AddActionDialog>
@@ -1302,6 +1418,22 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                             </SortableContext>
                         </DndContext>
                     </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                    <Button
+                        type="button"
+                        variant="tertiary"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        onClick={() => {
+                            if (confirm('Are you sure you want to reset actions to defaults?')) {
+                                config.resetActions?.();
+                            }
+                        }}
+                    >
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Restore Actions to Default
+                    </Button>
                 </div>
             </TabsContent>
         </Tabs >
@@ -1362,14 +1494,6 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                 </div>
 
                 <DialogFooter className="flex justify-between sm:justify-between items-center bg-gray-50 -mx-6 -mb-6 p-4 mt-4 border-t">
-                    <Button
-                        type="button"
-                        variant="tertiary"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => config.resetToDefaults?.()}
-                    >
-                        Restore Defaults
-                    </Button>
                     <DialogClose asChild>
                         <Button type="button">Save</Button>
                     </DialogClose>
@@ -1400,9 +1524,8 @@ function DetailLayoutSection({ config }: { config: ReturnType<typeof useTableCon
     };
 
     // All available potential items (standard + columns)
-    // All available potential items (standard + columns)
+    // Filter out system columns that shouldn't be draggable in Detail View
     const allPotentialItems = useMemo(() => {
-        // Filter out system columns that shouldn't be draggable in Detail View
         const ignoredSystemColumns = ['select'];
         return sortedColumns
             .map(c => c.id)
@@ -1418,6 +1541,16 @@ function DetailLayoutSection({ config }: { config: ReturnType<typeof useTableCon
         ]);
         return allPotentialItems.filter(id => !used.has(id));
     }, [allPotentialItems, detailLayout]);
+
+    // Label Visibility Toggle
+    const hiddenLabels = tableConfig?.entityConfig?.hiddenLabels || [];
+    const toggleLabelVisibility = (id: string) => {
+        const isHidden = hiddenLabels.includes(id);
+        const newHiddenLabels = isHidden
+            ? hiddenLabels.filter(labelId => labelId !== id)
+            : [...hiddenLabels, id];
+        updateEntityConfig({ hiddenLabels: newHiddenLabels });
+    };
 
     // Drag Handler
     const handleDragEnd = (event: DragEndEvent) => {
@@ -1449,7 +1582,6 @@ function DetailLayoutSection({ config }: { config: ReturnType<typeof useTableCon
         };
 
         const activeItems = getItems(activeContainer);
-        const overItems = getItems(activeContainer); // Typo fixed below? No, need OVER items
         const targetItems = getItems(overContainer);
 
         // Move Logic
@@ -1505,7 +1637,13 @@ function DetailLayoutSection({ config }: { config: ReturnType<typeof useTableCon
                                 onUpdate={(s) => updateEntityConfig({ detailStyles: { ...detailStyles, top: s } })}
                             />
                         </div>
-                        <DroppableZone id="top" items={detailLayout.top || []} getLabel={getLabel} />
+                        <DroppableZone
+                            id="top"
+                            items={detailLayout.top || []}
+                            getLabel={getLabel}
+                            hiddenLabels={hiddenLabels}
+                            onToggleLabel={toggleLabelVisibility}
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -1520,7 +1658,13 @@ function DetailLayoutSection({ config }: { config: ReturnType<typeof useTableCon
                                     title="Contact & Info"
                                 />
                             </div>
-                            <DroppableZone id="left" items={detailLayout.left || []} getLabel={getLabel} />
+                            <DroppableZone
+                                id="left"
+                                items={detailLayout.left || []}
+                                getLabel={getLabel}
+                                hiddenLabels={hiddenLabels}
+                                onToggleLabel={toggleLabelVisibility}
+                            />
                         </div>
 
                         {/* Right Column */}
@@ -1534,7 +1678,13 @@ function DetailLayoutSection({ config }: { config: ReturnType<typeof useTableCon
                                     title="Details"
                                 />
                             </div>
-                            <DroppableZone id="right" items={detailLayout.right || []} getLabel={getLabel} />
+                            <DroppableZone
+                                id="right"
+                                items={detailLayout.right || []}
+                                getLabel={getLabel}
+                                hiddenLabels={hiddenLabels}
+                                onToggleLabel={toggleLabelVisibility}
+                            />
                         </div>
                     </div>
 
@@ -1588,7 +1738,14 @@ function SectionStyleControl({ style, onUpdate, title, showTitleInput }: { style
     )
 }
 
-function DroppableZone({ id, items, getLabel, isHiddenZone }: { id: string, items: string[], getLabel: (id: string) => string, isHiddenZone?: boolean }) {
+function DroppableZone({ id, items, getLabel, isHiddenZone, hiddenLabels, onToggleLabel }: {
+    id: string,
+    items: string[],
+    getLabel: (id: string) => string,
+    isHiddenZone?: boolean,
+    hiddenLabels?: string[],
+    onToggleLabel?: (id: string) => void
+}) {
     const { setNodeRef } = useSortable({ id });
 
     return (
@@ -1606,14 +1763,27 @@ function DroppableZone({ id, items, getLabel, isHiddenZone }: { id: string, item
                     <div className="text-center py-4 text-xs text-slate-400 italic">Empty Section</div>
                 )}
                 {items.map(itemId => (
-                    <DraggableFieldItem key={itemId} id={itemId} label={getLabel(itemId)} isHidden={isHiddenZone} />
+                    <DraggableFieldItem
+                        key={itemId}
+                        id={itemId}
+                        label={getLabel(itemId)}
+                        isHidden={isHiddenZone}
+                        isLabelHidden={hiddenLabels?.includes(itemId)}
+                        onToggleLabel={onToggleLabel ? () => onToggleLabel(itemId) : undefined}
+                    />
                 ))}
             </div>
         </SortableContext>
     );
 }
 
-function DraggableFieldItem({ id, label, isHidden }: { id: string, label: string, isHidden?: boolean }) {
+function DraggableFieldItem({ id, label, isHidden, isLabelHidden, onToggleLabel }: {
+    id: string,
+    label: string,
+    isHidden?: boolean,
+    isLabelHidden?: boolean,
+    onToggleLabel?: () => void
+}) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
     const style = {
@@ -1627,19 +1797,44 @@ function DraggableFieldItem({ id, label, isHidden }: { id: string, label: string
         <div
             ref={setNodeRef}
             style={style}
-            {...attributes}
-            {...listeners}
+            // Move attributes/listeners here to cover the whole div, BUT excluding the button area via interaction handling
             className={cn(
-                "flex items-center justify-between p-2 rounded text-sm border cursor-grab active:cursor-grabbing group bg-white dark:bg-slate-800",
+                "flex items-center justify-between p-2 rounded text-sm border bg-white dark:bg-slate-800",
                 isDragging ? "shadow-lg ring-2 ring-blue-500 opacity-80" : "hover:border-blue-300 dark:hover:border-blue-700",
-                isHidden && "opacity-75 bg-slate-50"
+                isHidden && "opacity-75 bg-slate-50",
+                !isHidden && "cursor-default" // Not draggable by default, handle grips
             )}
         >
-            <span className="flex items-center gap-2">
-                <GripVertical className="w-3.5 h-3.5 text-slate-400" />
-                {label}
-            </span>
-            {isHidden && <span className="text-[10px] bg-slate-200 text-slate-500 px-1.5 rounded">Hidden</span>}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="cursor-move text-slate-400 hover:text-slate-600 p-1 -ml-1"
+                >
+                    <GripVertical className="w-3.5 h-3.5" />
+                </div>
+                <span className="truncate">{label}</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+                {!isHidden && onToggleLabel && (
+                    <Button
+                        variant="tertiary"
+                        className={cn(
+                            "h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-700",
+                            isLabelHidden ? "text-slate-400" : "text-blue-600"
+                        )}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleLabel();
+                        }}
+                        title={isLabelHidden ? "Show Label" : "Hide Label"}
+                    >
+                        {isLabelHidden ? <LucideIcons.EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </Button>
+                )}
+                {isHidden && <span className="text-[10px] bg-slate-200 text-slate-500 px-1.5 rounded">Hidden</span>}
+            </div>
         </div>
     );
 }

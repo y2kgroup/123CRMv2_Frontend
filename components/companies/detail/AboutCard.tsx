@@ -37,12 +37,13 @@ interface AboutCardProps {
         tertiary?: ButtonStyle;
     };
     columns?: Record<string, ColumnConfig>;
+    hiddenLabels?: string[];
     actions?: ActionButtonConfig[];
     onAction?: (actionId: string, company: CompanyData) => void;
 }
 
 // Helper to render a field value based on its type/config
-const renderFieldValue = (company: CompanyData, fieldId: string, column?: ColumnConfig) => {
+const renderFieldValue = (company: CompanyData, fieldId: string, column?: ColumnConfig, options: { hasCustomColor?: boolean, customStyle?: React.CSSProperties } = {}) => {
     const value = company[fieldId];
     if (value === undefined || value === null || value === '') return <span className="text-slate-400 italic text-xs">Empty</span>;
 
@@ -74,7 +75,8 @@ const renderFieldValue = (company: CompanyData, fieldId: string, column?: Column
         }
         if (column.type === 'currency') {
             const numericVal = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]+/g, "")) : Number(value);
-            return <span className="font-mono text-slate-900 dark:text-slate-200">
+            const colorClass = options.hasCustomColor ? "" : "text-slate-900 dark:text-slate-200";
+            return <span className={cn("font-mono", colorClass)} style={options.customStyle}>
                 {isNaN(numericVal) ? value : numericVal.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 })}
             </span>;
         }
@@ -89,28 +91,52 @@ const renderFieldValue = (company: CompanyData, fieldId: string, column?: Column
 
     // Default Array handling (e.g. services) if not caught above
     if (Array.isArray(value)) {
+        const isBadgeStyle = (column?.type === 'badge' || (column?.type === 'select' && column?.displayStyle === 'badge'))
+            && !['email', 'phone', 'address', 'emails', 'phones', 'addresses'].includes(fieldId);
+
+        if (isBadgeStyle) {
+            return (
+                <div className="flex gap-1 flex-wrap">
+                    {value.map((v, i) => {
+                        const displayVal = (typeof v === 'object' && v !== null && 'value' in v) ? v.value : v;
+                        if (typeof displayVal === 'object') return null; // Skip complex without value
+                        return <Badge key={i} variant="secondary" className="font-normal rounded-full px-3">{String(displayVal)}</Badge>;
+                    })}
+                </div>
+            );
+        }
+
+        const textColorClass = options.hasCustomColor ? "" : "text-slate-700 dark:text-slate-300";
+
+        // Default Text List (Email, Phone, Address, etc.)
         return (
-            <div className="flex gap-1 flex-wrap">
+            <div className="flex flex-col gap-1">
                 {value.map((v, i) => {
-                    // Handle object items (like the new emails/phones/addresses structure)
                     if (typeof v === 'object' && v !== null && 'value' in v) {
-                        const displayVal = v.isPrimary ? `${v.value} (Primary)` : v.value;
-                        return <Badge key={v.id || i} variant="secondary" className="font-normal bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300">{displayVal}</Badge>;
+                        const label = v.label || (v.isPrimary ? 'Primary' : null);
+                        const key = v.id || i;
+                        return (
+                            <div key={key} className={cn("text-sm flex items-center gap-1.5 flex-wrap", textColorClass)} style={options.customStyle}>
+                                <span>{v.value}</span>
+                                {label && <span className="text-slate-400 text-xs">({label})</span>}
+                            </div>
+                        );
                     }
-                    // Handle primitive items
-                    return <Badge key={i} variant="secondary" className="font-normal bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300">{v}</Badge>
+                    return (
+                        <div key={i} className={cn("text-sm", textColorClass)} style={options.customStyle}>
+                            {String(v)}
+                        </div>
+                    );
                 })}
             </div>
         );
     }
 
-    return <span className="text-slate-900 dark:text-slate-200">{value}</span>;
-}
+    const defaultColorClass = options.hasCustomColor ? "" : "text-slate-900 dark:text-slate-200";
+    return <span className={defaultColorClass} style={options.customStyle}>{String(value)}</span>;
+};
 
-
-
-
-export function AboutCardDetails({ company, detailLayout, detailStyles, buttonStyles, columns, actions, onAction }: AboutCardProps) {
+export function AboutCardDetails({ company, detailLayout, detailStyles, buttonStyles, columns, actions, onAction, hiddenLabels }: AboutCardProps) {
     if (!company) return null;
 
     // Default Layout if none provided - matching new default in useTableConfig
@@ -123,15 +149,58 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
     // Helper to get label
     const getLabel = (id: string) => columns?.[id]?.label || id.replace(/([A-Z])/g, ' $1').trim(); // Fallback to Title Case
 
+    const getSectionStyle = (section: 'top' | 'left' | 'right') => {
+        const style = detailStyles?.[section];
+        if (!style) return {};
+
+        const css: React.CSSProperties = {
+            backgroundColor: style.backgroundColor,
+            color: style.textColor,
+            fontFamily: style.fontFamily,
+        };
+
+        // Map text size
+        if (style.textSize) {
+            css.fontSize = { xs: '0.75rem', sm: '0.875rem', base: '1rem' }[style.textSize];
+        }
+        // Map font weight
+        if (style.fontWeight) {
+            css.fontWeight = { normal: 400, medium: 500, semibold: 600, bold: 700 }[style.fontWeight];
+        }
+
+        return css;
+    };
+
     const renderSection = (fields: string[], section: 'top' | 'left' | 'right') => {
         if (!fields || fields.length === 0) return null;
 
         const style = detailStyles?.[section];
         const alignment = style?.alignment || 'left';
+        const spacing = style?.spacing || 'normal';
+
+        // Check for custom styles to optionally disable defaults
+        const hasCustomColor = !!style?.textColor;
+        const hasCustomSize = !!style?.textSize;
+        const hasCustomWeight = !!style?.fontWeight;
+
+        const computedStyle = getSectionStyle(section);
+        // Extract text-related explicit styles to pass down
+        const textStyleOverride: React.CSSProperties = {
+            color: hasCustomColor ? computedStyle.color : undefined,
+            fontSize: hasCustomSize ? computedStyle.fontSize : undefined,
+            fontWeight: hasCustomWeight ? computedStyle.fontWeight : undefined,
+            fontFamily: computedStyle.fontFamily
+        };
+
+        const spacingClass = {
+            compact: "space-y-2",
+            normal: "space-y-4",
+            relaxed: "space-y-6"
+        }[spacing];
 
         return (
             <div className={cn(
-                "space-y-4",
+                spacingClass,
                 alignment === 'center' && "items-center text-center",
                 alignment === 'right' && "items-end text-right"
             )}>
@@ -139,17 +208,25 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
                     // --- Standard Header Fields Rendering ---
 
                     if (fieldId === 'logo') {
+                        const imageSize = style?.imageSize || 'md';
+                        const sizeClasses = {
+                            sm: "w-12 h-12",
+                            md: "w-16 h-16",
+                            lg: "w-24 h-24",
+                            xl: "w-32 h-32"
+                        }[imageSize];
+
                         return (
                             <div key={fieldId} className={cn("mb-4 flex",
                                 alignment === 'center' ? 'justify-center' : alignment === 'right' ? 'justify-end' : 'justify-start'
                             )}>
                                 {company.logo ? (
-                                    <div className="relative w-16 h-16 rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700">
-                                        <Image src={company.logo} alt={company.name || 'Company Logo'} fill className="object-cover" sizes="64px" />
+                                    <div className={cn("relative rounded-2xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700", sizeClasses)}>
+                                        <Image src={company.logo} alt={company.name || 'Company Logo'} fill className="object-cover" sizes="128px" />
                                     </div>
                                 ) : (
-                                    <div className="w-16 h-16 rounded-2xl bg-slate-700 flex items-center justify-center text-white shadow-sm">
-                                        <Building2 className="w-8 h-8" />
+                                    <div className={cn("rounded-2xl bg-slate-700 flex items-center justify-center text-white shadow-sm", sizeClasses)}>
+                                        <Building2 className="w-1/2 h-1/2" />
                                     </div>
                                 )}
                             </div>
@@ -158,7 +235,15 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
 
                     if (fieldId === 'name') {
                         return (
-                            <h2 key={fieldId} className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-1">
+                            <h2 key={fieldId}
+                                className={cn(
+                                    "mb-1",
+                                    !hasCustomSize && "text-xl",
+                                    !hasCustomWeight && "font-bold",
+                                    !hasCustomColor && "text-slate-900 dark:text-slate-100"
+                                )}
+                                style={textStyleOverride}
+                            >
                                 {company.name}
                             </h2>
                         );
@@ -230,9 +315,10 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
                                         <Button
                                             key={action.id}
                                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            variant={action.variant as any || 'outline'}
+                                            variant={(action.variant === 'default' ? 'secondary' : action.variant) as any || 'outline'}
                                             className={cn(
-                                                "flex-1 max-w-[160px] gap-2",
+                                                "flex-1 max-w-[160px]",
+                                                displayMode === 'icon-only' ? "gap-0" : "gap-2",
                                                 sizeClasses[btnSize],
                                                 displayMode === 'icon-only' && `px-0 justify-center ${iconOnlyWidths[btnSize]}`,
                                                 iconPosition === 'right' ? "flex-row-reverse" : "flex-row",
@@ -240,7 +326,10 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
                                                 (displayMode === 'icon-only' || iconPosition === 'center') ? "justify-center" : "justify-start"
                                             )}
                                             onClick={() => onAction?.(action.id, company)}
-                                            style={btnStyle}
+                                            style={{
+                                                ...btnStyle,
+                                                padding: displayMode === 'icon-only' ? '0' : undefined
+                                            }}
                                             title={action.label}
                                             icon={ResolvedIcon} // Pass as prop for proper layout control
                                         >
@@ -282,11 +371,19 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <div className="text-xs font-medium text-slate-400 mb-0.5 capitalize">
-                                    {getLabel(fieldId)}
-                                </div>
-                                <div className="text-sm font-medium">
-                                    {renderFieldValue(company, fieldId, columns?.[fieldId])}
+                                {!(hiddenLabels?.includes(fieldId)) && (
+                                    <div className="text-xs font-medium text-slate-400 mb-0.5 capitalize">
+                                        {getLabel(fieldId)}
+                                    </div>
+                                )}
+                                <div className={cn(
+                                    !hasCustomWeight && "font-medium",
+                                    !hasCustomSize && "text-sm",
+                                    // Note: Color is handled inside renderFieldValue
+                                )}
+                                    style={textStyleOverride}
+                                >
+                                    {renderFieldValue(company, fieldId, columns?.[fieldId], { hasCustomColor, customStyle: textStyleOverride })}
                                 </div>
                             </div>
                         </div>
@@ -297,30 +394,61 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
     };
 
     return (
-        <div className="p-6 md:p-8 pt-6"> {/* Added top padding back since header is gone */}
+        <div className="p-6 md:p-8 pt-6">
             {/* Top Section */}
             {layout.top && layout.top.length > 0 && (
-                <div className={cn(
-                    "mb-8 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg",
-                    detailStyles?.top?.alignment === 'center' && "text-center",
-                    detailStyles?.top?.alignment === 'right' && "text-right"
-                )}>
+                <div
+                    className={cn(
+                        "mb-8 p-4 rounded-lg",
+                        // Only apply default bg if no custom bg is set
+                        !detailStyles?.top?.backgroundColor && "bg-slate-50 dark:bg-slate-800/50",
+                        detailStyles?.top?.alignment === 'center' && "text-center",
+                        detailStyles?.top?.alignment === 'right' && "text-right"
+                    )}
+                    style={getSectionStyle('top')}
+                >
                     {renderSection(layout.top, 'top')}
                 </div>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Left Column */}
-                <div>
-                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">
+                <div
+                    className={cn(
+                        "rounded-lg",
+                        detailStyles?.left?.backgroundColor && "p-4", // Add padding if custom bg
+                        detailStyles?.left?.alignment === 'center' && "text-center",
+                        detailStyles?.left?.alignment === 'right' && "text-right"
+                    )}
+                    style={getSectionStyle('left')}
+                >
+                    <h3 className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-4 border-b pb-2"
+                        style={{
+                            ...getSectionStyle('left'), // Apply text style to header too
+                            borderColor: detailStyles?.left?.textColor ? 'currentColor' : undefined,
+                            backgroundColor: 'transparent' // Reset bg just in case inherited from getSectionStyle
+                        }}>
                         {detailStyles?.left?.title || "Contact & Info"}
                     </h3>
                     {renderSection(layout.left, 'left')}
                 </div>
 
                 {/* Right Column */}
-                <div>
-                    <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 border-b pb-2">
+                <div
+                    className={cn(
+                        "rounded-lg",
+                        detailStyles?.right?.backgroundColor && "p-4", // Add padding if custom bg
+                        detailStyles?.right?.alignment === 'center' && "text-center",
+                        detailStyles?.right?.alignment === 'right' && "text-right"
+                    )}
+                    style={getSectionStyle('right')}
+                >
+                    <h3 className="text-xs font-semibold opacity-70 uppercase tracking-wider mb-4 border-b pb-2"
+                        style={{
+                            ...getSectionStyle('right'),
+                            borderColor: detailStyles?.right?.textColor ? 'currentColor' : undefined,
+                            backgroundColor: 'transparent'
+                        }}>
                         {detailStyles?.right?.title || "Details"}
                     </h3>
                     {renderSection(layout.right, 'right')}
@@ -347,6 +475,7 @@ export function AboutCard({ company, detailLayout, detailStyles, columns }: Abou
                 detailLayout={detailLayout}
                 detailStyles={detailStyles}
                 columns={columns}
+                hiddenLabels={(company as any)?.hiddenLabels} // Fallback or pass prop if AboutCard receives it. Wait, AboutCard receives props.
             />
         </div>
     );

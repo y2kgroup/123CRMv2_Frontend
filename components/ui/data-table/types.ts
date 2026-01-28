@@ -56,6 +56,7 @@ export interface ColumnConfig {
     displayStyle?: 'text' | 'badge'; // For 'select' type: how to display the selected value
     dropdownOptions?: string[]; // For 'select' type: available options
     isMultiSelect?: boolean; // For 'select' or 'badge' type: allow multiple values
+    multiEntryDisplay?: 'all' | 'primary'; // For multi-entry text fields: show all or only primary
     // Icon Configuration
     icon?: string; // Lucide icon name
     showIconInTable?: boolean; // Show in table header
@@ -86,6 +87,8 @@ export interface GlobalStyle {
     fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
     fontFamily?: string;
     textWrap?: 'wrap' | 'nowrap';
+    spacing?: 'compact' | 'normal' | 'relaxed';
+    imageSize?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 // Global configuration for a specific table instance
@@ -126,6 +129,12 @@ export interface DetailSectionStyle {
     backgroundColor?: string;
     textColor?: string;
     title?: string;
+    spacing?: 'compact' | 'normal' | 'relaxed';
+    imageSize?: 'sm' | 'md' | 'lg' | 'xl';
+    textSize?: 'xs' | 'sm' | 'base';
+    fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold';
+    fontFamily?: string;
+    textWrap?: 'wrap' | 'nowrap';
 }
 
 export interface EntityConfig {
@@ -139,6 +148,7 @@ export interface EntityConfig {
         left?: DetailSectionStyle;
         right?: DetailSectionStyle;
     };
+    hiddenLabels?: string[]; // Array of field IDs whose labels should be hidden in Detail Card
     buttonStyles?: {
         primary?: ButtonStyle;
         secondary?: ButtonStyle;

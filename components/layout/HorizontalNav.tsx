@@ -2,23 +2,23 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useLayout, NavItem } from './LayoutContext';
-import { ActionButtons } from './ActionButtons';
-import { ChevronRight, ChevronDown, FileText } from 'lucide-react';
-import { useState, Fragment, useRef } from 'react';
+import { ChevronDown, FileText, ChevronRight } from 'lucide-react';
+import { useState, useRef } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 
 export function HorizontalNav() {
     const pathname = usePathname();
-    const { customTheme, handleNavigation, theme, headerActions, navItems } = useLayout();
+    const { customTheme, handleNavigation, theme, navItems } = useLayout();
     const activeTheme = theme === 'dark' ? customTheme.dark : customTheme.light;
     const { displayMode } = activeTheme.horizontalNav;
-
-    const activeItem = navItems.find(item => item.href === pathname) || navItems[0];
 
     return (
         <div
@@ -110,7 +110,13 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
     const [isOpen, setIsOpen] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const isActive = pathname === item.href || item.children?.some((child: any) => pathname === child.href);
+    // Check recursive active state
+    const isActive = pathname === item.href || (item.children && checkActiveRecursive(item.children, pathname));
+
+    function checkActiveRecursive(children: NavItem[], path: string): boolean {
+        return children.some(child => child.href === path || (child.children && checkActiveRecursive(child.children, path)));
+    }
+
     const Icon = item.icon || FileText;
     const iconColor = isActive ? 'var(--h-nav-active-text)' : 'var(--h-nav-icon)';
 
@@ -156,11 +162,7 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
                             !isActive && "hover:bg-black/5"
                         )}
                         onClick={(e) => {
-                            if (triggerMode === 'hover') {
-                                // Optional: clicking on the main trigger in hover mode could navigate to parent? 
-                                // For now, let's allow it to toggle or just do nothing if open.
-                                // If it's a link, we might want to navigate. But item is a dropdown.
-                            }
+                            // If it's click mode, this toggles. In hover mode, click might be NOP orNav.
                         }}
                     >
                         {(displayMode === 'both' || displayMode === 'icon') && (
@@ -173,8 +175,8 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                    align="center"
-                    sideOffset={5}
+                    align="start"
+                    sideOffset={2}
                     className="min-w-[180px]"
                     style={{
                         backgroundColor: 'var(--h-nav-dropdown-bg)',
@@ -184,43 +186,79 @@ function NavDropdownItem({ item, activeTheme, pathname, handleNavigation, displa
                     onMouseEnter={handleMouseEnter} // Keep open when hovering content
                     onMouseLeave={handleMouseLeave}
                 >
-                    {item.children?.map((child: NavItem) => (
-                        <Link key={child.id || child.href} href={child.href} onClick={(e) => {
-                            setIsOpen(false);
-                            handleNavigation(e, child.href);
-                        }}>
-                            <DropdownMenuItem
-                                className={cn("cursor-pointer focus:outline-none")}
-                                style={{
-                                    color: 'var(--h-nav-dropdown-text)',
-                                    fontWeight: 'var(--h-nav-dropdown-font-weight)',
-                                } as React.CSSProperties}
-                                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
-                                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                                onFocus={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
-                                onBlur={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                            >
-                                {(() => {
-                                    const ChildIcon = child.icon || FileText;
-                                    return (
-                                        <ChildIcon
-                                            className="w-4 h-4 mr-2"
-                                            style={{
-                                                color: 'var(--h-nav-dropdown-icon)',
-                                                opacity: 1
-                                            }}
-                                        />
-                                    );
-                                })()}
-                                <span style={{ fontWeight: 'var(--h-nav-dropdown-font-weight)' }}>
-                                    {child.label}
-                                </span>
-                            </DropdownMenuItem>
-                        </Link>
+                    {item.children!.map((child: NavItem) => (
+                        <RecursiveDropdownItem
+                            key={child.href || child.label}
+                            item={child}
+                            handleNavigation={handleNavigation}
+                            setIsOpen={setIsOpen}
+                            pathname={pathname}
+                        />
                     ))}
                 </DropdownMenuContent>
             </div>
         </DropdownMenu>
     );
 }
+
+// --- Recursive Dropdown Item helper ---
+const RecursiveDropdownItem: React.FC<{ item: NavItem, handleNavigation: any, setIsOpen: any, pathname: string }> = ({ item, handleNavigation, setIsOpen, pathname }) => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isActive = item.href === pathname; // Simple leaf check, can be fancier if needed
+
+    if (hasChildren) {
+        return (
+            <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="cursor-pointer focus:bg-[var(--h-nav-dropdown-active-bg)] focus:text-[var(--h-nav-dropdown-text)]">
+                    {item.icon && <item.icon className="w-4 h-4 mr-2" style={{ color: 'var(--h-nav-dropdown-icon)' }} />}
+                    <span style={{ fontWeight: 'var(--h-nav-dropdown-font-weight)', color: 'var(--h-nav-dropdown-text)' }}>{item.label}</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent
+                    className="min-w-[180px]"
+                    alignOffset={-4}
+                    style={{
+                        backgroundColor: 'var(--h-nav-dropdown-bg)',
+                        borderColor: 'var(--h-nav-dropdown-border)',
+                        borderWidth: 'var(--h-nav-dropdown-border-width)',
+                        color: 'var(--h-nav-dropdown-text)'
+                    }}
+                >
+                    {item.children!.map(child => (
+                        <RecursiveDropdownItem
+                            key={child.href || child.label}
+                            item={child}
+                            handleNavigation={handleNavigation}
+                            setIsOpen={setIsOpen}
+                            pathname={pathname}
+                        />
+                    ))}
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>
+        );
+    }
+
+    return (
+        <Link href={item.href} onClick={(e) => {
+            setIsOpen(false);
+            handleNavigation(e, item.href);
+        }}>
+            <DropdownMenuItem
+                className={cn("cursor-pointer focus:outline-none")}
+                style={{
+                    color: 'var(--h-nav-dropdown-text)',
+                    fontWeight: 'var(--h-nav-dropdown-font-weight)',
+                } as React.CSSProperties}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                onFocus={(e) => (e.currentTarget.style.backgroundColor = 'var(--h-nav-dropdown-active-bg)')}
+                onBlur={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+            >
+                {item.icon && <item.icon className="w-4 h-4 mr-2" style={{ color: 'var(--h-nav-dropdown-icon)' }} />}
+                <span style={{ fontWeight: 'var(--h-nav-dropdown-font-weight)' }}>
+                    {item.label}
+                </span>
+            </DropdownMenuItem>
+        </Link>
+    );
+};
 

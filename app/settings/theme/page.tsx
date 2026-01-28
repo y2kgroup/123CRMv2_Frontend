@@ -7,9 +7,9 @@ import { Check, Settings as SettingsIcon, Save, Upload, Trash2, Image as ImageIc
 import { useRef, useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { createPage, deletePage, getAvailablePages } from "@/app/actions/page-management";
-import { saveNavigationConfig } from "@/app/actions/navigation-config";
-import { saveThemeConfig } from "@/app/actions/theme-config";
+import { createPage, deletePage, getAvailablePages } from "@/actions/page-management";
+import { saveNavigationConfig } from "@/actions/navigation-config";
+import { saveThemeConfig } from "@/actions/theme-config";
 import { MenuBuilder } from "@/components/settings/MenuBuilder";
 import { PageCreator } from "@/components/settings/PageCreator";
 import {
@@ -261,7 +261,7 @@ export default function SettingsPage() {
                                 <TabsTrigger value="components" className="px-4 py-2">Components</TabsTrigger>
                             </TabsList>
                             <Button
-                                variant="secondary"
+                                variant="primary"
                                 onClick={async () => {
                                     if (confirm('Are you sure you want to save the current theme settings as the PROJECT DEFAULT? This will update the code configuration file.')) {
                                         const res = await saveThemeConfig(customTheme);
@@ -272,9 +272,9 @@ export default function SettingsPage() {
                                         }
                                     }
                                 }}
-                                className="text-xs bg-green-50 text-green-700 hover:bg-green-100 border-green-200 shrink-0"
+                                className="text-xs shrink-0"
+                                icon={Save}
                             >
-                                <Save className="w-4 h-4 mr-2" />
                                 Save Theme as Default
                             </Button>
                         </div>
