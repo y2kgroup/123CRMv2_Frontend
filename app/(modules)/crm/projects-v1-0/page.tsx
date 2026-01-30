@@ -50,7 +50,6 @@ import { NotesCard } from '@/components/companies/detail/NotesCard';
 import { FilesCard } from '@/components/companies/detail/FilesCard';
 
 import Papa from 'papaparse';
-import { exportTableToCSV } from '@/components/ui/data-table/export-utils';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { useLookupData } from '@/components/ui/data-table/useLookupData';
 
@@ -66,7 +65,7 @@ const defaultColumns = [
 
 
 
-export default function TemplatesPage() {
+export default function Projectsv10Page() {
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
 
@@ -102,10 +101,7 @@ export default function TemplatesPage() {
             pluralName: detectedConfig.pluralName
         }
     });
-    console.log('TABLE CONFIG KEYS:', Object.keys(tableConfig.config?.columns || {}));
-
     const { getLookupValue, lookupData } = useLookupData(tableConfig.config as any);
-
     const persistenceKey = `table-data-${pathname?.replace(/\//g, '-') || 'default'}`;
     const [tableData, setTableData] = usePersistedData<any>(persistenceKey, []);
 
@@ -440,45 +436,18 @@ export default function TemplatesPage() {
                             textAlign: badgeStyleCfg.alignment as any
                         };
 
-                        // --- MERGED COLUMN LOGIC ---
-                        let mergedContent = null;
-                        if (col.mergeWithColumnId && tableConfig.config?.columns) {
-                            const mergedCol = Object.values(tableConfig.config.columns).find(c => c.id === col.mergeWithColumnId);
-                            if (mergedCol) {
-                                const mergedVal = item[mergedCol.id];
-                                if (mergedVal) {
-                                    if (mergedCol.type === 'image') {
-                                        mergedContent = (
-                                            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0">
-                                                <img src={mergedVal} alt="Merged" className="w-full h-full object-cover" />
-                                            </div>
-                                        );
-                                    } else if (mergedCol.type === 'select' && mergedCol.displayStyle === 'badge') {
-                                        mergedContent = <span className="text-xs text-slate-500 font-medium">{String(mergedVal)}</span>;
-                                    } else {
-                                        mergedContent = <span className="text-sm text-slate-500">{String(mergedVal)}</span>;
-                                    }
-                                }
-                            }
-                        }
-
                         // --- LOOKUP COLUMN LOGIC ---
-                        if (col.id === 'vendors') {
-                            console.log('RENDER VENDORS:', { id: col.id, type: col.type, hasLookupConfig: !!col.lookupConfig, qe: isQuickEditMode });
-                        }
                         if (col.type === 'lookup' && col.lookupConfig) {
                             const targetTableId = col.lookupConfig.targetTableId;
                             const targetRows = lookupData?.[targetTableId] || [];
+                            const foreignKeyVal = item[col.foreignKey || col.id]; // The stored ID
+                            const displayValue = getLookupValue(targetTableId, foreignKeyVal, col.lookupConfig.targetField);
 
-                            // --- QUICK EDIT MODE FOR LOOKUP ---
                             if (isQuickEditMode) {
-                                const currentVal = item[col.id]; // This is likely the foreign key (ID) or Name?
-                                // We should store the ID.
-
                                 return (
                                     <div onClick={(e) => e.stopPropagation()}>
                                         <Select
-                                            value={currentVal || ''}
+                                            value={foreignKeyVal || ''}
                                             onValueChange={(val) => handleCellChange(item.id, col.id, val)}
                                         >
                                             <SelectTrigger className="h-8 w-full min-w-[120px]">
@@ -499,21 +468,30 @@ export default function TemplatesPage() {
                                     </div>
                                 );
                             }
+                            // Read-only display
+                            return <span className="text-sm text-slate-700 dark:text-slate-300">{displayValue || foreignKeyVal}</span>;
+                        }
 
-                            const lookupVal = getLookupValue(
-                                col.lookupConfig.targetTableId,
-                                item[col.lookupConfig.foreignKey || col.id],
-                                col.lookupConfig.targetField
-                            );
-
-                            return (
-                                <span className={cn(
-                                    "text-sm text-slate-600 dark:text-slate-400 border-b border-dashed border-slate-300 dark:border-slate-700 pb-0.5 cursor-help",
-                                    !lookupVal && "text-slate-400 italic text-xs"
-                                )} title={`Looked up from ${col.lookupConfig.targetTableId}`}>
-                                    {lookupVal || 'Not Found'}
-                                </span>
-                            );
+                        // --- MERGED COLUMN LOGIC ---
+                        let mergedContent = null;
+                        if (col.mergeWithColumnId && tableConfig.config?.columns) {
+                            const mergedCol = Object.values(tableConfig.config.columns).find(c => c.id === col.mergeWithColumnId);
+                            if (mergedCol) {
+                                const mergedVal = item[mergedCol.id];
+                                if (mergedVal) {
+                                    if (mergedCol.type === 'image') {
+                                        mergedContent = (
+                                            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0">
+                                                <img src={mergedVal} alt="Merged" className="w-full h-full object-cover" />
+                                            </div>
+                                        );
+                                    } else if (mergedCol.type === 'select' && mergedCol.displayStyle === 'badge') {
+                                        mergedContent = <span className="text-xs text-slate-500 font-medium">{String(mergedVal)}</span>;
+                                    } else {
+                                        mergedContent = <span className="text-sm text-slate-500">{String(mergedVal)}</span>;
+                                    }
+                                }
+                            }
                         }
 
                         const mainContent = (() => {
@@ -588,57 +566,11 @@ export default function TemplatesPage() {
                                     );
                                 }
 
-                                // Handle Complex Types (Email, Phone, Address, Website)
-                                if (col.type === 'email' || col.type === 'phone' || col.type === 'address' || col.type === 'url') {
-                                    const displayValue = (() => {
-                                        if (Array.isArray(val)) {
-                                            return val.map((v: any) => (typeof v === 'object' && 'value' in v) ? v.value : v).join(', ');
-                                        }
-                                        if (typeof val === 'object' && val !== null && 'value' in val) {
-                                            return val.value;
-                                        }
-                                        return val || '';
-                                    })();
-
-                                    return (
-                                        <div onClick={(e) => e.stopPropagation()}>
-                                            <Input
-                                                value={displayValue}
-                                                onChange={(e) => {
-                                                    const newVal = e.target.value;
-                                                    // Reconstruct structure based on input
-                                                    // If original was array(of objects), split and map
-                                                    // If original was single object, updated value
-                                                    // If original was clean string (or empty), store as array of objects to be safe/consistent?
-                                                    // Let's infer from current val structure if possible, default to array of objects for these types.
-
-                                                    let structuresVal: any = newVal;
-
-                                                    const isArrayStructure = Array.isArray(val) || (!val && (col.type === 'email' || col.type === 'phone')); // Default to array for email/phone
-
-                                                    if (isArrayStructure) {
-                                                        structuresVal = newVal.split(',').map(s => ({ value: s.trim(), label: 'Primary' })).filter(o => o.value);
-                                                    } else if (typeof val === 'object' && val !== null) {
-                                                        structuresVal = { ...val, value: newVal };
-                                                    }
-
-                                                    handleChange(structuresVal);
-                                                }}
-                                                className="h-8 w-full min-w-[150px]"
-                                                placeholder={col.label}
-                                            />
-                                        </div>
-                                    );
-                                }
-
                                 return (
                                     <div onClick={(e) => e.stopPropagation()}>
                                         <Input
                                             type={col.type === 'number' ? 'number' : 'text'}
-                                            value={(() => {
-                                                if (typeof val === 'object' && val !== null) return JSON.stringify(val);
-                                                return val || '';
-                                            })()}
+                                            value={val || ''}
                                             onChange={(e) => handleChange(e.target.value)}
                                             className="h-8 w-full min-w-[100px]"
                                         />
@@ -764,7 +696,7 @@ export default function TemplatesPage() {
         }
 
         return baseColumns;
-    }, [selectedRows, tableData, isQuickEditMode, tableConfig.config]);
+    }, [selectedRows, tableData, isQuickEditMode, tableConfig.config, lookupData, getLookupValue]);
 
     // --- Import Dialog State ---
     const [isImportOpen, setIsImportOpen] = React.useState(false);
@@ -855,22 +787,18 @@ export default function TemplatesPage() {
 
 
     const handleExport = () => {
-        const columnsToExport = tableConfig.sortedColumns.map(col => ({ id: col.id, label: col.label }));
-
-        // Hydrate formula values
-        const dataToExport = tableData.map(row => {
-            const newRow = { ...row };
-            if (tableConfig.config?.columns) {
-                Object.values(tableConfig.config.columns).forEach(col => {
-                    if (col.type === 'formula' && col.formula) {
-                        newRow[col.id] = evaluateFormula(col.formula, row);
-                    }
-                });
-            }
-            return newRow;
-        });
-
-        exportTableToCSV(dataToExport, `export-${detectedConfig?.pluralName || 'data'}.csv`, columnsToExport);
+        const csv = Papa.unparse(tableData);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'templates_export.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     };
 
     // --- Action Menu Items ---
@@ -1155,8 +1083,8 @@ export default function TemplatesPage() {
                 onOpenChange={(open) => { setIsAddCompanyOpen(open); if (!open) setEditingCompany(null); }}
                 onSubmit={handleSaveCompany}
                 initialData={editingCompany}
-                entityConfig={tableConfig.config?.entityConfig || { singularName: 'Item', pluralName: 'Items', layout: [] }}
                 lookupData={lookupData}
+                entityConfig={tableConfig.config?.entityConfig || { singularName: 'Item', pluralName: 'Items', layout: [] }}
             />
 
             <AdvancedFilterSheet

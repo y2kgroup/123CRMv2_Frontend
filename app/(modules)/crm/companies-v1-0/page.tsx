@@ -52,7 +52,6 @@ import { FilesCard } from '@/components/companies/detail/FilesCard';
 import Papa from 'papaparse';
 import { exportTableToCSV } from '@/components/ui/data-table/export-utils';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { useLookupData } from '@/components/ui/data-table/useLookupData';
 
 // Requested specific columns only
 const defaultColumns = [
@@ -66,46 +65,21 @@ const defaultColumns = [
 
 
 
-export default function TemplatesPage() {
+export default function Companiesv10Page() {
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
 
-    const pathname = usePathname();
-
-    // Auto-detect entity name and ID from URL
-    const detectedConfig = useMemo(() => {
-        const parts = pathname?.split('/').filter(Boolean) || [];
-        const lastPart = parts[parts.length - 1] || 'item';
-        // Clean name (remove version suffixes like -v1-0)
-        let cleanName = lastPart.replace(/-v\d+.*$/, '').replace(/-/g, ' ');
-        if (cleanName === 'crm') cleanName = 'item'; // Fallback if root
-
-        const singular = (cleanName.endsWith('ies') ? cleanName.slice(0, -3) + 'y' :
-            cleanName.endsWith('s') ? cleanName.slice(0, -1) :
-                cleanName);
-
-        const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-        return {
-            tableId: `table-${pathname?.replace(/\//g, '-')}` || 'default-table',
-            singularName: capitalize(singular),
-            pluralName: capitalize(cleanName)
-        };
-    }, [pathname]);
-
     // --- Table Config ---
     const tableConfig = useTableConfig({
-        tableId: detectedConfig.tableId,
+        tableId: 'crm-companies-v1-0',
         defaultColumns: defaultColumns,
         metadata: {
-            singularName: detectedConfig.singularName,
-            pluralName: detectedConfig.pluralName
+            singularName: 'Company',
+            pluralName: 'Companies'
         }
     });
-    console.log('TABLE CONFIG KEYS:', Object.keys(tableConfig.config?.columns || {}));
 
-    const { getLookupValue, lookupData } = useLookupData(tableConfig.config as any);
-
+    const pathname = usePathname();
     const persistenceKey = `table-data-${pathname?.replace(/\//g, '-') || 'default'}`;
     const [tableData, setTableData] = usePersistedData<any>(persistenceKey, []);
 
@@ -462,60 +436,6 @@ export default function TemplatesPage() {
                             }
                         }
 
-                        // --- LOOKUP COLUMN LOGIC ---
-                        if (col.id === 'vendors') {
-                            console.log('RENDER VENDORS:', { id: col.id, type: col.type, hasLookupConfig: !!col.lookupConfig, qe: isQuickEditMode });
-                        }
-                        if (col.type === 'lookup' && col.lookupConfig) {
-                            const targetTableId = col.lookupConfig.targetTableId;
-                            const targetRows = lookupData?.[targetTableId] || [];
-
-                            // --- QUICK EDIT MODE FOR LOOKUP ---
-                            if (isQuickEditMode) {
-                                const currentVal = item[col.id]; // This is likely the foreign key (ID) or Name?
-                                // We should store the ID.
-
-                                return (
-                                    <div onClick={(e) => e.stopPropagation()}>
-                                        <Select
-                                            value={currentVal || ''}
-                                            onValueChange={(val) => handleCellChange(item.id, col.id, val)}
-                                        >
-                                            <SelectTrigger className="h-8 w-full min-w-[120px]">
-                                                <SelectValue placeholder="Select..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {targetRows.length > 0 ? (
-                                                    targetRows.map((r: any) => (
-                                                        <SelectItem key={r.id} value={r.id}>
-                                                            {r[col.lookupConfig!.targetField] || r.name || r.id}
-                                                        </SelectItem>
-                                                    ))
-                                                ) : (
-                                                    <div className="p-2 text-xs text-muted-foreground">No data</div>
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                );
-                            }
-
-                            const lookupVal = getLookupValue(
-                                col.lookupConfig.targetTableId,
-                                item[col.lookupConfig.foreignKey || col.id],
-                                col.lookupConfig.targetField
-                            );
-
-                            return (
-                                <span className={cn(
-                                    "text-sm text-slate-600 dark:text-slate-400 border-b border-dashed border-slate-300 dark:border-slate-700 pb-0.5 cursor-help",
-                                    !lookupVal && "text-slate-400 italic text-xs"
-                                )} title={`Looked up from ${col.lookupConfig.targetTableId}`}>
-                                    {lookupVal || 'Not Found'}
-                                </span>
-                            );
-                        }
-
                         const mainContent = (() => {
                             // --- QUICK EDIT MODE ---
                             if (isQuickEditMode) {
@@ -870,7 +790,7 @@ export default function TemplatesPage() {
             return newRow;
         });
 
-        exportTableToCSV(dataToExport, `export-${detectedConfig?.pluralName || 'data'}.csv`, columnsToExport);
+        exportTableToCSV(dataToExport, 'companies-export.csv', columnsToExport);
     };
 
     // --- Action Menu Items ---
@@ -1156,7 +1076,6 @@ export default function TemplatesPage() {
                 onSubmit={handleSaveCompany}
                 initialData={editingCompany}
                 entityConfig={tableConfig.config?.entityConfig || { singularName: 'Item', pluralName: 'Items', layout: [] }}
-                lookupData={lookupData}
             />
 
             <AdvancedFilterSheet

@@ -38,7 +38,7 @@ export interface CellStyle {
 }
 
 // Main Column Configuration Interface
-export type ColumnType = 'text' | 'number' | 'badge' | 'date' | 'phone' | 'email' | 'address' | 'select' | 'currency' | 'link' | 'user' | 'action' | 'file' | 'image' | 'id' | 'url';
+export type ColumnType = 'text' | 'number' | 'badge' | 'date' | 'phone' | 'email' | 'address' | 'select' | 'currency' | 'link' | 'user' | 'action' | 'file' | 'image' | 'id' | 'url' | 'formula' | 'lookup';
 
 export interface ColumnConfig {
     id: string;
@@ -65,6 +65,14 @@ export interface ColumnConfig {
     idPrefix?: string; // For 'id' type: prefix for generated ID
     // Merging
     mergeWithColumnId?: string; // ID of the column to merge with this one (displayed before/after)
+    // Formula Configuration
+    formula?: string; // The formula expression (e.g. "{price} * {qty}")
+    // Lookup Configuration
+    lookupConfig?: {
+        targetTableId: string; // e.g., 'crm-companies-v1-0'
+        foreignKey: string;    // e.g., 'companyId' (column in THIS table)
+        targetField: string;   // e.g., 'website' (column in OTHER table)
+    };
 }
 
 export interface ActionButtonConfig {
@@ -116,6 +124,12 @@ export interface FormLayoutItem {
     // Dropdown props synced from ColumnConfig
     dropdownOptions?: string[];
     isMultiSelect?: boolean;
+    // Lookup Config synced from ColumnConfig
+    lookupConfig?: {
+        targetTableId: string; // e.g., 'crm-companies-v1-0'
+        foreignKey: string;    // e.g., 'companyId' (column in THIS table)
+        targetField: string;   // e.g., 'website' (column in OTHER table)
+    };
 }
 
 export interface DetailLayout {

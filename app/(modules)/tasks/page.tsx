@@ -17,6 +17,7 @@ import {
 import { useLayout } from '@/components/layout/LayoutContext';
 import { DataTable } from '@/components/ui/data-table/DataTable';
 import { useTableConfig } from '@/components/ui/data-table/useTableConfig';
+import { evaluateFormula } from '@/lib/formula';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +33,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { TaskDetailCard, Task } from '@/components/tasks/TaskDetailCard';
+import { AddTaskModal } from '@/components/tasks/AddTaskModal';
 
 // --- Mock Data ---
 const MOCK_TASKS: Task[] = [
@@ -125,12 +127,18 @@ export default function TasksPage() {
     const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
     const [selectedRows, setSelectedRows] = useState<Record<string, boolean>>({});
     const [filterText, setFilterText] = useState('');
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     // --- Table Config ---
     const tableConfig = useTableConfig({
         tableId: 'crm-tasks-v1',
         defaultColumns: defaultColumns
     });
+
+    // --- Handlers ---
+    const handleAddTask = (newTask: Task) => {
+        setTasks(prev => [newTask, ...prev]);
+    };
 
     // --- Header Actions ---
     React.useEffect(() => {
@@ -140,7 +148,7 @@ export default function TasksPage() {
                 <Button variant="secondary" className="h-9 px-3" icon={Filter}>
                     Filters
                 </Button>
-                <Button variant="primary" className="h-9 w-auto px-4" icon={Plus}>
+                <Button variant="primary" className="h-9 w-auto px-4" icon={Plus} onClick={() => setIsAddModalOpen(true)}>
                     New Task
                 </Button>
             </div>
@@ -221,14 +229,24 @@ export default function TasksPage() {
                     />
                 </div>
             ),
-            title: (item) => (
-                <div className="flex flex-col">
-                    <span className="font-semibold text-slate-900">{item.title}</span>
-                    {item.description && (
-                        <span className="text-xs text-slate-500 truncate max-w-[300px]">{item.description}</span>
-                    )}
-                </div>
-            ),
+            title: (item) => {
+                const colConfig = tableConfig.config?.columns?.['title'];
+
+                // Formula Support
+                if (colConfig?.type === 'formula' && colConfig.formula) {
+                    const val = evaluateFormula(colConfig.formula, item);
+                    return <span className="font-semibold text-slate-900">{String(val)}</span>;
+                }
+
+                return (
+                    <div className="flex flex-col">
+                        <span className="font-semibold text-slate-900">{item.title}</span>
+                        {item.description && (
+                            <span className="text-xs text-slate-500 truncate max-w-[300px]">{item.description}</span>
+                        )}
+                    </div>
+                );
+            },
             priority: (item) => {
                 const priorityColors: Record<string, string> = {
                     'High': 'bg-red-50 text-red-700 border-red-100',
@@ -303,6 +321,12 @@ export default function TasksPage() {
                     />
                 )}
             </div>
+
+            <AddTaskModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onAddTask={handleAddTask}
+            />
         </div>
     );
 }

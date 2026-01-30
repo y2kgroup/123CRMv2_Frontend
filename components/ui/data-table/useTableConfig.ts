@@ -6,6 +6,7 @@ import { TableConfig, ColumnConfig, getDefaultColumnConfig, SortConfig, GlobalSt
 interface UseTableConfigProps {
     tableId: string;
     defaultColumns: { id: string; label: string; isMandatory?: boolean; type?: ColumnType }[];
+    metadata?: { singularName?: string; pluralName?: string };
 }
 
 const DEFAULT_HEADER_STYLE: GlobalStyle = {
@@ -130,13 +131,28 @@ function syncEntityLayout(entityConfig: EntityConfig, columns: Record<string, Co
             type: columns[item.id].type, // Always sync type
             required: item.required ?? false, // Persist required state
             dropdownOptions: columns[item.id].dropdownOptions, // Sync options
-            isMultiSelect: columns[item.id].isMultiSelect // Sync multi-select state
+            isMultiSelect: columns[item.id].isMultiSelect, // Sync multi-select state
+            lookupConfig: columns[item.id].lookupConfig // Sync lookup config
         }));
 
     return layout;
 }
 
-export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps) {
+// Helper to clean up detail layout by removing IDs that don't exist in columns
+function syncDetailLayout(detailLayout: import('./types').DetailLayout, columns: Record<string, ColumnConfig>): import('./types').DetailLayout {
+    const validIds = new Set(Object.keys(columns));
+    // Ensure special UI elements are always allowed if they make sense
+    validIds.add('actions');
+    validIds.add('logo');
+
+    return {
+        top: detailLayout.top?.filter(id => validIds.has(id)) || [],
+        left: detailLayout.left?.filter(id => validIds.has(id)) || [],
+        right: detailLayout.right?.filter(id => validIds.has(id)) || []
+    };
+}
+
+export function useTableConfig({ tableId, defaultColumns, metadata }: UseTableConfigProps) {
     const [config, setConfig] = useState<TableConfig | null>(() => {
         if (typeof window === 'undefined') return null;
 
@@ -144,6 +160,7 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
         if (saved) {
             try {
                 const parsed = JSON.parse(saved);
+                // ... (existing column merge logic) ...
                 // Merge saved config with any new default columns that might have been added
                 const mergedColumns = { ...parsed.columns };
 
@@ -180,9 +197,15 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
                     mergedEntityConfig = { ...DEFAULT_ENTITY_CONFIG };
                 }
 
+                // Apply Metadata Overrides (Always enforce code-defined names)
+                if (metadata) {
+                    if (metadata.singularName) mergedEntityConfig.singularName = metadata.singularName;
+                    if (metadata.pluralName) mergedEntityConfig.pluralName = metadata.pluralName;
+                }
+
                 // Ensure layout exists/migrated
                 if (!mergedEntityConfig.layout) {
-                    // Migrate from old 'fields' format to 'layout'
+                    // ... (existing layout migration) ...
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const oldFields = (mergedEntityConfig as any).fields || {};
                     const newLayout: FormLayoutItem[] = [
@@ -219,6 +242,7 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
 
                 // SYNC APPLIED HERE
                 mergedEntityConfig.layout = syncEntityLayout(mergedEntityConfig, mergedColumns);
+                mergedEntityConfig.detailLayout = syncDetailLayout(mergedEntityConfig.detailLayout, mergedColumns);
 
                 return {
                     ...parsed,
@@ -247,6 +271,12 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
             layout: DEFAULT_ENTITY_CONFIG.layout ? [...DEFAULT_ENTITY_CONFIG.layout] : []
         };
 
+        // Apply Metadata Overrides to Defaults
+        if (metadata) {
+            if (metadata.singularName) defaultEntityConfig.singularName = metadata.singularName;
+            if (metadata.pluralName) defaultEntityConfig.pluralName = metadata.pluralName;
+        }
+
         // SYNC APPLIED HERE
         defaultEntityConfig.layout = syncEntityLayout(defaultEntityConfig, cols);
 
@@ -258,6 +288,9 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
                 right: ['addresses', 'owner']
             };
         }
+
+        // SYNC DETAIL LAYOUT
+        defaultEntityConfig.detailLayout = syncDetailLayout(defaultEntityConfig.detailLayout, cols);
 
         if (!defaultEntityConfig.cardsLayout) {
             defaultEntityConfig.cardsLayout = ['tasks', 'notes', 'files'];
@@ -302,7 +335,8 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
                         // Sync type/options if changed, or fall back to existing column data
                         type: updates.type !== undefined ? updates.type : item.type,
                         dropdownOptions: updates.dropdownOptions !== undefined ? updates.dropdownOptions : item.dropdownOptions,
-                        isMultiSelect: updates.isMultiSelect !== undefined ? updates.isMultiSelect : item.isMultiSelect
+                        isMultiSelect: updates.isMultiSelect !== undefined ? updates.isMultiSelect : item.isMultiSelect,
+                        lookupConfig: updates.lookupConfig !== undefined ? updates.lookupConfig : item.lookupConfig
                     };
                 }
                 return item;
@@ -339,7 +373,8 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
                         label: column.label,
                         type: column.type,
                         dropdownOptions: column.dropdownOptions,
-                        isMultiSelect: column.isMultiSelect
+                        isMultiSelect: column.isMultiSelect,
+                        lookupConfig: column.lookupConfig
                     }
                 ];
             }
@@ -528,7 +563,7 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
                 ...prev,
                 entityConfig: {
                     ...prev.entityConfig,
-                    detailLayout: DEFAULT_ENTITY_CONFIG.detailLayout,
+                    detailLayout: syncDetailLayout(DEFAULT_ENTITY_CONFIG.detailLayout || { top: [], left: [], right: [] }, prev.columns),
                     hiddenLabels: DEFAULT_ENTITY_CONFIG.hiddenLabels
                 } as EntityConfig
             };
@@ -563,6 +598,9 @@ export function useTableConfig({ tableId, defaultColumns }: UseTableConfigProps)
 
         // Sync layout with columns
         newEntityConfig.layout = syncEntityLayout(newEntityConfig, cols);
+        if (newEntityConfig.detailLayout) {
+            newEntityConfig.detailLayout = syncDetailLayout(newEntityConfig.detailLayout, cols);
+        }
 
         setConfig({
             id: tableId,

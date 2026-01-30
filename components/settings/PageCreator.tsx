@@ -63,6 +63,7 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
     // Page Creation State
     const [pageTitle, setPageTitle] = useState('');
     const [selectedModule, setSelectedModule] = useState('');
+    const [selectedTemplate, setSelectedTemplate] = useState('default');
     const [loading, setLoading] = useState(false);
 
     // New: Existing Page State
@@ -141,7 +142,7 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
                 fullHref = `/${fullPath}`;
 
                 // Create File
-                const res = await createPage(fullPath, pageTitle, 'default');
+                const res = await createPage(fullPath, pageTitle, selectedTemplate as any);
                 if (!res.success) {
                     alert(res.message);
                     setLoading(false);
@@ -178,6 +179,7 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
             // Reset
             setPageTitle('');
             setSelectedExistingPage('');
+            setSelectedTemplate('default');
             setCreationType('new'); // Reset to default
 
             alert(creationType === 'new' ? 'Page created and added to module!' : 'Existing page added to module!');
@@ -283,16 +285,29 @@ export function PageCreator({ items, onAdd }: PageCreatorProps) {
                         </div>
 
                         {creationType === 'new' ? (
-                            <div className="space-y-1 lg:col-span-2">
-                                <label className="text-[10px] uppercase font-bold text-gray-400">Page Name</label>
-                                <input
-                                    type="text"
-                                    value={pageTitle}
-                                    onChange={e => setPageTitle(e.target.value)}
-                                    placeholder="e.g. My New Page"
-                                    className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
-                                />
-                            </div>
+                            <>
+                                <div className="space-y-1 lg:col-span-2">
+                                    <label className="text-[10px] uppercase font-bold text-gray-400">Page Name</label>
+                                    <input
+                                        type="text"
+                                        value={pageTitle}
+                                        onChange={e => setPageTitle(e.target.value)}
+                                        placeholder="e.g. My New Page"
+                                        className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                                    />
+                                </div>
+                                <div className="space-y-1 lg:col-span-2">
+                                    <label className="text-[10px] uppercase font-bold text-gray-400">Template</label>
+                                    <select
+                                        value={selectedTemplate}
+                                        onChange={e => setSelectedTemplate(e.target.value)}
+                                        className="w-full text-sm px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:border-blue-500"
+                                    >
+                                        <option value="default">Blank Page</option>
+                                        <option value="data-table-template">Data Table & Detail Card</option>
+                                    </select>
+                                </div>
+                            </>
                         ) : (
                             <>
                                 <div className="space-y-1 lg:col-span-1">

@@ -38,6 +38,7 @@ export interface Task {
     };
     subtasks?: { id: string; text: string; completed: boolean }[];
     activity?: { id: string; user: string; action: string; time: string; text?: string }[];
+    reminder?: string;
 }
 
 interface TaskDetailCardProps {

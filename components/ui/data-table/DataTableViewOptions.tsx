@@ -8,7 +8,8 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
-    DragEndEvent
+    DragEndEvent,
+    useDroppable
 } from '@dnd-kit/core';
 import {
     arrayMove,
@@ -62,6 +63,7 @@ import { IconPicker } from '@/components/ui/IconPicker';
 import { ColumnConfig, GlobalStyle, ColumnType, CellStyle, FormLayoutItem, DetailLayout } from './types';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { FormulaInput } from './FormulaInput';
 
 interface DataTableViewOptionsProps {
     config: ReturnType<typeof useTableConfig>;
@@ -72,15 +74,142 @@ interface DataTableViewOptionsProps {
 }
 
 
+// Helper to get available tables from localStorage
+const getAvailableTables = () => {
+    if (typeof window === 'undefined') return [];
 
-function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, extra?: { displayStyle?: 'text' | 'badge'; dropdownOptions?: string[]; isMultiSelect?: boolean; idPrefix?: string }) => void }) {
+    const tableIds = new Set<string>();
+
+    // Scan for both config and data to find all tables
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key?.startsWith('table-config-')) {
+            tableIds.add(key.replace('table-config-', ''));
+        }
+        if (key?.startsWith('table-data-')) {
+            tableIds.add(key.replace('table-data-', ''));
+        }
+    }
+
+    const tables: { id: string; name: string }[] = [];
+    const nameCounts: Record<string, number> = {};
+
+    // First pass: Generate names and count occurrences
+    const tempTables: { id: string; name: string }[] = [];
+    tableIds.forEach(id => {
+        let name = id;
+        try {
+            const nameParts = id.includes('-') ? id.split('-').slice(1, -2) : [id];
+            if (nameParts.length > 0) {
+                name = nameParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            }
+        } catch (e) { }
+
+        nameCounts[name] = (nameCounts[name] || 0) + 1;
+        tempTables.push({ id, name });
+    });
+
+    // Second pass: Uniqueify names
+    tempTables.forEach(t => {
+        if (nameCounts[t.name] > 1) {
+            tables.push({ id: t.id, name: `${t.name} (${t.id})` });
+        } else {
+            tables.push({ id: t.id, name: t.name });
+        }
+    });
+
+    return tables.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+// Helper to get columns for a specific table
+const getTableColumns = (tableId: string) => {
+    if (typeof window === 'undefined') return [];
+
+    // We will collect columns from both config and data
+    const columnMap = new Map<string, ColumnConfig>();
+
+    // 1. Try to get from config
+    const configKey = `table-config-${tableId}`;
+    try {
+        const configStr = localStorage.getItem(configKey);
+        if (configStr) {
+            const config = JSON.parse(configStr);
+            if (config.columns) {
+                Object.values(config.columns).forEach((col: any) => {
+                    columnMap.set(col.id, col as ColumnConfig);
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Error fetching table config columns', e);
+    }
+
+    // 2. Try to infer from data keys and merge
+    const dataKey = `table-data-${tableId}`;
+    try {
+        const dataStr = localStorage.getItem(dataKey);
+        if (dataStr) {
+            const data = JSON.parse(dataStr);
+            if (Array.isArray(data) && data.length > 0) {
+                // Inspect first few rows to get all keys (just in case some are optional)
+                const keys = new Set<string>();
+                data.slice(0, 5).forEach(row => {
+                    Object.keys(row).forEach(k => keys.add(k));
+                });
+
+                keys.forEach(k => {
+                    if (!columnMap.has(k)) {
+                        columnMap.set(k, {
+                            id: k,
+                            label: k.charAt(0).toUpperCase() + k.slice(1),
+                            type: 'text' // Default to text if inferred
+                        } as ColumnConfig);
+                    }
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Error fetching table data for columns', e);
+    }
+
+    return Array.from(columnMap.values());
+};
+function AddColumnDialog({ onAdd, availableColumns }: { onAdd: (name: string, type: ColumnType, extra?: { displayStyle?: 'text' | 'badge'; dropdownOptions?: string[]; isMultiSelect?: boolean; idPrefix?: string; formula?: string }) => void, availableColumns: ColumnConfig[] }) {
     const [name, setName] = useState('');
     const [type, setType] = useState<ColumnType>('text');
     const [displayStyle, setDisplayStyle] = useState<'text' | 'badge'>('text');
     const [options, setOptions] = useState('');
     const [isMultiSelect, setIsMultiSelect] = useState(false);
     const [idPrefix, setIdPrefix] = useState(''); // New State for ID Prefix
+    const [formula, setFormula] = useState(''); // State for Formula
+    const [lookupConfig, setLookupConfig] = useState<{ targetTableId: string; foreignKey: string; targetField: string }>({ targetTableId: '', foreignKey: '', targetField: '' });
     const [open, setOpen] = useState(false);
+
+    // Lookup State
+    const [availableTables, setAvailableTables] = useState<{ id: string; name: string }[]>([]);
+    const [targetTableColumns, setTargetTableColumns] = useState<ColumnConfig[]>([]);
+
+    React.useEffect(() => {
+        if (open) {
+            setAvailableTables(getAvailableTables());
+        }
+    }, [open]);
+
+    React.useEffect(() => {
+        if (lookupConfig.targetTableId) {
+            const cols = getTableColumns(lookupConfig.targetTableId);
+            setTargetTableColumns(cols);
+            // Auto-select preferred field
+            if (!lookupConfig.targetField || !cols.find(c => c.id === lookupConfig.targetField)) {
+                const preferred = cols.find(c => c.id === 'name') || cols.find(c => c.id === 'title') || cols[0];
+                if (preferred) {
+                    setLookupConfig(prev => ({ ...prev, targetField: preferred.id }));
+                }
+            }
+        } else {
+            setTargetTableColumns([]);
+        }
+    }, [lookupConfig.targetTableId]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -89,7 +218,10 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                 displayStyle: type === 'select' ? displayStyle : undefined,
                 dropdownOptions: (type === 'select' || type === 'badge') ? options.split(/[,\n]+/).map(s => s.trim()).filter(Boolean) : undefined,
                 isMultiSelect: ['select', 'badge', 'email', 'phone', 'address'].includes(type) ? isMultiSelect : undefined,
-                idPrefix: type === 'id' ? idPrefix : undefined // Include prefix
+                idPrefix: type === 'id' ? idPrefix : undefined,
+                formula: type === 'formula' ? formula : undefined,
+                // @ts-ignore - Extra propery handling
+                lookupConfig: type === 'lookup' ? lookupConfig : undefined
             });
             setOpen(false);
             setName('');
@@ -98,6 +230,9 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
             setDisplayStyle('text');
             setIsMultiSelect(false);
             setIdPrefix('');
+            // @ts-ignore
+            setFormula('');
+            setLookupConfig({ targetTableId: '', foreignKey: '', targetField: '' });
         }
     };
 
@@ -108,7 +243,7 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                     Add Column
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Add New Column</DialogTitle>
                     <DialogDescription>
@@ -125,7 +260,7 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="col-span-3"
-                            placeholder="e.g. Project Status"
+                            placeholder="e.g. Company Website"
                         />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -150,9 +285,73 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                                 <SelectItem value="file">File Upload</SelectItem>
                                 <SelectItem value="image">Logo/Profile Picture</SelectItem>
                                 <SelectItem value="id">ID</SelectItem>
+                                <SelectItem value="formula">Formula 𝑓(x)</SelectItem>
+                                <SelectItem value="lookup">Lookup (Relation)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {type === 'lookup' && (
+                        <>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Target Table</Label>
+                                <Select
+                                    value={lookupConfig.targetTableId}
+                                    onValueChange={(val) => setLookupConfig(prev => ({ ...prev, targetTableId: val }))}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select Table" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableTables.length > 0 ? (
+                                            availableTables.map(t => (
+                                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                            ))
+                                        ) : (
+                                            <div className="p-2 text-xs text-center text-muted-foreground">No tables found</div>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Link using Column</Label>
+                                <div className="col-span-3">
+                                    <Select
+                                        value={lookupConfig.foreignKey}
+                                        onValueChange={(val) => setLookupConfig(prev => ({ ...prev, foreignKey: val }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select existing column..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableColumns.map(col => (
+                                                <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[10px] text-slate-500 mt-1.5 leading-snug">
+                                        Select the column in <strong>this table</strong> that connects to the target (e.g. select "Company Name" to link to the Companies table).
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Display Field</Label>
+                                <Select
+                                    value={lookupConfig.targetField}
+                                    onValueChange={(val) => setLookupConfig(prev => ({ ...prev, targetField: val }))}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select Field" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {targetTableColumns.map(col => (
+                                            <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
+                    )}
 
                     {type === 'id' && (
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -166,6 +365,22 @@ function AddColumnDialog({ onAdd }: { onAdd: (name: string, type: ColumnType, ex
                                 className="col-span-3"
                                 placeholder="e.g. INV-"
                             />
+                        </div>
+                    )}
+
+                    {type === 'formula' && (
+                        <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="formula" className="text-right pt-2">
+                                Expression
+                            </Label>
+                            <div className="col-span-3 space-y-2">
+                                <FormulaInput
+                                    value={formula}
+                                    onChange={setFormula}
+                                    columns={availableColumns}
+                                    placeholder="{price} * {qty}"
+                                />
+                            </div>
                         </div>
                     )}
 
@@ -238,6 +453,7 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
     const [options, setOptions] = useState(column.dropdownOptions?.join(', ') || '');
     const [isMultiSelect, setIsMultiSelect] = useState(column.isMultiSelect || false);
     const [idPrefix, setIdPrefix] = useState(column.idPrefix || ''); // Edit State
+    const [formula, setFormula] = useState(column.formula || '');
     const [width, setWidth] = useState(column.width || '');
 
     // Icon State
@@ -249,7 +465,33 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
     const [mergeWithColumnId, setMergeWithColumnId] = useState(column.mergeWithColumnId || 'none');
     const [multiEntryDisplay, setMultiEntryDisplay] = useState<'all' | 'primary'>(column.multiEntryDisplay || 'all');
 
+    // Lookup State
+    const [lookupConfig, setLookupConfig] = useState<{ targetTableId: string; foreignKey: string; targetField: string }>(column.lookupConfig || { targetTableId: '', foreignKey: '', targetField: '' });
+    const [availableTables, setAvailableTables] = useState<{ id: string; name: string }[]>([]);
+    const [targetTableColumns, setTargetTableColumns] = useState<ColumnConfig[]>([]);
     const [open, setOpen] = useState(false);
+
+    React.useEffect(() => {
+        if (open) {
+            setAvailableTables(getAvailableTables());
+        }
+    }, [open]);
+
+    React.useEffect(() => {
+        if (lookupConfig.targetTableId) {
+            const cols = getTableColumns(lookupConfig.targetTableId);
+            setTargetTableColumns(cols);
+            // Auto-select preferred field
+            if (!lookupConfig.targetField || !cols.find(c => c.id === lookupConfig.targetField)) {
+                const preferred = cols.find(c => c.id === 'name') || cols.find(c => c.id === 'title') || cols[0];
+                if (preferred) {
+                    setLookupConfig(prev => ({ ...prev, targetField: preferred.id }));
+                }
+            }
+        } else {
+            setTargetTableColumns([]);
+        }
+    }, [lookupConfig.targetTableId]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -261,11 +503,14 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
             dropdownOptions: (type === 'select' || type === 'badge') ? options.split(/[,\n]+/).map(s => s.trim()).filter(Boolean) : undefined,
             isMultiSelect: ['select', 'badge', 'email', 'phone', 'address'].includes(type) ? isMultiSelect : undefined,
             idPrefix: type === 'id' ? idPrefix : undefined,
+            formula: type === 'formula' ? formula : undefined,
             icon,
             showIconInTable,
             showIconInCard,
             mergeWithColumnId: mergeWithColumnId === 'none' ? undefined : mergeWithColumnId,
-            multiEntryDisplay
+            multiEntryDisplay,
+            // @ts-ignore
+            lookupConfig: type === 'lookup' ? lookupConfig : undefined
         });
         setOpen(false);
     };
@@ -275,7 +520,7 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Edit Column</DialogTitle>
                     <DialogDescription>
@@ -358,9 +603,73 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
                                 <SelectItem value="file">File Upload</SelectItem>
                                 <SelectItem value="image">Logo/Profile Picture</SelectItem>
                                 <SelectItem value="id">ID</SelectItem>
+                                <SelectItem value="formula">Formula 𝑓(x)</SelectItem>
+                                <SelectItem value="lookup">Lookup (Relation)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+
+                    {type === 'lookup' && (
+                        <>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Target Table</Label>
+                                <Select
+                                    value={lookupConfig.targetTableId}
+                                    onValueChange={(val) => setLookupConfig(prev => ({ ...prev, targetTableId: val }))}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select Table" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {availableTables.length > 0 ? (
+                                            availableTables.map(t => (
+                                                <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                                            ))
+                                        ) : (
+                                            <div className="p-2 text-xs text-center text-muted-foreground">No tables found</div>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Link using Column</Label>
+                                <div className="col-span-3">
+                                    <Select
+                                        value={lookupConfig.foreignKey}
+                                        onValueChange={(val) => setLookupConfig(prev => ({ ...prev, foreignKey: val }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select existing column..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {availableColumns?.map(col => (
+                                                <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[10px] text-slate-500 mt-1.5 leading-snug">
+                                        Select the column in <strong>this table</strong> that connects to the target (e.g. select "Company Name" to link to the Companies table).
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Display Field</Label>
+                                <Select
+                                    value={lookupConfig.targetField}
+                                    onValueChange={(val) => setLookupConfig(prev => ({ ...prev, targetField: val }))}
+                                >
+                                    <SelectTrigger className="col-span-3">
+                                        <SelectValue placeholder="Select Field" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {targetTableColumns.map(col => (
+                                            <SelectItem key={col.id} value={col.id}>{col.label}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </>
+                    )}
 
                     {type === 'id' && (
                         <div className="grid grid-cols-4 items-center gap-4">
@@ -374,6 +683,25 @@ function EditColumnDialog({ column, onUpdate, children, availableColumns }: { co
                                 className="col-span-3"
                                 placeholder="e.g. INV-"
                             />
+                        </div>
+                    )}
+
+                    {type === 'formula' && (
+                        <div className="grid grid-cols-4 items-start gap-4">
+                            <Label htmlFor="edit-formula" className="text-right pt-2">
+                                Expression
+                            </Label>
+                            <div className="col-span-3 space-y-2">
+                                <FormulaInput
+                                    value={formula}
+                                    onChange={setFormula}
+                                    // Use availableColumns (passed from parent) plus the current column itself if needed?
+                                    // Actually availableColumns usually contains *all* columns or *other* columns.
+                                    // We want all columns for formula.
+                                    columns={availableColumns || []}
+                                    placeholder="{price} * {qty}"
+                                />
+                            </div>
                         </div>
                     )}
 
@@ -1124,14 +1452,14 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                     <Button
                         type="button"
                         variant="tertiary"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        icon={RotateCcw}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0 whitespace-nowrap"
                         onClick={() => {
                             if (confirm('Are you sure you want to reset the form layout to defaults?')) {
                                 config.resetForm?.();
                             }
                         }}
                     >
-                        <RotateCcw className="h-4 w-4 mr-2" />
                         Restore Form to Default
                     </Button>
                 </div>
@@ -1146,7 +1474,7 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                         Drag to reorder columns. Toggle switches to show or hide them.
                     </p>
 
-                    <AddColumnDialog onAdd={handleAddColumn} />
+                    <AddColumnDialog onAdd={handleAddColumn} availableColumns={sortedColumns} />
 
                     <DndContext
                         sensors={sensors}
@@ -1177,14 +1505,14 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                     <Button
                         type="button"
                         variant="tertiary"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        icon={RotateCcw}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0 whitespace-nowrap"
                         onClick={() => {
                             if (confirm('Are you sure you want to reset columns to defaults? Custom columns will be removed.')) {
                                 config.resetColumns?.();
                             }
                         }}
                     >
-                        <RotateCcw className="h-4 w-4 mr-2" />
                         Restore Columns to Default
                     </Button>
                 </div>
@@ -1344,14 +1672,14 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                     <Button
                         type="button"
                         variant="tertiary"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        icon={RotateCcw}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0 whitespace-nowrap"
                         onClick={() => {
                             if (confirm('Are you sure you want to reset all table styles to defaults?')) {
                                 config.resetStyles?.();
                             }
                         }}
                     >
-                        <RotateCcw className="h-4 w-4 mr-2" />
                         Restore Styles to Default
                     </Button>
                 </div>
@@ -1363,14 +1691,14 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                     <Button
                         type="button"
                         variant="tertiary"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        icon={RotateCcw}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0 whitespace-nowrap"
                         onClick={() => {
                             if (confirm('Are you sure you want to reset the detail card layout to defaults?')) {
                                 config.resetDetailLayout?.();
                             }
                         }}
                     >
-                        <RotateCcw className="h-4 w-4 mr-2" />
                         Restore Detail Card to Default
                     </Button>
                 </div>
@@ -1424,14 +1752,14 @@ export function DataTableViewOptions({ config, trigger, mode = 'sheet', showDeta
                     <Button
                         type="button"
                         variant="tertiary"
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0"
+                        icon={RotateCcw}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 pl-0 whitespace-nowrap"
                         onClick={() => {
                             if (confirm('Are you sure you want to reset actions to defaults?')) {
                                 config.resetActions?.();
                             }
                         }}
                     >
-                        <RotateCcw className="h-4 w-4 mr-2" />
                         Restore Actions to Default
                     </Button>
                 </div>
@@ -1746,22 +2074,31 @@ function DroppableZone({ id, items, getLabel, isHiddenZone, hiddenLabels, onTogg
     hiddenLabels?: string[],
     onToggleLabel?: (id: string) => void
 }) {
-    const { setNodeRef } = useSortable({ id });
+    const { setNodeRef, isOver } = useDroppable({ id });
 
     return (
         <SortableContext id={id} items={items} strategy={verticalListSortingStrategy}>
             <div
                 ref={setNodeRef}
                 className={cn(
-                    "min-h-[60px] rounded-md border p-2 space-y-2 transition-colors",
-                    isHiddenZone
-                        ? "bg-slate-50 dark:bg-slate-900 border-dashed border-slate-200"
-                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700"
+                    "min-h-[120px] rounded-md border p-3 space-y-2 transition-all duration-200", // Increased height and padding
+                    isOver ? "bg-blue-50 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800" : "", // Active drop state
+                    !isOver && isHiddenZone ? "bg-slate-50 dark:bg-slate-900/50 border-dashed border-slate-300 dark:border-slate-700" : "",
+                    !isOver && !isHiddenZone ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700" : ""
                 )}
             >
                 {items.length === 0 && !isHiddenZone && (
-                    <div className="text-center py-4 text-xs text-slate-400 italic">Empty Section</div>
+                    <div className="h-full flex flex-col items-center justify-center text-slate-400 italic py-8 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded">
+                        <span className="text-sm font-medium">Empty Section</span>
+                        <span className="text-xs opacity-70">Drop fields here</span>
+                    </div>
                 )}
+
+                {/* Hidden Zone Empty State */}
+                {items.length === 0 && isHiddenZone && (
+                    <div className="text-center py-8 text-sm text-slate-400 italic">All fields are visible</div>
+                )}
+
                 {items.map(itemId => (
                     <DraggableFieldItem
                         key={itemId}
@@ -2002,9 +2339,19 @@ function SortableActionItem({
                 <div {...attributes} {...listeners} className="cursor-grab hover:text-slate-700 dark:hover:text-slate-300 text-slate-400">
                     <GripVertical className="h-4 w-4" />
                 </div>
-                <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
-                    {IconComp ? <IconComp className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
-                </div>
+                <IconPicker
+                    value={action.icon}
+                    onChange={(newIcon) => {
+                        const newActions = [...(config.config?.actions || [])];
+                        newActions[index] = { ...newActions[index], icon: newIcon };
+                        config.updateActions?.(newActions);
+                    }}
+                    trigger={
+                        <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition-colors">
+                            {IconComp ? <IconComp className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+                        </div>
+                    }
+                />
                 <div>
                     <p className="font-medium text-sm">{action.label}</p>
                     <p className="text-xs text-slate-400 capitalize">{action.id}</p>
@@ -2120,7 +2467,7 @@ function AddActionDialog({ onAdd, children }: { onAdd: (action: import('./types'
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader>
                     <DialogTitle>Add Custom Action</DialogTitle>
                     <DialogDescription>

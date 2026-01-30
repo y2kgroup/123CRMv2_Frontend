@@ -43,7 +43,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
             <main
                 className={cn(
-                    "flex-1 flex flex-col space-y-4 fade-in transition-all duration-300 overflow-hidden",
+                    "flex-1 flex flex-col space-y-[-7px] fade-in transition-all duration-300 overflow-hidden",
                     layoutMode === 'horizontal'
                         ? "pt-[86px] md:pt-[136px]"
                         : cn("pt-[86px]", isSidebarCollapsed ? "md:pl-[70px]" : "md:pl-[250px]")

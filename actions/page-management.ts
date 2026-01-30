@@ -3,7 +3,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-export async function createPage(pagePath: string, title: string, template: 'default' | 'table' | 'detail' = 'default') {
+export async function createPage(pagePath: string, title: string, template: 'default' | 'table' | 'detail' | 'data-table-template' = 'default') {
     if (!pagePath || !title) {
         return { success: false, message: 'Path and Title are required.' };
     }
@@ -94,7 +94,25 @@ export async function createPage(pagePath: string, title: string, template: 'def
 
         let content = '';
 
-        if (template === 'table') {
+        if (template === 'data-table-template') {
+            try {
+                // Read from the template file
+                const templatePath = path.join(process.cwd(), 'app', 'templates', 'data-table-and-detail-card', 'page.tsx');
+                let templateContent = await fs.readFile(templatePath, 'utf8');
+
+                // Rename the component to match the new page title (Sanitized) to avoid naming conflicts if possible, 
+                // or just leave it as is since it's a default export.
+                // However, having multiple "TablePage" components might be confusing in DevTools.
+                // Let's try to rename "export default function TablePage" -> "export default function [NewName]"
+                const safeComponentName = title.replace(/[^a-zA-Z0-9]/g, '') + 'Page';
+                templateContent = templateContent.replace(/export default function \w+\(\)/, `export default function ${safeComponentName}()`);
+
+                content = templateContent;
+            } catch (err) {
+                console.error('Error reading template file:', err);
+                return { success: false, message: 'Failed to read template source file.' };
+            }
+        } else if (template === 'table') {
             content = `'use client';
 
 import React, { useMemo, useState, useEffect } from 'react';

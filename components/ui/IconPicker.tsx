@@ -21,11 +21,12 @@ const iconNames = Object.keys(LucideIcons).filter(key => key !== 'icons' && key 
 interface IconPickerProps {
     value?: string;
     onChange: (iconName: string) => void;
+    trigger?: React.ReactNode;
 }
 
 const PAGE_SIZE = 48; // 6x8 grid
 
-export function IconPicker({ value, onChange }: IconPickerProps) {
+export function IconPicker({ value, onChange, trigger }: IconPickerProps) {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -52,14 +53,16 @@ export function IconPicker({ value, onChange }: IconPickerProps) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="secondary" className="w-full justify-between px-3 h-9">
-                    <span className="flex items-center gap-2 truncate">
-                        {SelectedIcon ? <SelectedIcon className="w-4 h-4" /> : <Search className="w-4 h-4 text-slate-400 dark:text-slate-500" />}
-                        <span className={cn("truncate text-xs", !value && "text-slate-400 dark:text-slate-500")}>
-                            {value || "Select Icon"}
+                {trigger || (
+                    <Button variant="secondary" className="w-full justify-between px-3 h-9">
+                        <span className="flex items-center gap-2 truncate">
+                            {SelectedIcon ? <SelectedIcon className="w-4 h-4" /> : <Search className="w-4 h-4 text-slate-400 dark:text-slate-500" />}
+                            <span className={cn("truncate text-xs", !value && "text-slate-400 dark:text-slate-500")}>
+                                {value || "Select Icon"}
+                            </span>
                         </span>
-                    </span>
-                </Button>
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] h-[80vh] flex flex-col p-6">
                 <DialogHeader className="shrink-0">

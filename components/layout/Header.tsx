@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { useState, useRef, useEffect } from 'react';
 import { useLayout } from './LayoutContext';
+import { NotificationCenter } from './NotificationCenter';
 
 export function Header() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -36,6 +37,40 @@ export function Header() {
         const collapsedLogo = theme === 'dark' ? customTheme.branding?.logoCollapsedDark : customTheme.branding?.logoCollapsedLight;
         if (collapsedLogo) logoSrc = collapsedLogo;
     }
+
+    const handleSaveSnapshot = async () => {
+        try {
+            const data: Record<string, any> = {};
+            // Gather all localStorage data relevant to tables and config
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.startsWith('table-') || key.startsWith('app-') || key.startsWith('templates_'))) {
+                    try {
+                        const val = localStorage.getItem(key);
+                        if (val) data[key] = JSON.parse(val);
+                    } catch (e) {
+                        // ignore non-json
+                        data[key] = localStorage.getItem(key);
+                    }
+                }
+            }
+
+            const res = await fetch('/api/dev/snapshot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data })
+            });
+
+            if (res.ok) {
+                alert('Snapshot saved to dev-snapshot.json');
+            } else {
+                alert('Failed to save snapshot');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error saving snapshot');
+        }
+    };
 
     return (
         <header
@@ -93,6 +128,7 @@ export function Header() {
                 {/* Right Actions */}
                 <div className="flex items-center gap-3 ml-auto">
 
+                    <NotificationCenter />
 
                     {/* User Dropdown */}
                     <div className="relative" ref={dropdownRef}>
@@ -117,6 +153,13 @@ export function Header() {
                                     <p className="text-sm font-semibold">My Account</p>
                                 </div>
                                 <div className="py-1">
+                                    <button
+                                        onClick={handleSaveSnapshot}
+                                        className="w-full px-4 py-2 text-sm text-left flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-blue-600 dark:text-blue-400"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                        Developer Mode - Save Snapshot
+                                    </button>
                                     <button
                                         onClick={() => {
                                             // Directly reset without confirm to avoid browser blocking issues

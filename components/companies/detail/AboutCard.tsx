@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, MapPin, User, Building2, Globe } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import { ColumnConfig, DetailLayout, DetailSectionStyle, ActionButtonConfig, ButtonStyle } from '@/components/ui/data-table/types';
+import { ActionButtonConfig, ColumnConfig, DetailLayout, DetailSectionStyle, ButtonStyle } from '@/components/ui/data-table/types';
+import { evaluateFormula } from '@/lib/formula';
 import { cn } from '@/lib/utils';
 
 export interface CompanyData {
@@ -49,10 +50,12 @@ const renderFieldValue = (company: CompanyData, fieldId: string, column?: Column
 
     // Special cases for standard fields if no column config or if default behavior desired
     if (fieldId === 'website' && !Array.isArray(value)) {
-        return <a href={`https://${value}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{value}</a>;
+        const displayVal = (typeof value === 'object' && value !== null && 'value' in value) ? value.value : value;
+        return <a href={`https://${displayVal}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{String(displayVal)}</a>;
     }
     if (fieldId === 'email' && !Array.isArray(value)) {
-        return <a href={`mailto:${value}`} className="text-blue-600 hover:underline break-all">{value}</a>;
+        const displayVal = (typeof value === 'object' && value !== null && 'value' in value) ? value.value : value;
+        return <a href={`mailto:${displayVal}`} className="text-blue-600 hover:underline break-all">{String(displayVal)}</a>;
     }
 
     if (column) {
@@ -87,6 +90,11 @@ const renderFieldValue = (company: CompanyData, fieldId: string, column?: Column
                 {value}
             </a>;
         }
+        if (column.type === 'formula' && column.formula) {
+            const formulaVal = evaluateFormula(column.formula, company);
+            const colorClass = options.hasCustomColor ? "" : "text-slate-900 dark:text-slate-200";
+            return <span className={colorClass} style={options.customStyle}>{String(formulaVal ?? '')}</span>;
+        }
     }
 
     // Default Array handling (e.g. services) if not caught above
@@ -117,7 +125,7 @@ const renderFieldValue = (company: CompanyData, fieldId: string, column?: Column
                         const key = v.id || i;
                         return (
                             <div key={key} className={cn("text-sm flex items-center gap-1.5 flex-wrap", textColorClass)} style={options.customStyle}>
-                                <span>{v.value}</span>
+                                <span>{String(v.value)}</span>
                                 {label && <span className="text-slate-400 text-xs">({label})</span>}
                             </div>
                         );
@@ -234,6 +242,13 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
                     }
 
                     if (fieldId === 'name') {
+                        const col = columns?.['name'];
+                        let displayValue = company.name;
+
+                        if (col?.type === 'formula' && col.formula) {
+                            displayValue = String(evaluateFormula(col.formula, company) ?? '');
+                        }
+
                         return (
                             <h2 key={fieldId}
                                 className={cn(
@@ -244,7 +259,7 @@ export function AboutCardDetails({ company, detailLayout, detailStyles, buttonSt
                                 )}
                                 style={textStyleOverride}
                             >
-                                {company.name}
+                                {displayValue}
                             </h2>
                         );
                     }

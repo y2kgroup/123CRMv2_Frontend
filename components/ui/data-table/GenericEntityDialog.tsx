@@ -35,9 +35,10 @@ interface GenericEntityDialogProps {
     onSubmit: (data: any) => void;
     initialData?: any;
     entityConfig: EntityConfig;
+    lookupData?: Record<string, any[]>;
 }
 
-export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData, entityConfig }: GenericEntityDialogProps) {
+export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData, entityConfig, lookupData }: GenericEntityDialogProps) {
     const { singularName, layout } = entityConfig;
 
     // Form State
@@ -448,7 +449,9 @@ export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData,
                             </Label>
                             <MultiSelect
                                 options={item.dropdownOptions}
-                                value={Array.isArray(formData[item.id]) ? formData[item.id] : (formData[item.id] ? [formData[item.id].toString()] : [])}
+                                value={(Array.isArray(formData[item.id]) ? formData[item.id] : (formData[item.id] ? [formData[item.id]] : []))
+                                    .map((v: any) => (typeof v === 'object' && v !== null && 'value' in v) ? v.value : v)
+                                    .filter((v: any) => typeof v === 'string')}
                                 onChange={(val) => updateField(item.id, val)}
                                 placeholder={`Select ${item.label || item.id}...`}
                             />
@@ -461,7 +464,7 @@ export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData,
                                 {item.label || item.id}
                                 {item.required && <span className="text-red-500 ml-1">*</span>}
                             </Label>
-                            <Select value={formData[item.id] || ''} onValueChange={(val) => updateField(item.id, val)}>
+                            <Select value={(typeof formData[item.id] === 'object' && formData[item.id] !== null) ? (formData[item.id].value || '') : (formData[item.id] || '')} onValueChange={(val) => updateField(item.id, val)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder={`Select ${item.label || item.id}`} />
                                 </SelectTrigger>
@@ -476,6 +479,41 @@ export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData,
                 }
             }
 
+            // --- Lookup Field Renderer ---
+            if (item.type === 'lookup' && item.lookupConfig) {
+                const targetTableId = item.lookupConfig.targetTableId;
+                const rows = lookupData?.[targetTableId] || [];
+
+                return (
+                    <div key={item.id} className="space-y-2">
+                        <Label>
+                            {item.label || item.id}
+                            {item.required && <span className="text-red-500 ml-1">*</span>}
+                        </Label>
+                        <Select
+                            value={formData[item.id] || ''}
+                            onValueChange={(val) => updateField(item.id, val)}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder={`Select ${item.label || item.id}...`} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {rows.length > 0 ? (
+                                    rows.map((row: any) => (
+                                        <SelectItem key={row.id} value={row.id}>
+                                            {/* Try to find a good label: targetField, or name, or ID */}
+                                            {row[item.lookupConfig!.targetField] || row.name || row.id}
+                                        </SelectItem>
+                                    ))
+                                ) : (
+                                    <div className="p-2 text-xs text-muted-foreground text-center">No data in {targetTableId}</div>
+                                )}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                );
+            }
+
             // Fallback for address/other custom types
             return (
                 <div key={item.id} className="space-y-2">
@@ -484,7 +522,7 @@ export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData,
                         {item.required && <span className="text-red-500 ml-1">*</span>}
                     </Label>
                     <Input
-                        value={formData[item.id] || ''}
+                        value={(typeof formData[item.id] === 'object' && formData[item.id] !== null) ? (formData[item.id].value || '') : (formData[item.id] || '')}
                         onChange={(e) => updateField(item.id, e.target.value)}
                         placeholder={item.type === 'address' ? 'Enter address (Google Maps placeholder)' : `Enter ${item.label || item.id}`}
                     />
@@ -536,7 +574,7 @@ export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData,
                         <Label>{item.label || 'Name'}</Label>
                         <Input
                             placeholder={`${singularName} Name`}
-                            value={formData.name || ''}
+                            value={(typeof formData.name === 'object' && formData.name !== null) ? (formData.name.value || '') : (formData.name || '')}
                             onChange={(e) => updateField('name', e.target.value)}
                         />
                     </div>
@@ -547,7 +585,7 @@ export function GenericEntityDialog({ open, onOpenChange, onSubmit, initialData,
                         <Label>{item.label || 'Owner'}</Label>
                         <Input
                             placeholder={`${singularName} Owner`}
-                            value={formData.owner || ''}
+                            value={(typeof formData.owner === 'object' && formData.owner !== null) ? (formData.owner.value || '') : (formData.owner || '')}
                             onChange={(e) => updateField('owner', e.target.value)}
                         />
                     </div>
