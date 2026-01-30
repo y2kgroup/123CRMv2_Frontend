@@ -92,29 +92,56 @@ const getAvailableTables = () => {
     }
 
     const tables: { id: string; name: string }[] = [];
-    const nameCounts: Record<string, number> = {};
+    const nameMap = new Map<string, string[]>();
 
-    // First pass: Generate names and count occurrences
-    const tempTables: { id: string; name: string }[] = [];
+    // First pass: Generate names and group IDs
     tableIds.forEach(id => {
         let name = id;
         try {
-            const nameParts = id.includes('-') ? id.split('-').slice(1, -2) : [id];
-            if (nameParts.length > 0) {
+            // Remove leading hyphens or 'table-' prefixes for display name
+            const cleanId = id.replace(/^(table-|-)+/, '');
+            const nameParts = cleanId.split(/[-_]+/).filter(Boolean);
+
+            // Heuristic: remove common version suffixes if they clutter the name (e.g. v1, 0)
+            const meaningfulParts = nameParts.filter(p => !['v1', '0', '1'].includes(p));
+
+            if (meaningfulParts.length > 0) {
+                name = meaningfulParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            } else if (nameParts.length > 0) {
                 name = nameParts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
             }
         } catch (e) { }
 
-        nameCounts[name] = (nameCounts[name] || 0) + 1;
-        tempTables.push({ id, name });
+        if (!nameMap.has(name)) {
+            nameMap.set(name, []);
+        }
+        nameMap.get(name)?.push(id);
     });
 
-    // Second pass: Uniqueify names
-    tempTables.forEach(t => {
-        if (nameCounts[t.name] > 1) {
-            tables.push({ id: t.id, name: `${t.name} (${t.id})` });
+    // Second pass: Deduplicate and select best ID
+    nameMap.forEach((ids, name) => {
+        if (ids.length === 1) {
+            tables.push({ id: ids[0], name });
         } else {
-            tables.push({ id: t.id, name: t.name });
+            // Multiple IDs for same name - pick the "cleanest"
+            // Criteria: 
+            // 1. Prefer NOT starting with 'table-'
+            // 2. Prefer shorter length (usually implies clean ID)
+            // 3. Prefer starting with '-' (if that's the working convention)
+
+            const bestId = ids.sort((a, b) => {
+                const aIsTable = a.startsWith('table-');
+                const bIsTable = b.startsWith('table-');
+                if (aIsTable && !bIsTable) return 1;
+                if (!aIsTable && bIsTable) return -1;
+
+                return a.length - b.length;
+            })[0];
+
+            tables.push({ id: bestId, name });
+
+            // Optional: If we really wanted to show duplicates, we'd append IDs, 
+            // but the User specifically requested to NOT see double.
         }
     });
 
@@ -144,32 +171,42 @@ const getTableColumns = (tableId: string) => {
         console.error('Error fetching table config columns', e);
     }
 
-    // 2. Try to infer from data keys and merge
-    const dataKey = `table-data-${tableId}`;
-    try {
-        const dataStr = localStorage.getItem(dataKey);
-        if (dataStr) {
-            const data = JSON.parse(dataStr);
-            if (Array.isArray(data) && data.length > 0) {
-                // Inspect first few rows to get all keys (just in case some are optional)
-                const keys = new Set<string>();
-                data.slice(0, 5).forEach(row => {
-                    Object.keys(row).forEach(k => keys.add(k));
-                });
+    // 2. Try to infer from data keys and merge, BUT ONLY if config is missing or empty
+    // If we have a config, we assume it's the source of truth for "available columns" to avoid showing stale data fields.
+    if (columnMap.size === 0) {
+        const dataKey = `table-data-${tableId}`;
+        try {
+            const dataStr = localStorage.getItem(dataKey);
+            if (dataStr) {
+                const data = JSON.parse(dataStr);
+                if (Array.isArray(data) && data.length > 0) {
+                    // Inspect first few rows to get all keys (just in case some are optional)
+                    const keys = new Set<string>();
+                    data.slice(0, 5).forEach(row => {
+                        Object.entries(row).forEach(([k, v]) => {
+                            // Skip complex objects/arrays from inference (legacy data often has these)
+                            // consistently include 'id' though
+                            if (k !== 'id' && typeof v === 'object' && v !== null) {
+                                return;
+                            }
+                            keys.add(k);
+                        });
+                    });
 
-                keys.forEach(k => {
-                    if (!columnMap.has(k)) {
-                        columnMap.set(k, {
-                            id: k,
-                            label: k.charAt(0).toUpperCase() + k.slice(1),
-                            type: 'text' // Default to text if inferred
-                        } as ColumnConfig);
-                    }
-                });
+                    keys.forEach(k => {
+                        if (!columnMap.has(k)) {
+                            columnMap.set(k, {
+                                id: k,
+                                label: k.charAt(0).toUpperCase() + k.slice(1),
+                                type: 'text' // Default to text if inferred
+                            } as ColumnConfig);
+                        }
+                    });
+                }
             }
+        } catch (e) {
+            console.error('Error fetching table data for columns', e);
         }
-    } catch (e) {
-        console.error('Error fetching table data for columns', e);
     }
 
     return Array.from(columnMap.values());
@@ -1089,7 +1126,7 @@ function SortableColumnItem({
                 {onRemoveColumn && !isSystemColumn && (
                     <Button
                         variant="tertiary"
-                        className="h-6 w-6 p-0 text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-6 w-6 p-0 text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-opacity"
                         onClick={() => {
                             if (confirm(`Are you sure you want to delete column "${column.label}"?`)) {
                                 onRemoveColumn(column.id);

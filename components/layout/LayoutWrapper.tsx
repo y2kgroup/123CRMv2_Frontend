@@ -9,6 +9,7 @@ import { Footer } from './Footer';
 import { LayoutProvider, useLayout } from './LayoutContext';
 import { cn } from '@/lib/utils'; // Make sure you import cn!
 import { NavigationAlert } from '@/components/ui/navigation-alert';
+import { SnapshotHydrator } from './SnapshotHydrator';
 
 interface LayoutWrapperProps {
     children: React.ReactNode;
@@ -76,6 +77,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
     return (
         <LayoutProvider>
+            <SnapshotHydrator />
             <LayoutContent>{children}</LayoutContent>
         </LayoutProvider>
     );

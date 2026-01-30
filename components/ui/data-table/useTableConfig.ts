@@ -91,11 +91,15 @@ function syncEntityLayout(entityConfig: EntityConfig, columns: Record<string, Co
 
     Object.values(columns).forEach((col: ColumnConfig) => {
         const standardIds = ['id', 'name', 'owner', 'emails', 'phones', 'addresses', 'industry', 'website', 'services', 'logo', 'createdBy', 'createdAt', 'editedBy', 'editedAt', 'select', 'actions'];
-        if (!standardIds.includes(col.id) && !existingIds.has(col.id)) {
+        // Fields that should never be in the form layout
+        const formSystemFields = ['select', 'actions', 'createdBy', 'createdAt', 'editedBy', 'editedAt'];
+
+        if (!existingIds.has(col.id) && !formSystemFields.includes(col.id)) {
+            const isStandard = standardIds.includes(col.id);
             columnsToAdd.push({
                 id: col.id,
                 visible: true,
-                isCustom: true,
+                isCustom: !isStandard,
                 label: col.label,
                 type: col.type,
                 required: false
@@ -163,13 +167,20 @@ export function useTableConfig({ tableId, defaultColumns, metadata }: UseTableCo
                 // ... (existing column merge logic) ...
                 // Merge saved config with any new default columns that might have been added
                 const mergedColumns = { ...parsed.columns };
+                const removedIds = new Set(parsed.removedColumnIds || []);
 
                 defaultColumns.forEach((col, index) => {
+                    // Skip if explicitly removed
+                    if (removedIds.has(col.id)) return;
+
                     if (!mergedColumns[col.id]) {
                         mergedColumns[col.id] = getDefaultColumnConfig(col.id, col.label, index, col.isMandatory, col.type);
                         if (col.type === 'badge' && !mergedColumns[col.id].badgeStyle) {
                             mergedColumns[col.id].badgeStyle = DEFAULT_SERVICES_STYLE; // Use defaults
                         }
+                    } else {
+                        // Always sync mandatory status from code definition
+                        mergedColumns[col.id].isMandatory = col.isMandatory;
                     }
                     // Ensure existing columns get type if missing (migration)
                     if (mergedColumns[col.id] && !mergedColumns[col.id].type && col.type) {
@@ -400,6 +411,10 @@ export function useTableConfig({ tableId, defaultColumns, metadata }: UseTableCo
             const newColumns = { ...prev.columns };
             delete newColumns[columnId];
 
+            // Add to removed list
+            const currentRemoved = prev.removedColumnIds || [];
+            const newRemoved = currentRemoved.includes(columnId) ? currentRemoved : [...currentRemoved, columnId];
+
             // Sync with entityConfig.layout
             const currentEntityConfig = prev.entityConfig || DEFAULT_ENTITY_CONFIG;
             const currentLayout = currentEntityConfig.layout || [];
@@ -408,6 +423,7 @@ export function useTableConfig({ tableId, defaultColumns, metadata }: UseTableCo
             return {
                 ...prev,
                 columns: newColumns,
+                removedColumnIds: newRemoved,
                 entityConfig: {
                     ...currentEntityConfig,
                     layout: newLayout
@@ -496,7 +512,12 @@ export function useTableConfig({ tableId, defaultColumns, metadata }: UseTableCo
         setConfig(prev => {
             if (!prev) return null;
             const cols: Record<string, ColumnConfig> = {};
+            const removedIds = new Set(prev.removedColumnIds || []);
+
             defaultColumns.forEach((col, index) => {
+                // Respect explicitly removed columns during reset
+                if (removedIds.has(col.id)) return;
+
                 cols[col.id] = getDefaultColumnConfig(col.id, col.label, index, col.isMandatory, col.type);
                 if (col.type === 'badge') {
                     cols[col.id].badgeStyle = DEFAULT_SERVICES_STYLE;
@@ -611,7 +632,8 @@ export function useTableConfig({ tableId, defaultColumns, metadata }: UseTableCo
             sort: { key: null, direction: null },
             pagination: { pageSize: 10 },
             entityConfig: newEntityConfig,
-            actions: [...DEFAULT_ACTIONS]
+            actions: [...DEFAULT_ACTIONS],
+            removedColumnIds: []
         });
     }, [tableId, defaultColumns]);
 

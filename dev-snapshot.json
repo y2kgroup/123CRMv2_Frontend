@@ -1,6 +1,114 @@
 {
-  "table-config-crm-companies-v1-0": {
-    "id": "template-data-table-final",
+  "templates_showDetailCard": true,
+  "table-data--crm-vendors": [
+    {
+      "id": "ID-823999",
+      "emails": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "vendor-name": "Vendor C",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026",
+      "editedBy": "System",
+      "editedAt": "1/30/2026"
+    },
+    {
+      "id": "ID-7973726",
+      "emails": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "vendor-name": "Vendor B",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026",
+      "editedBy": "System",
+      "editedAt": "1/30/2026"
+    },
+    {
+      "id": "ID-6134790",
+      "emails": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "vendor-name": "Vendor A",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026",
+      "editedBy": "System",
+      "editedAt": "1/30/2026"
+    }
+  ],
+  "table-config-table--crm-projects": {
+    "id": "table--crm-projects",
     "columns": {
       "select": {
         "id": "select",
@@ -13,14 +121,13 @@
           "alignment": "left",
           "textSize": "sm",
           "fontWeight": "normal"
-        },
-        "pinned": "left"
+        }
       },
       "createdBy": {
         "id": "createdBy",
         "label": "Created By",
         "isVisible": true,
-        "order": 9,
+        "order": 4,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -33,7 +140,7 @@
         "id": "createdAt",
         "label": "Created At",
         "isVisible": true,
-        "order": 10,
+        "order": 5,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -46,7 +153,7 @@
         "id": "editedBy",
         "label": "Edited By",
         "isVisible": true,
-        "order": 11,
+        "order": 6,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -59,7 +166,7 @@
         "id": "editedAt",
         "label": "Edited At",
         "isVisible": true,
-        "order": 12,
+        "order": 7,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -72,22 +179,33 @@
         "id": "actions",
         "label": "Actions",
         "isVisible": true,
-        "order": 13,
+        "order": 8,
         "isMandatory": true,
         "type": "text",
         "style": {
           "alignment": "left",
           "textSize": "sm",
           "fontWeight": "normal"
-        },
-        "pinned": null
+        }
       },
-      "company-name": {
-        "id": "company-name",
-        "label": "Company Name",
+      "project-address": {
+        "id": "project-address",
+        "label": "Project Address",
+        "isVisible": true,
+        "order": 1,
+        "type": "text",
+        "style": {
+          "alignment": "left",
+          "textSize": "sm",
+          "fontWeight": "normal"
+        }
+      },
+      "customer-name": {
+        "id": "customer-name",
+        "label": "Customer Name",
         "isVisible": true,
         "order": 2,
-        "type": "text",
+        "type": "lookup",
         "style": {
           "alignment": "left",
           "textSize": "sm",
@@ -96,141 +214,33 @@
         "icon": "",
         "showIconInTable": false,
         "showIconInCard": false,
-        "mergeWithColumnId": "logo",
-        "multiEntryDisplay": "all"
-      },
-      "logo": {
-        "id": "logo",
-        "label": "Logo",
-        "isVisible": false,
-        "order": 1,
-        "type": "image",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
+        "multiEntryDisplay": "all",
+        "lookupConfig": {
+          "targetTableId": "-crm-customers",
+          "foreignKey": "customer-name",
+          "targetField": "-customer-name"
         }
       },
-      "owner": {
-        "id": "owner",
-        "label": "Owner",
+      "vendor-name": {
+        "id": "vendor-name",
+        "label": "Vendor Name",
         "isVisible": true,
         "order": 3,
-        "type": "text",
+        "type": "lookup",
         "style": {
           "alignment": "left",
           "textSize": "sm",
           "fontWeight": "normal"
-        }
-      },
-      "address": {
-        "id": "address",
-        "label": "Address",
-        "isVisible": true,
-        "order": 4,
-        "type": "address",
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "LucideMapPin",
-        "showIconInTable": false,
-        "showIconInCard": true,
-        "multiEntryDisplay": "all"
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 5,
-        "type": "phone",
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "website": {
-        "id": "website",
-        "label": "Website",
-        "isVisible": true,
-        "order": 6,
-        "type": "url",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "Globe",
-        "showIconInTable": false,
-        "showIconInCard": true,
-        "multiEntryDisplay": "all"
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 7,
-        "type": "email",
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "services": {
-        "id": "services",
-        "label": "Services",
-        "isVisible": true,
-        "order": 8,
-        "type": "badge",
-        "dropdownOptions": [
-          "Google Workspace.",
-          "Microsoft 365",
-          "SipTrunk",
-          "AT&T",
-          "Voxtelesys",
-          "Hivelocity"
-        ],
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "badgeStyle": {
-          "backgroundColor": "#405189",
-          "textColor": "#ffffff",
-          "textSize": "xs",
-          "fontWeight": "normal",
-          "alignment": "center",
-          "textWrap": "wrap"
         },
         "icon": "",
         "showIconInTable": false,
         "showIconInCard": false,
-        "multiEntryDisplay": "all"
-      },
-      "comid": {
-        "id": "comid",
-        "label": "ID",
-        "isVisible": false,
-        "order": 14,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "COMID",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
+        "multiEntryDisplay": "all",
+        "lookupConfig": {
+          "targetTableId": "-crm-vendors",
+          "foreignKey": "vendor-name",
+          "targetField": "vendor-name"
+        }
       }
     },
     "headerStyle": {
@@ -238,14 +248,12 @@
       "textSize": "sm",
       "textColor": "#2563eb",
       "backgroundColor": "#ffffff",
-      "fontWeight": "bold",
-      "textWrap": "wrap"
+      "fontWeight": "bold"
     },
     "rowStyle": {
       "alignment": "center",
       "textSize": "sm",
-      "fontWeight": "normal",
-      "textWrap": "wrap"
+      "fontWeight": "normal"
     },
     "servicesStyle": {
       "alignment": "center",
@@ -255,184 +263,119 @@
       "fontWeight": "normal"
     },
     "sort": {
-      "key": null,
-      "direction": null
+      "key": "customer-name",
+      "direction": "desc"
     },
     "pagination": {
       "pageSize": 10
     },
     "entityConfig": {
-      "singularName": "Company",
-      "pluralName": "Companies",
+      "singularName": "Project",
+      "pluralName": "Projects",
       "layout": [
         {
-          "id": "logo",
+          "id": "project-address",
           "visible": true,
           "isCustom": true,
-          "label": "Logo",
-          "type": "image",
-          "required": false
-        },
-        {
-          "id": "company-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "Company Name",
+          "label": "Project Address",
           "type": "text",
           "required": false
         },
         {
-          "id": "owner",
+          "id": "customer-name",
           "visible": true,
           "isCustom": true,
-          "label": "Owner",
-          "type": "text",
-          "required": false
+          "label": "Customer Name",
+          "type": "lookup",
+          "required": false,
+          "lookupConfig": {
+            "targetTableId": "-crm-customers",
+            "foreignKey": "customer-name",
+            "targetField": "-customer-name"
+          }
         },
         {
-          "id": "address",
+          "id": "vendor-name",
           "visible": true,
           "isCustom": true,
-          "label": "Address",
-          "type": "address",
-          "isMultiSelect": true,
-          "required": false
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "phone",
-          "isMultiSelect": false,
-          "required": false
-        },
-        {
-          "id": "website",
-          "visible": true,
-          "isCustom": true,
-          "label": "Website",
-          "type": "url",
-          "required": false
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "email",
-          "isMultiSelect": true,
-          "required": false
-        },
-        {
-          "id": "services",
-          "visible": true,
-          "isCustom": true,
-          "label": "Services",
-          "type": "badge",
-          "dropdownOptions": [
-            "Google Workspace.",
-            "Microsoft 365",
-            "SipTrunk",
-            "AT&T",
-            "Voxtelesys",
-            "Hivelocity"
-          ],
-          "isMultiSelect": true,
-          "required": false
-        },
-        {
-          "id": "comid",
-          "visible": true,
-          "isCustom": true,
-          "label": "ID",
-          "type": "id",
-          "required": false
+          "label": "Vendor Name",
+          "type": "lookup",
+          "required": false,
+          "lookupConfig": {
+            "targetTableId": "-crm-vendors",
+            "foreignKey": "vendor-name",
+            "targetField": "vendor-name"
+          }
         }
       ],
       "detailLayout": {
-        "top": [
-          "comid",
-          "logo",
-          "company-name",
-          "actions"
-        ],
-        "left": [
-          "owner",
-          "address",
-          "phone",
-          "email",
-          "website"
-        ],
-        "right": [
-          "services",
-          "createdBy",
-          "createdAt"
-        ]
+        "top": [],
+        "left": [],
+        "right": []
       },
-      "cardsLayout": [],
+      "cardsLayout": [
+        "tasks",
+        "notes",
+        "files"
+      ],
       "hiddenLabels": [],
       "detailStyles": {
         "top": {
-          "alignment": "center",
+          "alignment": "left",
           "textColor": "#000000",
           "backgroundColor": "#ffffff"
         },
         "left": {
           "alignment": "left",
           "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "textWrap": "wrap"
+          "backgroundColor": "#ffffff"
         },
         "right": {
           "alignment": "left",
           "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "title": "Services",
-          "textWrap": "wrap"
+          "backgroundColor": "#ffffff"
         }
       },
       "buttonStyles": {
         "primary": {
-          "backgroundColor": "#D5F2EE",
-          "textColor": "#059669",
-          "iconColor": "#059669",
-          "borderColor": "#ffffff",
+          "backgroundColor": "#ffffff",
+          "textColor": "#0f172a",
+          "iconColor": "#64748b",
+          "borderColor": "#e2e8f0",
           "activeBorderThickness": "0px",
           "displayMode": "icon-text",
           "iconPosition": "left",
           "fontWeight": "medium"
         },
         "secondary": {
-          "backgroundColor": "#FEF2E0",
-          "textColor": "#D97706",
-          "iconColor": "#D97706",
-          "borderColor": "#ffffff",
+          "backgroundColor": "#ffffff",
+          "textColor": "#0f172a",
+          "iconColor": "#64748b",
+          "borderColor": "#e2e8f0",
           "activeBorderThickness": "0px",
           "displayMode": "icon-text",
           "iconPosition": "left",
           "fontWeight": "medium"
         },
         "tertiary": {
-          "backgroundColor": "#FDE5ED",
-          "textColor": "#DC2626",
-          "iconColor": "#DC2626",
-          "borderColor": "#ffffff",
+          "backgroundColor": "#ffffff",
+          "textColor": "#0f172a",
+          "iconColor": "#64748b",
+          "borderColor": "#e2e8f0",
           "activeBorderThickness": "0px",
           "displayMode": "icon-text",
           "iconPosition": "left",
           "fontWeight": "medium"
         },
         "default": {
-          "backgroundColor": "#405189",
-          "textColor": "#000000",
-          "iconColor": "#ffffff",
-          "borderColor": "#ffffff",
+          "backgroundColor": "#ffffff",
+          "textColor": "#0f172a",
+          "iconColor": "#64748b",
+          "borderColor": "#e2e8f0",
           "activeBorderThickness": "0px",
-          "displayMode": "icon-only",
+          "displayMode": "icon-text",
           "iconPosition": "center",
-          "fontWeight": "medium",
-          "size": "md"
+          "fontWeight": "medium"
         }
       }
     },
@@ -442,17 +385,16 @@
         "label": "View Details",
         "icon": "Eye",
         "actionType": "system",
-        "variant": "secondary",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": false,
-        "isVisibleInTable": false
+        "variant": "default",
+        "tableDisplayMode": "primary",
+        "isVisibleInCard": false
       },
       {
         "id": "edit",
         "label": "Edit",
         "icon": "Pencil",
         "actionType": "system",
-        "variant": "secondary",
+        "variant": "default",
         "tableDisplayMode": "primary",
         "isVisibleInCard": false
       },
@@ -461,10 +403,9 @@
         "label": "Delete",
         "icon": "Trash2",
         "actionType": "system",
-        "variant": "tertiary",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": false,
-        "isVisibleInTable": false
+        "variant": "default",
+        "tableDisplayMode": "primary",
+        "isVisibleInCard": false
       },
       {
         "id": "email",
@@ -483,22 +424,14 @@
         "variant": "default",
         "tableDisplayMode": "menu",
         "isVisibleInCard": true
-      },
-      {
-        "id": "web-3ws5",
-        "label": "Web",
-        "icon": "Globe",
-        "customUrl": "https://modernizegreensolutions.com/",
-        "actionType": "custom",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true,
-        "isVisibleInTable": false,
-        "variant": "default"
       }
+    ],
+    "removedColumnIds": [
+      "name"
     ]
   },
-  "table-config-templates-data-table-v2": {
-    "id": "templates-data-table-v2",
+  "table-config-table--crm-customers": {
+    "id": "table--crm-customers",
     "columns": {
       "select": {
         "id": "select",
@@ -517,7 +450,7 @@
         "id": "createdBy",
         "label": "Created By",
         "isVisible": true,
-        "order": 7,
+        "order": 2,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -530,7 +463,7 @@
         "id": "createdAt",
         "label": "Created At",
         "isVisible": true,
-        "order": 8,
+        "order": 3,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -543,7 +476,7 @@
         "id": "editedBy",
         "label": "Edited By",
         "isVisible": true,
-        "order": 9,
+        "order": 4,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -556,7 +489,7 @@
         "id": "editedAt",
         "label": "Edited At",
         "isVisible": true,
-        "order": 10,
+        "order": 5,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -569,7 +502,7 @@
         "id": "actions",
         "label": "Actions",
         "isVisible": true,
-        "order": 11,
+        "order": 6,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -578,89 +511,17 @@
           "fontWeight": "normal"
         }
       },
-      "first-name": {
-        "id": "first-name",
-        "label": "First Name",
-        "isVisible": false,
-        "order": 3,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "last-name": {
-        "id": "last-name",
-        "label": "Last Name",
-        "isVisible": false,
-        "order": 4,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 5,
-        "type": "phone",
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "cid": {
-        "id": "cid",
-        "label": "CID",
+      "-customer-name": {
+        "id": "-customer-name",
+        "label": " Customer Name",
         "isVisible": true,
         "order": 1,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "CID",
-        "icon": "",
-        "showIconInTable": true,
-        "showIconInCard": true,
-        "multiEntryDisplay": "all"
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 6,
-        "type": "email",
-        "isMultiSelect": true,
+        "type": "text",
         "style": {
           "alignment": "left",
           "textSize": "sm",
           "fontWeight": "normal"
         }
-      },
-      "name": {
-        "id": "name",
-        "label": "Name",
-        "isVisible": true,
-        "order": 2,
-        "type": "formula",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "formula": " {first-name} +\" \"+ {last-name}",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
       }
     },
     "headerStyle": {
@@ -668,14 +529,12 @@
       "textSize": "sm",
       "textColor": "#2563eb",
       "backgroundColor": "#ffffff",
-      "fontWeight": "bold",
-      "textWrap": "wrap"
+      "fontWeight": "bold"
     },
     "rowStyle": {
       "alignment": "center",
       "textSize": "sm",
-      "fontWeight": "normal",
-      "textWrap": "wrap"
+      "fontWeight": "normal"
     },
     "servicesStyle": {
       "alignment": "center",
@@ -685,83 +544,39 @@
       "fontWeight": "normal"
     },
     "sort": {
-      "key": null,
-      "direction": null
+      "key": "-customer-name",
+      "direction": "asc"
     },
     "pagination": {
       "pageSize": 10
     },
     "entityConfig": {
       "singularName": "Customer",
-      "pluralName": "Customer",
+      "pluralName": "Customers",
       "layout": [
         {
-          "id": "first-name",
+          "id": "-customer-name",
           "visible": true,
           "isCustom": true,
-          "label": "First Name",
+          "label": " Customer Name",
           "type": "text",
-          "required": true
-        },
-        {
-          "id": "last-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "Last Name",
-          "type": "text",
-          "required": true
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "phone",
-          "isMultiSelect": true,
-          "required": true
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "email",
-          "isMultiSelect": true,
-          "required": false
-        },
-        {
-          "id": "name",
-          "visible": false,
-          "isCustom": true,
-          "label": "Name",
-          "type": "formula",
-          "required": false
-        },
-        {
-          "id": "cid",
-          "visible": false,
-          "isCustom": true,
-          "label": "CID",
-          "type": "id",
           "required": false
         }
       ],
       "detailLayout": {
-        "top": [
-          "cid",
-          "name"
-        ],
-        "left": [
-          "phone",
-          "email"
-        ],
+        "top": [],
+        "left": [],
         "right": []
       },
-      "cardsLayout": [],
+      "cardsLayout": [
+        "tasks",
+        "notes",
+        "files"
+      ],
       "hiddenLabels": [],
       "detailStyles": {
         "top": {
-          "alignment": "center",
+          "alignment": "left",
           "textColor": "#000000",
           "backgroundColor": "#ffffff"
         },
@@ -773,8 +588,7 @@
         "right": {
           "alignment": "left",
           "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "title": ""
+          "backgroundColor": "#ffffff"
         }
       },
       "buttonStyles": {
@@ -866,10 +680,14 @@
         "tableDisplayMode": "menu",
         "isVisibleInCard": true
       }
+    ],
+    "removedColumnIds": [
+      "name"
     ]
   },
-  "table-config-template-data-table": {
-    "id": "template-data-table",
+  "app-dev-snapshot-hydrated": true,
+  "table-config--templates-data-table-and-detail-card": {
+    "id": "-templates-data-table-and-detail-card",
     "columns": {
       "select": {
         "id": "select",
@@ -977,8 +795,8 @@
       "pageSize": 10
     },
     "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
+      "singularName": "Data table and detail card",
+      "pluralName": "Data table and detail card",
       "layout": [],
       "detailLayout": {
         "top": [],
@@ -1052,852 +870,7 @@
       }
     }
   },
-  "table-config-crm-notes-v1": {
-    "id": "crm-notes-v1",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "title": {
-        "id": "title",
-        "label": "Note Title",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "relatedTo": {
-        "id": "relatedTo",
-        "label": "Related To",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "author": {
-        "id": "author",
-        "label": "Author",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
-      "layout": [
-        {
-          "id": "title",
-          "visible": true,
-          "isCustom": true,
-          "label": "Note Title",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "relatedTo",
-          "visible": true,
-          "isCustom": true,
-          "label": "Related To",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "author",
-          "visible": true,
-          "isCustom": true,
-          "label": "Author",
-          "type": "text",
-          "required": false
-        }
-      ],
-      "detailLayout": {
-        "top": [],
-        "left": [],
-        "right": []
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
-      ],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
-  "table-config-template-data-table-final": {
-    "id": "template-data-table-final",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
-      "layout": [],
-      "detailLayout": {
-        "top": [],
-        "left": [],
-        "right": []
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
-      ],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
   "table-data--templates-data-table-and-detail-card": [],
-  "table-config-crm-companies-table": {
-    "id": "templates-data-table-v2",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 7,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 8,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 9,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 10,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 11,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "first-name": {
-        "id": "first-name",
-        "label": "First Name",
-        "isVisible": false,
-        "order": 3,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "last-name": {
-        "id": "last-name",
-        "label": "Last Name",
-        "isVisible": false,
-        "order": 4,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 5,
-        "type": "phone",
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "cid": {
-        "id": "cid",
-        "label": "CID",
-        "isVisible": true,
-        "order": 1,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "CID",
-        "icon": "",
-        "showIconInTable": true,
-        "showIconInCard": true,
-        "multiEntryDisplay": "all"
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 6,
-        "type": "email",
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "name": {
-        "id": "name",
-        "label": "Name",
-        "isVisible": true,
-        "order": 2,
-        "type": "formula",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "formula": " {first-name} +\" \"+ {last-name}",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
-      }
-    },
-    "headerStyle": {
-      "alignment": "center",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold",
-      "textWrap": "wrap"
-    },
-    "rowStyle": {
-      "alignment": "center",
-      "textSize": "sm",
-      "fontWeight": "normal",
-      "textWrap": "wrap"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Customer",
-      "pluralName": "Customer",
-      "layout": [
-        {
-          "id": "first-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "First Name",
-          "type": "text",
-          "required": true
-        },
-        {
-          "id": "last-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "Last Name",
-          "type": "text",
-          "required": true
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "phone",
-          "isMultiSelect": true,
-          "required": true
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "email",
-          "isMultiSelect": true,
-          "required": false
-        },
-        {
-          "id": "name",
-          "visible": false,
-          "isCustom": true,
-          "label": "Name",
-          "type": "formula",
-          "required": false
-        },
-        {
-          "id": "cid",
-          "visible": false,
-          "isCustom": true,
-          "label": "CID",
-          "type": "id",
-          "required": false
-        }
-      ],
-      "detailLayout": {
-        "top": [
-          "cid",
-          "name"
-        ],
-        "left": [
-          "phone",
-          "email"
-        ],
-        "right": []
-      },
-      "cardsLayout": [],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "center",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "title": ""
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
   "table-config-table--crm-vendors": {
     "id": "table--crm-vendors",
     "columns": {
@@ -1918,7 +891,7 @@
         "id": "createdBy",
         "label": "Created By",
         "isVisible": true,
-        "order": 8,
+        "order": 2,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -1931,7 +904,7 @@
         "id": "createdAt",
         "label": "Created At",
         "isVisible": true,
-        "order": 9,
+        "order": 3,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -1944,7 +917,7 @@
         "id": "editedBy",
         "label": "Edited By",
         "isVisible": true,
-        "order": 10,
+        "order": 4,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -1957,7 +930,7 @@
         "id": "editedAt",
         "label": "Edited At",
         "isVisible": true,
-        "order": 11,
+        "order": 5,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -1970,7 +943,7 @@
         "id": "actions",
         "label": "Actions",
         "isVisible": true,
-        "order": 12,
+        "order": 6,
         "isMandatory": true,
         "type": "text",
         "style": {
@@ -1983,121 +956,24 @@
         "id": "vendor-name",
         "label": "Vendor Name",
         "isVisible": true,
-        "order": 2,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "id": {
-        "id": "id",
-        "label": "ID",
-        "isVisible": false,
         "order": 1,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "VENID",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
-      },
-      "address": {
-        "id": "address",
-        "label": "Address",
-        "isVisible": true,
-        "order": 3,
-        "type": "address",
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 4,
-        "type": "phone",
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 5,
-        "type": "email",
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "contact-person": {
-        "id": "contact-person",
-        "label": "Contact Person",
-        "isVisible": true,
-        "order": 6,
         "type": "text",
         "style": {
           "alignment": "left",
           "textSize": "sm",
           "fontWeight": "normal"
-        }
-      },
-      "branch": {
-        "id": "branch",
-        "label": "Branch",
-        "isVisible": true,
-        "order": 7,
-        "type": "badge",
-        "dropdownOptions": [
-          "BHP",
-          "DSC",
-          "MOD",
-          "RNVT",
-          "SWR",
-          "SWS",
-          "BSP"
-        ],
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "badgeStyle": {
-          "backgroundColor": "#f1f5f9",
-          "textColor": "#334155",
-          "textSize": "xs",
-          "fontWeight": "normal",
-          "alignment": "center"
         }
       }
     },
     "headerStyle": {
-      "alignment": "left",
+      "alignment": "center",
       "textSize": "sm",
       "textColor": "#2563eb",
       "backgroundColor": "#ffffff",
       "fontWeight": "bold"
     },
     "rowStyle": {
-      "alignment": "left",
+      "alignment": "center",
       "textSize": "sm",
       "fontWeight": "normal"
     },
@@ -2109,8 +985,8 @@
       "fontWeight": "normal"
     },
     "sort": {
-      "key": null,
-      "direction": null
+      "key": "vendor-name",
+      "direction": "asc"
     },
     "pagination": {
       "pageSize": 10
@@ -2120,354 +996,12 @@
       "pluralName": "Vendors",
       "layout": [
         {
-          "id": "id",
-          "visible": true,
-          "isCustom": true,
-          "label": "ID",
-          "type": "id",
-          "required": false
-        },
-        {
           "id": "vendor-name",
           "visible": true,
           "isCustom": true,
           "label": "Vendor Name",
           "type": "text",
           "required": false
-        },
-        {
-          "id": "address",
-          "visible": true,
-          "isCustom": true,
-          "label": "Address",
-          "type": "address",
-          "isMultiSelect": false,
-          "required": false
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "phone",
-          "isMultiSelect": false,
-          "required": false
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "email",
-          "isMultiSelect": true,
-          "required": false
-        },
-        {
-          "id": "contact-person",
-          "visible": true,
-          "isCustom": true,
-          "label": "Contact Person",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "branch",
-          "visible": true,
-          "isCustom": true,
-          "label": "Branch",
-          "type": "badge",
-          "dropdownOptions": [
-            "BHP",
-            "DSC",
-            "MOD",
-            "RNVT",
-            "SWR",
-            "SWS",
-            "BSP"
-          ],
-          "isMultiSelect": true,
-          "required": false
-        }
-      ],
-      "detailLayout": {
-        "top": [
-          "id",
-          "vendor-name",
-          "actions"
-        ],
-        "left": [
-          "address",
-          "phone",
-          "email",
-          "contact-person"
-        ],
-        "right": [
-          "branch",
-          "editedBy",
-          "editedAt"
-        ]
-      },
-      "cardsLayout": [],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "center",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
-  "table-config-crm-tasks-v1": {
-    "id": "crm-tasks-v1",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "title": {
-        "id": "title",
-        "label": "Task Name",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "priority": {
-        "id": "priority",
-        "label": "Priority",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "status": {
-        "id": "status",
-        "label": "Status",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "dueDate": {
-        "id": "dueDate",
-        "label": "Due Date",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "assignee": {
-        "id": "assignee",
-        "label": "Assignee",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
-      "layout": [
-        {
-          "id": "title",
-          "visible": true,
-          "isCustom": true,
-          "label": "Task Name",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "priority",
-          "visible": true,
-          "isCustom": true,
-          "label": "Priority",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "status",
-          "visible": true,
-          "isCustom": true,
-          "label": "Status",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "dueDate",
-          "visible": true,
-          "isCustom": true,
-          "label": "Due Date",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "assignee",
-          "visible": true,
-          "isCustom": true,
-          "label": "Assignee",
-          "type": "text",
-          "required": false
         }
       ],
       "detailLayout": {
@@ -2587,960 +1121,15 @@
         "tableDisplayMode": "menu",
         "isVisibleInCard": true
       }
+    ],
+    "removedColumnIds": [
+      "name"
     ]
   },
-  "table-config-templates-data-table": {
-    "id": "templates-data-table",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "pinned": "left"
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 10,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "LucideUser2",
-        "showIconInTable": false,
-        "showIconInCard": true
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 11,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "Clock10",
-        "showIconInTable": false,
-        "showIconInCard": true
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 12,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "LucideUserCheck2",
-        "showIconInTable": false,
-        "showIconInCard": true
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 13,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "Clock10Icon",
-        "showIconInTable": false,
-        "showIconInCard": true
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 15,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "pinned": "right"
-      },
-      "oner": {
-        "id": "oner",
-        "label": "Oner",
-        "isVisible": true,
-        "order": 3,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "logo": {
-        "id": "logo",
-        "label": "Logo",
-        "isVisible": false,
-        "order": 1,
-        "type": "image",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false
-      },
-      "company-name": {
-        "id": "company-name",
-        "label": "Company name",
-        "isVisible": true,
-        "order": 2,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "pinned": null,
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "mergeWithColumnId": "logo"
-      },
-      "industry": {
-        "id": "industry",
-        "label": "Industry",
-        "isVisible": true,
-        "order": 4,
-        "type": "select",
-        "displayStyle": "text",
-        "dropdownOptions": [
-          "Communication",
-          "Network Support",
-          "Access control",
-          "Construction"
-        ],
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "Building2",
-        "showIconInTable": false,
-        "showIconInCard": true
-      },
-      "services": {
-        "id": "services",
-        "label": "Services",
-        "isVisible": true,
-        "order": 9,
-        "type": "badge",
-        "dropdownOptions": [
-          "IT",
-          "Website",
-          "Security camera",
-          "Google workspace",
-          "Microsoft 365",
-          "3CX"
-        ],
-        "isMultiSelect": true,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "badgeStyle": {
-          "backgroundColor": "#e0e7ff",
-          "textColor": "#4338ca",
-          "textSize": "xs",
-          "fontWeight": "normal",
-          "alignment": "center"
-        },
-        "icon": "ServerIcon",
-        "showIconInTable": false,
-        "showIconInCard": true
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 7,
-        "type": "email",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "isMultiSelect": true,
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "primary"
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 8,
-        "type": "phone",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "isMultiSelect": true,
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "primary"
-      },
-      "address": {
-        "id": "address",
-        "label": "Address",
-        "isVisible": true,
-        "order": 5,
-        "type": "address",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "isMultiSelect": true,
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "primary"
-      },
-      "id": {
-        "id": "id",
-        "label": "ID",
-        "isVisible": false,
-        "order": 14,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "CON",
-        "icon": "",
-        "showIconInTable": true,
-        "showIconInCard": true,
-        "pinned": null
-      },
-      "web": {
-        "id": "web",
-        "label": "Web",
-        "isVisible": false,
-        "order": 6,
-        "type": "url",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "icon": "Globe",
-        "showIconInTable": false,
-        "showIconInCard": true
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold",
-      "textWrap": "wrap"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal",
-      "textWrap": "wrap"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": "select",
-      "direction": "asc"
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
-      "layout": [
-        {
-          "id": "logo",
-          "visible": true,
-          "isCustom": true,
-          "label": "Logo",
-          "type": "image",
-          "required": false
-        },
-        {
-          "id": "company-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "Company name",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "industry",
-          "visible": true,
-          "isCustom": true,
-          "label": "Industry",
-          "type": "select",
-          "required": false,
-          "dropdownOptions": [
-            "Communication",
-            "Network Support",
-            "Access control",
-            "Construction"
-          ],
-          "isMultiSelect": false
-        },
-        {
-          "id": "oner",
-          "visible": true,
-          "isCustom": true,
-          "label": "Oner",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "web",
-          "visible": true,
-          "isCustom": true,
-          "label": "Web",
-          "type": "url",
-          "required": false
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "email",
-          "required": false,
-          "isMultiSelect": true
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "phone",
-          "required": false,
-          "isMultiSelect": true
-        },
-        {
-          "id": "address",
-          "visible": true,
-          "isCustom": true,
-          "label": "Address",
-          "type": "address",
-          "required": false,
-          "isMultiSelect": true
-        },
-        {
-          "id": "services",
-          "visible": true,
-          "isCustom": true,
-          "label": "Services",
-          "type": "badge",
-          "required": false,
-          "dropdownOptions": [
-            "IT",
-            "Website",
-            "Security camera",
-            "Google workspace",
-            "Microsoft 365",
-            "3CX"
-          ],
-          "isMultiSelect": true
-        },
-        {
-          "id": "id",
-          "visible": true,
-          "isCustom": true,
-          "label": "ID",
-          "type": "id",
-          "required": false
-        }
-      ],
-      "detailLayout": {
-        "top": [
-          "logo",
-          "company-name",
-          "oner",
-          "actions"
-        ],
-        "left": [
-          "id",
-          "email",
-          "phone",
-          "address",
-          "createdBy",
-          "createdAt"
-        ],
-        "right": [
-          "web",
-          "industry",
-          "services",
-          "editedBy",
-          "editedAt"
-        ]
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
-      ],
-      "detailStyles": {
-        "top": {
-          "alignment": "center",
-          "textColor": "#ca1c1c",
-          "backgroundColor": "#fcfcfc",
-          "textWrap": "wrap",
-          "textSize": "base",
-          "spacing": "compact",
-          "fontWeight": "bold",
-          "imageSize": "xl"
-        },
-        "left": {
-          "textColor": "#000000",
-          "backgroundColor": "#fcfcfc",
-          "fontWeight": "normal",
-          "textWrap": "wrap",
-          "textSize": "sm"
-        },
-        "right": {
-          "backgroundColor": "#fcfcfc",
-          "textColor": "#000000",
-          "textSize": "base",
-          "fontWeight": "normal",
-          "textWrap": "wrap"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "textColor": "#059669",
-          "backgroundColor": "#D5F2EE",
-          "fontWeight": "normal",
-          "activeBorderThickness": "3px",
-          "borderColor": "#ffffff",
-          "iconColor": "#059669",
-          "displayMode": "icon-only",
-          "iconPosition": "center",
-          "size": "md"
-        },
-        "tertiary": {
-          "textColor": "#DC2626",
-          "backgroundColor": "#FDE5ED",
-          "fontWeight": "normal",
-          "borderColor": "#ffffff",
-          "iconColor": "#DC2626",
-          "activeBorderThickness": "3px",
-          "displayMode": "icon-only",
-          "iconPosition": "center",
-          "size": "md"
-        },
-        "secondary": {
-          "textColor": "#D97706",
-          "backgroundColor": "#FEF2E0",
-          "fontWeight": "normal",
-          "borderColor": "#ffffff",
-          "iconColor": "#D97706",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-only",
-          "iconPosition": "center",
-          "size": "md"
-        },
-        "default": {
-          "backgroundColor": "#405189",
-          "textColor": "#ffffff",
-          "borderColor": "#405189",
-          "iconColor": "#ffffff",
-          "iconPosition": "center",
-          "size": "md",
-          "displayMode": "text-only",
-          "fontWeight": "medium"
-        }
-      },
-      "hiddenLabels": [
-        "logo"
-      ]
-    },
-    "actions": [
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "isVisibleInTable": true,
-        "isVisibleInCard": true,
-        "tableDisplayMode": "primary"
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "isVisibleInTable": false,
-        "isVisibleInCard": true,
-        "tableDisplayMode": "menu"
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "isVisibleInTable": false,
-        "isVisibleInCard": true,
-        "tableDisplayMode": "menu"
-      },
-      {
-        "id": "web-72ro",
-        "label": "Web",
-        "icon": "Globe",
-        "customUrl": "localhost:3001",
-        "actionType": "custom",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": true,
-        "isVisibleInTable": true,
-        "variant": "default"
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "tertiary",
-        "isVisibleInTable": false,
-        "isVisibleInCard": false,
-        "tableDisplayMode": "menu"
-      }
-    ]
-  },
-  "templates_showDetailCard": true,
-  "table-config-crm-contacts-v1-0": {
-    "id": "template-data-table-final",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 7,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 8,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 9,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 10,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 11,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "first-name": {
-        "id": "first-name",
-        "label": "First Name",
-        "isVisible": false,
-        "order": 3,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "last-name": {
-        "id": "last-name",
-        "label": "Last Name",
-        "isVisible": false,
-        "order": 4,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 6,
-        "type": "email",
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "id": {
-        "id": "id",
-        "label": "ID",
-        "isVisible": true,
-        "order": 1,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "CONID",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
-      },
-      "name": {
-        "id": "name",
-        "label": "Name",
-        "isVisible": true,
-        "order": 2,
-        "type": "formula",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "formula": " {first-name} +\" \"+ {last-name} ",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 5,
-        "type": "phone",
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "center",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold",
-      "textWrap": "wrap"
-    },
-    "rowStyle": {
-      "alignment": "center",
-      "textSize": "sm",
-      "fontWeight": "normal",
-      "textWrap": "wrap"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Contact",
-      "pluralName": "Contacts",
-      "layout": [
-        {
-          "id": "first-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "First Name",
-          "type": "text",
-          "required": true
-        },
-        {
-          "id": "last-name",
-          "visible": true,
-          "isCustom": true,
-          "label": "Last Name",
-          "type": "text",
-          "required": true
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "phone",
-          "isMultiSelect": false,
-          "required": false
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "email",
-          "isMultiSelect": false,
-          "required": false
-        },
-        {
-          "id": "id",
-          "visible": false,
-          "isCustom": true,
-          "label": "ID",
-          "type": "id",
-          "required": false
-        },
-        {
-          "id": "name",
-          "visible": false,
-          "isCustom": true,
-          "label": "Name",
-          "type": "formula",
-          "required": false
-        }
-      ],
-      "detailLayout": {
-        "top": [
-          "id",
-          "name"
-        ],
-        "left": [
-          "phone",
-          "email"
-        ],
-        "right": [
-          "createdBy",
-          "createdAt",
-          "editedBy",
-          "editedAt"
-        ]
-      },
-      "cardsLayout": [],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "center",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "textWrap": "wrap"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "title": "Contact Info",
-          "textWrap": "wrap"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "textWrap": "wrap"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": false,
-        "isVisibleInTable": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "secondary",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "tertiary",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": false,
-        "isVisibleInTable": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
-  "table-data--crm-contacts": [],
-  "table-data--crm-vendors": [
+  "app-snapshot-timestamp": 1769797320360,
+  "table-data--crm-projects": [
     {
-      "id": "VENIDPPG69X",
+      "id": "ID-7353799",
       "emails": [
         {
           "id": "1",
@@ -3565,1570 +1154,197 @@
           "isPrimary": true
         }
       ],
-      "vendor-name": "360 Remodeling & Building",
-      "address": "17200 Ventura Blvd Suit 117, Encino, CA 91316",
-      "phone": "818-469-2646",
-      "branch": [
-        "BHP",
-        "DSC",
-        "MOD",
-        "RNVT",
-        "SWR",
-        "SWS",
-        "BSP"
-      ],
-      "contact-person": "Avi Mualem",
+      "project-address": "Project address C",
+      "customer-name": "ID-4542658",
+      "vendor-name": "ID-823999",
       "email": "",
-      "createdBy": "System",
-      "createdAt": "1/29/2026",
-      "editedBy": "System",
-      "editedAt": "1/29/2026"
-    }
-  ],
-  "table-data--crm-companies-v1-0": [
-    {
-      "id": "ID-4304914",
-      "emails": [
-        {
-          "id": "1",
-          "value": "",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "phones": [
-        {
-          "id": "1",
-          "value": "",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "addresses": [
-        {
-          "id": "1",
-          "value": "",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "logo": "blob:http://localhost:3001/0e8cc1a4-2666-4fc0-966e-661d32db72ba",
-      "company-name": "Modernize Green Solutions",
-      "owner": "Omri Daniel Lev Haari",
-      "address": [
-        {
-          "id": "0.23159244533307854",
-          "value": "1 Oakwood Blvd #200, Hollywood, FL 33020, USA",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "phone": "305-786-5950",
-      "website": "https://modernizegreensolutions.com",
-      "email": [
-        {
-          "id": "0.4399276576785981",
-          "value": "admin@modernizegreensolutions.com",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "services": [
-        "Google Workspace.",
-        "Microsoft 365",
-        "SipTrunk",
-        "AT&T",
-        "Voxtelesys",
-        "Hivelocity"
-      ],
-      "comid": "COMIDDNHGR7",
-      "createdBy": "System",
-      "createdAt": "1/29/2026",
-      "editedBy": "System",
-      "editedAt": "1/29/2026"
-    }
-  ],
-  "table-data--crm-projects-v1-0": [],
-  "table-data--crm-contacts-v1-0": [
-    {
-      "id": "CONID34EKTZ",
-      "emails": [
-        {
-          "id": "1",
-          "value": "",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "phones": [
-        {
-          "id": "1",
-          "value": "",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "addresses": [
-        {
-          "id": "1",
-          "value": "",
-          "type": "Work",
-          "isPrimary": true
-        }
-      ],
-      "first-name": "Keren",
-      "last-name": "Kidron",
-      "phone": "202-557-5569",
-      "email": "kkidron@yahoo.com",
+      "phone": "",
       "address": "",
       "createdBy": "System",
-      "createdAt": "1/29/2026",
+      "createdAt": "1/30/2026",
       "editedBy": "System",
-      "editedAt": "1/29/2026"
+      "editedAt": "1/30/2026"
+    },
+    {
+      "id": "ID-7694189",
+      "emails": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "project-address": "Project address B",
+      "customer-name": "ID-626711",
+      "vendor-name": "ID-7973726",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026",
+      "editedBy": "System",
+      "editedAt": "1/30/2026"
+    },
+    {
+      "id": "ID-7748301",
+      "emails": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "project-address": "Project address A",
+      "customer-name": "ID-8718765",
+      "vendor-name": "ID-6134790",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026",
+      "editedBy": "System",
+      "editedAt": "1/30/2026"
     }
   ],
-  "table-config-table--crm-projects-v1-0": {
-    "id": "table--crm-projects-v1-0",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "project-address": {
-        "id": "project-address",
-        "label": "Project Address",
-        "isVisible": true,
-        "order": 6,
-        "type": "address",
-        "isMultiSelect": false,
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "id": {
-        "id": "id",
-        "label": "ID",
-        "isVisible": true,
-        "order": 7,
-        "type": "id",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "idPrefix": "PROID",
-        "icon": "",
-        "showIconInTable": false,
-        "showIconInCard": false,
-        "multiEntryDisplay": "all"
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Project",
-      "pluralName": "Projects",
-      "layout": [
+  "table-data--crm-customers": [
+    {
+      "id": "ID-4542658",
+      "emails": [
         {
-          "id": "project-address",
-          "visible": true,
-          "isCustom": true,
-          "label": "Project Address",
-          "type": "address",
-          "isMultiSelect": false,
-          "required": false
-        },
-        {
-          "id": "id",
-          "visible": true,
-          "isCustom": true,
-          "label": "ID",
-          "type": "id",
-          "required": false
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
         }
       ],
-      "detailLayout": {
-        "top": [],
-        "left": [],
-        "right": []
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
-      ],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
-  "table-config-companies-updated": {
-    "id": "companies-updated",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "id": {
-        "id": "id",
-        "label": "ID",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "name": {
-        "id": "name",
-        "label": "Company Name",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "owner": {
-        "id": "owner",
-        "label": "Owner",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "industry": {
-        "id": "industry",
-        "label": "Industry",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": false,
-        "type": "badge",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "badgeStyle": {
-          "alignment": "center",
-          "textSize": "xs",
-          "textColor": "#4338ca",
-          "backgroundColor": "#e0e7ff",
-          "fontWeight": "normal"
-        }
-      },
-      "website": {
-        "id": "website",
-        "label": "Website",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "services": {
-        "id": "services",
-        "label": "Services",
-        "isVisible": true,
-        "order": 6,
-        "isMandatory": false,
-        "type": "badge",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        },
-        "badgeStyle": {
-          "alignment": "center",
-          "textSize": "xs",
-          "textColor": "#4338ca",
-          "backgroundColor": "#e0e7ff",
-          "fontWeight": "normal"
-        }
-      },
-      "email": {
-        "id": "email",
-        "label": "Email",
-        "isVisible": true,
-        "order": 7,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "phone": {
-        "id": "phone",
-        "label": "Phone",
-        "isVisible": true,
-        "order": 8,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "address": {
-        "id": "address",
-        "label": "Address",
-        "isVisible": true,
-        "order": 9,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 10,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 11,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 12,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 13,
-        "isMandatory": false,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 14,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "semibold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": "createdBy",
-      "direction": "asc"
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
-      "layout": [
+      "phones": [
         {
-          "id": "id",
-          "visible": true,
-          "isCustom": false,
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "name",
-          "visible": true,
-          "isCustom": false,
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "owner",
-          "visible": true,
-          "isCustom": false,
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "industry",
-          "visible": true,
-          "isCustom": false,
-          "type": "badge",
-          "required": false
-        },
-        {
-          "id": "website",
-          "visible": true,
-          "isCustom": false,
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "services",
-          "visible": true,
-          "isCustom": false,
-          "type": "badge",
-          "required": false
-        },
-        {
-          "id": "email",
-          "visible": true,
-          "isCustom": true,
-          "label": "Email",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "phone",
-          "visible": true,
-          "isCustom": true,
-          "label": "Phone",
-          "type": "text",
-          "required": false
-        },
-        {
-          "id": "address",
-          "visible": true,
-          "isCustom": true,
-          "label": "Address",
-          "type": "text",
-          "required": false
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
         }
       ],
-      "detailLayout": {
-        "top": [
-          "logo",
-          "name",
-          "industry",
-          "actions"
-        ],
-        "left": [
-          "emails",
-          "phones",
-          "website"
-        ],
-        "right": [
-          "addresses",
-          "owner"
-        ]
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
-      ],
-      "detailStyles": {
-        "top": {
-          "alignment": "center"
-        },
-        "right": {
-          "alignment": "left"
-        },
-        "left": {
-          "alignment": "left"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "ghost",
-        "isVisibleInTable": true,
-        "isVisibleInCard": false,
-        "tableDisplayMode": "primary"
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "ghost",
-        "isVisibleInTable": true,
-        "isVisibleInCard": false,
-        "tableDisplayMode": "primary"
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "destructive",
-        "isVisibleInTable": true,
-        "isVisibleInCard": false,
-        "tableDisplayMode": "primary"
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "actionCard",
-        "isVisibleInTable": true,
-        "isVisibleInCard": true,
-        "tableDisplayMode": "primary"
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "actionCard",
-        "isVisibleInTable": true,
-        "isVisibleInCard": true,
-        "tableDisplayMode": "primary"
-      }
-    ]
-  },
-  "table-config-crm-contacts-table": {
-    "id": "crm-contacts-table",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Item",
-      "pluralName": "Items",
-      "layout": [],
-      "detailLayout": {
-        "top": [],
-        "left": [],
-        "right": []
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
-      ],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
-    },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
-  "table-config-crm-companies-final": {
-    "id": "templates-data-table-v2",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "id": {
-        "id": "id",
-        "label": "CID",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "name": {
-        "id": "name",
-        "label": "Name",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 6,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 7,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "center",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold",
-      "textWrap": "wrap"
-    },
-    "rowStyle": {
-      "alignment": "center",
-      "textSize": "sm",
-      "fontWeight": "normal",
-      "textWrap": "wrap"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Customer",
-      "pluralName": "Customer",
-      "layout": [
+      "addresses": [
         {
-          "id": "name",
-          "visible": false,
-          "isCustom": true,
-          "label": "Name",
-          "type": "text",
-          "required": false
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
         }
       ],
-      "detailLayout": {
-        "top": [
-          "name"
-        ],
-        "left": [],
-        "right": []
-      },
-      "cardsLayout": [],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "center",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff",
-          "title": ""
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
+      "-customer-name": "Customer C",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026, 1:16:06 PM",
+      "editedBy": "System",
+      "editedAt": "1/30/2026, 1:16:06 PM"
     },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  },
-  "table-config-crm-contacts-final": {
-    "id": "crm-contacts-final",
-    "columns": {
-      "select": {
-        "id": "select",
-        "label": "Select",
-        "isVisible": true,
-        "order": 0,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "id": {
-        "id": "id",
-        "label": "CID",
-        "isVisible": true,
-        "order": 1,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "name": {
-        "id": "name",
-        "label": "Name",
-        "isVisible": true,
-        "order": 2,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdBy": {
-        "id": "createdBy",
-        "label": "Created By",
-        "isVisible": true,
-        "order": 3,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "createdAt": {
-        "id": "createdAt",
-        "label": "Created At",
-        "isVisible": true,
-        "order": 4,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedBy": {
-        "id": "editedBy",
-        "label": "Edited By",
-        "isVisible": true,
-        "order": 5,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "editedAt": {
-        "id": "editedAt",
-        "label": "Edited At",
-        "isVisible": true,
-        "order": 6,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      },
-      "actions": {
-        "id": "actions",
-        "label": "Actions",
-        "isVisible": true,
-        "order": 7,
-        "isMandatory": true,
-        "type": "text",
-        "style": {
-          "alignment": "left",
-          "textSize": "sm",
-          "fontWeight": "normal"
-        }
-      }
-    },
-    "headerStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "textColor": "#2563eb",
-      "backgroundColor": "#ffffff",
-      "fontWeight": "bold"
-    },
-    "rowStyle": {
-      "alignment": "left",
-      "textSize": "sm",
-      "fontWeight": "normal"
-    },
-    "servicesStyle": {
-      "alignment": "center",
-      "textSize": "xs",
-      "textColor": "#4338ca",
-      "backgroundColor": "#e0e7ff",
-      "fontWeight": "normal"
-    },
-    "sort": {
-      "key": null,
-      "direction": null
-    },
-    "pagination": {
-      "pageSize": 10
-    },
-    "entityConfig": {
-      "singularName": "Contact",
-      "pluralName": "Contacts",
-      "layout": [
+    {
+      "id": "ID-626711",
+      "emails": [
         {
-          "id": "id",
-          "visible": true,
-          "isCustom": false,
-          "type": "text",
-          "required": false
-        },
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
         {
-          "id": "name",
-          "visible": true,
-          "isCustom": false,
-          "type": "text",
-          "required": false
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
         }
       ],
-      "detailLayout": {
-        "top": [],
-        "left": [],
-        "right": []
-      },
-      "cardsLayout": [
-        "tasks",
-        "notes",
-        "files"
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
       ],
-      "hiddenLabels": [],
-      "detailStyles": {
-        "top": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "left": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        },
-        "right": {
-          "alignment": "left",
-          "textColor": "#000000",
-          "backgroundColor": "#ffffff"
-        }
-      },
-      "buttonStyles": {
-        "primary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "secondary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "tertiary": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "left",
-          "fontWeight": "medium"
-        },
-        "default": {
-          "backgroundColor": "#ffffff",
-          "textColor": "#0f172a",
-          "iconColor": "#64748b",
-          "borderColor": "#e2e8f0",
-          "activeBorderThickness": "0px",
-          "displayMode": "icon-text",
-          "iconPosition": "center",
-          "fontWeight": "medium"
-        }
-      }
+      "-customer-name": "Customer B",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026, 1:16:01 PM",
+      "editedBy": "System",
+      "editedAt": "1/30/2026, 1:16:01 PM"
     },
-    "actions": [
-      {
-        "id": "view",
-        "label": "View Details",
-        "icon": "Eye",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "edit",
-        "label": "Edit",
-        "icon": "Pencil",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "delete",
-        "label": "Delete",
-        "icon": "Trash2",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "primary",
-        "isVisibleInCard": false
-      },
-      {
-        "id": "email",
-        "label": "Send Email",
-        "icon": "Mail",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      },
-      {
-        "id": "call",
-        "label": "Call",
-        "icon": "Phone",
-        "actionType": "system",
-        "variant": "default",
-        "tableDisplayMode": "menu",
-        "isVisibleInCard": true
-      }
-    ]
-  }
+    {
+      "id": "ID-8718765",
+      "emails": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "phones": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "addresses": [
+        {
+          "id": "1",
+          "value": "",
+          "type": "Work",
+          "isPrimary": true
+        }
+      ],
+      "-customer-name": "Customer A",
+      "email": "",
+      "phone": "",
+      "address": "",
+      "createdBy": "System",
+      "createdAt": "1/30/2026, 1:15:52 PM",
+      "editedBy": "System",
+      "editedAt": "1/30/2026, 1:15:52 PM"
+    }
+  ]
 }

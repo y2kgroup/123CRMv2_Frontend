@@ -55,6 +55,9 @@ export function Header() {
                 }
             }
 
+            // Add timestamp for versioning
+            data['app-snapshot-timestamp'] = Date.now();
+
             const res = await fetch('/api/dev/snapshot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -87,7 +87,7 @@ export default function TemplatesPage() {
         const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
         return {
-            tableId: `table-${pathname?.replace(/\//g, '-')}` || 'default-table',
+            tableId: pathname?.replace(/\//g, '-') || 'default-table',
             singularName: capitalize(singular),
             pluralName: capitalize(cleanName)
         };
@@ -764,7 +764,8 @@ export default function TemplatesPage() {
         }
 
         return baseColumns;
-    }, [selectedRows, tableData, isQuickEditMode, tableConfig.config]);
+        return baseColumns;
+    }, [selectedRows, tableData, isQuickEditMode, tableConfig.config, lookupData, getLookupValue]);
 
     // --- Import Dialog State ---
     const [isImportOpen, setIsImportOpen] = React.useState(false);

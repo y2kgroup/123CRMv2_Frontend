@@ -50,12 +50,14 @@ import { NotesCard } from '@/components/companies/detail/NotesCard';
 import { FilesCard } from '@/components/companies/detail/FilesCard';
 
 import Papa from 'papaparse';
+import { exportTableToCSV } from '@/components/ui/data-table/export-utils';
 import { MultiSelect } from '@/components/ui/multi-select';
 import { useLookupData } from '@/components/ui/data-table/useLookupData';
 
 // Requested specific columns only
 const defaultColumns = [
     { id: 'select', label: 'Select', isMandatory: true, style: { alignment: 'center' } },
+    { id: 'name', label: 'Name', isMandatory: false }, // Added Name Column
     { id: 'createdBy', label: 'Created By', isMandatory: true },
     { id: 'createdAt', label: 'Created At', isMandatory: true },
     { id: 'editedBy', label: 'Edited By', isMandatory: true },
@@ -65,7 +67,7 @@ const defaultColumns = [
 
 
 
-export default function Projectsv10Page() {
+export default function ProjectsPage() {
     const { theme: currentMode, customTheme } = useLayout();
     const activeTheme = currentMode === 'dark' ? customTheme.dark : customTheme.light;
 
@@ -101,7 +103,10 @@ export default function Projectsv10Page() {
             pluralName: detectedConfig.pluralName
         }
     });
+    console.log('TABLE CONFIG KEYS:', Object.keys(tableConfig.config?.columns || {}));
+
     const { getLookupValue, lookupData } = useLookupData(tableConfig.config as any);
+
     const persistenceKey = `table-data-${pathname?.replace(/\//g, '-') || 'default'}`;
     const [tableData, setTableData] = usePersistedData<any>(persistenceKey, []);
 
@@ -191,8 +196,35 @@ export default function Projectsv10Page() {
                 }
             });
         }
+
+        // --- Sorting Logic ---
+        if (tableConfig.config?.sort?.key && tableConfig.config.sort.direction) {
+            const { key, direction } = tableConfig.config.sort;
+            result = [...result].sort((a, b) => {
+                const aVal = a[key];
+                const bVal = b[key];
+
+                // Handle null/undefined
+                if (aVal === bVal) return 0;
+                if (aVal === null || aVal === undefined) return 1; // Nulls last
+                if (bVal === null || bVal === undefined) return -1;
+
+                // String comparison (case insensitive)
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    return direction === 'asc'
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                }
+
+                // Number/Date comparison
+                if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
         return result;
-    }, [tableData, filterRules, filterMatchType]);
+    }, [tableData, filterRules, filterMatchType, tableConfig.config?.sort]);
 
 
     // --- Quick Edit State ---
@@ -436,42 +468,6 @@ export default function Projectsv10Page() {
                             textAlign: badgeStyleCfg.alignment as any
                         };
 
-                        // --- LOOKUP COLUMN LOGIC ---
-                        if (col.type === 'lookup' && col.lookupConfig) {
-                            const targetTableId = col.lookupConfig.targetTableId;
-                            const targetRows = lookupData?.[targetTableId] || [];
-                            const foreignKeyVal = item[col.lookupConfig.foreignKey || col.id]; // The stored ID
-                            const displayValue = getLookupValue(targetTableId, foreignKeyVal, col.lookupConfig.targetField);
-
-                            if (isQuickEditMode) {
-                                return (
-                                    <div onClick={(e) => e.stopPropagation()}>
-                                        <Select
-                                            value={foreignKeyVal || ''}
-                                            onValueChange={(val) => handleCellChange(item.id, col.id, val)}
-                                        >
-                                            <SelectTrigger className="h-8 w-full min-w-[120px]">
-                                                <SelectValue placeholder="Select..." />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {targetRows.length > 0 ? (
-                                                    targetRows.map((r: any) => (
-                                                        <SelectItem key={r.id} value={r.id}>
-                                                            {r[col.lookupConfig!.targetField] || r.name || r.id}
-                                                        </SelectItem>
-                                                    ))
-                                                ) : (
-                                                    <div className="p-2 text-xs text-muted-foreground">No data</div>
-                                                )}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                );
-                            }
-                            // Read-only display
-                            return <span className="text-sm text-slate-700 dark:text-slate-300">{displayValue || foreignKeyVal}</span>;
-                        }
-
                         // --- MERGED COLUMN LOGIC ---
                         let mergedContent = null;
                         if (col.mergeWithColumnId && tableConfig.config?.columns) {
@@ -492,6 +488,60 @@ export default function Projectsv10Page() {
                                     }
                                 }
                             }
+                        }
+
+                        // --- LOOKUP COLUMN LOGIC ---
+                        if (col.id === 'vendors') {
+                            console.log('RENDER VENDORS:', { id: col.id, type: col.type, hasLookupConfig: !!col.lookupConfig, qe: isQuickEditMode });
+                        }
+                        if (col.type === 'lookup' && col.lookupConfig) {
+                            const targetTableId = col.lookupConfig.targetTableId;
+                            const targetRows = lookupData?.[targetTableId] || [];
+
+                            // --- QUICK EDIT MODE FOR LOOKUP ---
+                            if (isQuickEditMode) {
+                                const currentVal = item[col.id]; // This is likely the foreign key (ID) or Name?
+                                // We should store the ID.
+
+                                return (
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <Select
+                                            value={currentVal || ''}
+                                            onValueChange={(val) => handleCellChange(item.id, col.id, val)}
+                                        >
+                                            <SelectTrigger className="h-8 w-full min-w-[120px]">
+                                                <SelectValue placeholder="Select..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {targetRows.length > 0 ? (
+                                                    targetRows.map((r: any) => (
+                                                        <SelectItem key={r.id} value={r.id}>
+                                                            {r[col.lookupConfig!.targetField] || r.name || r.id}
+                                                        </SelectItem>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-2 text-xs text-muted-foreground">No data</div>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                );
+                            }
+
+                            const lookupVal = getLookupValue(
+                                col.lookupConfig.targetTableId,
+                                item[col.lookupConfig.foreignKey || col.id],
+                                col.lookupConfig.targetField
+                            );
+
+                            return (
+                                <span className={cn(
+                                    "text-sm text-slate-600 dark:text-slate-400 border-b border-dashed border-slate-300 dark:border-slate-700 pb-0.5 cursor-help",
+                                    !lookupVal && "text-slate-400 italic text-xs"
+                                )} title={`Looked up from ${col.lookupConfig.targetTableId}`}>
+                                    {lookupVal || 'Not Found'}
+                                </span>
+                            );
                         }
 
                         const mainContent = (() => {
@@ -566,11 +616,57 @@ export default function Projectsv10Page() {
                                     );
                                 }
 
+                                // Handle Complex Types (Email, Phone, Address, Website)
+                                if (col.type === 'email' || col.type === 'phone' || col.type === 'address' || col.type === 'url') {
+                                    const displayValue = (() => {
+                                        if (Array.isArray(val)) {
+                                            return val.map((v: any) => (typeof v === 'object' && 'value' in v) ? v.value : v).join(', ');
+                                        }
+                                        if (typeof val === 'object' && val !== null && 'value' in val) {
+                                            return val.value;
+                                        }
+                                        return val || '';
+                                    })();
+
+                                    return (
+                                        <div onClick={(e) => e.stopPropagation()}>
+                                            <Input
+                                                value={displayValue}
+                                                onChange={(e) => {
+                                                    const newVal = e.target.value;
+                                                    // Reconstruct structure based on input
+                                                    // If original was array(of objects), split and map
+                                                    // If original was single object, updated value
+                                                    // If original was clean string (or empty), store as array of objects to be safe/consistent?
+                                                    // Let's infer from current val structure if possible, default to array of objects for these types.
+
+                                                    let structuresVal: any = newVal;
+
+                                                    const isArrayStructure = Array.isArray(val) || (!val && (col.type === 'email' || col.type === 'phone')); // Default to array for email/phone
+
+                                                    if (isArrayStructure) {
+                                                        structuresVal = newVal.split(',').map(s => ({ value: s.trim(), label: 'Primary' })).filter(o => o.value);
+                                                    } else if (typeof val === 'object' && val !== null) {
+                                                        structuresVal = { ...val, value: newVal };
+                                                    }
+
+                                                    handleChange(structuresVal);
+                                                }}
+                                                className="h-8 w-full min-w-[150px]"
+                                                placeholder={col.label}
+                                            />
+                                        </div>
+                                    );
+                                }
+
                                 return (
                                     <div onClick={(e) => e.stopPropagation()}>
                                         <Input
                                             type={col.type === 'number' ? 'number' : 'text'}
-                                            value={val || ''}
+                                            value={(() => {
+                                                if (typeof val === 'object' && val !== null) return JSON.stringify(val);
+                                                return val || '';
+                                            })()}
                                             onChange={(e) => handleChange(e.target.value)}
                                             className="h-8 w-full min-w-[100px]"
                                         />
@@ -696,6 +792,7 @@ export default function Projectsv10Page() {
         }
 
         return baseColumns;
+        return baseColumns;
     }, [selectedRows, tableData, isQuickEditMode, tableConfig.config, lookupData, getLookupValue]);
 
     // --- Import Dialog State ---
@@ -787,18 +884,22 @@ export default function Projectsv10Page() {
 
 
     const handleExport = () => {
-        const csv = Papa.unparse(tableData);
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        if (link.download !== undefined) {
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'templates_export.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        const columnsToExport = tableConfig.sortedColumns.map(col => ({ id: col.id, label: col.label }));
+
+        // Hydrate formula values
+        const dataToExport = tableData.map(row => {
+            const newRow = { ...row };
+            if (tableConfig.config?.columns) {
+                Object.values(tableConfig.config.columns).forEach(col => {
+                    if (col.type === 'formula' && col.formula) {
+                        newRow[col.id] = evaluateFormula(col.formula, row);
+                    }
+                });
+            }
+            return newRow;
+        });
+
+        exportTableToCSV(dataToExport, `export-${detectedConfig?.pluralName || 'data'}.csv`, columnsToExport);
     };
 
     // --- Action Menu Items ---
@@ -1083,8 +1184,8 @@ export default function Projectsv10Page() {
                 onOpenChange={(open) => { setIsAddCompanyOpen(open); if (!open) setEditingCompany(null); }}
                 onSubmit={handleSaveCompany}
                 initialData={editingCompany}
-                lookupData={lookupData}
                 entityConfig={tableConfig.config?.entityConfig || { singularName: 'Item', pluralName: 'Items', layout: [] }}
+                lookupData={lookupData}
             />
 
             <AdvancedFilterSheet

@@ -103,6 +103,7 @@ export interface GlobalStyle {
 export interface TableConfig {
     id: string; // Unique ID for storage (e.g. "companies-table-v1")
     columns: Record<string, ColumnConfig>; // Map column ID to config
+    removedColumnIds?: string[]; // Track columns explicitly removed by user
     actions: ActionButtonConfig[]; // Configured actions
     headerStyle?: GlobalStyle;
     rowStyle?: GlobalStyle;
