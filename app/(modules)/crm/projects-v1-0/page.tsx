@@ -440,7 +440,7 @@ export default function Projectsv10Page() {
                         if (col.type === 'lookup' && col.lookupConfig) {
                             const targetTableId = col.lookupConfig.targetTableId;
                             const targetRows = lookupData?.[targetTableId] || [];
-                            const foreignKeyVal = item[col.foreignKey || col.id]; // The stored ID
+                            const foreignKeyVal = item[col.lookupConfig.foreignKey || col.id]; // The stored ID
                             const displayValue = getLookupValue(targetTableId, foreignKeyVal, col.lookupConfig.targetField);
 
                             if (isQuickEditMode) {
